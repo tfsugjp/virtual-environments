@@ -14,7 +14,7 @@
         "virtual_network_resource_group_name": "{{env `VNET_RESOURCE_GROUP`}}",
         "virtual_network_subnet_name": "{{env `VNET_SUBNET`}}",
         "private_virtual_network_with_public_ip": "{{env `PRIVATE_VIRTUAL_NETWORK_WITH_PUBLIC_IP`}}",
-        "vm_size": "Standard_D4_v2",
+        "vm_size": "Standard_D4d_v4",
         "run_scan_antivirus": "false",
 
         "root_folder": "C:",
@@ -31,8 +31,8 @@
         "image_version": "dev",
         "image_os": "win19",
         "github_feed_token": "{{env `GITHUB_FEED_TOKEN`}}",
-        "go_versions": "1.9, 1.10, 1.11, 1.12, 1.13, 1.14",
-        "go_default": "1.14"
+        "go_versions": "1.13, 1.14, 1.15",
+        "go_default": "1.15"
     },
     "sensitive-variables": ["install_password", "ssh_password", "client_secret", "github_feed_token"],
     "builders": [
