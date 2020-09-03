@@ -9,8 +9,8 @@ Import-Module -Name ImageHelpers -Force
 
 if (Test-IsWin19)
 {
-    $winSdkUrl = "https://go.microsoft.com/fwlink/p/?linkid=2083338"
-    $wdkUrl = "https://go.microsoft.com/fwlink/?linkid=2085767"
+    $winSdkUrl = "https://go.microsoft.com/fwlink/p/?linkid=2120843"
+    $wdkUrl = "https://go.microsoft.com/fwlink/?linkid=2128854"
     $FilePath = "C:\Program Files (x86)\Windows Kits\10\Vsix\VS2019\WDK.vsix"
     $VSver = "2019"
 }
@@ -32,3 +32,5 @@ Install-Binary -Url $wdkUrl -Name "wdksetup.exe" -ArgumentList $argumentList
 
 # Need to install the VSIX to get the build targets when running VSBuild
 Install-VsixExtension -FilePath $FilePath -Name "WDK.vsix" -VSversion $VSver -InstallOnly
+
+Invoke-PesterTests -TestFile "WDK"

@@ -1,31 +1,18 @@
 ################################################################################
-##  File:  Install-awscli.ps1
-##  Desc:  Install awscli
+##  File:  Install-AWS.ps1
+##  Desc:  Install AWS tools(AWS CLI, Session Manager Plugin for the AWS CLI, AWS SAM CLI)
 ################################################################################
 
+# Install AWS CLI
 Choco-Install -PackageName awscli
 
-$env:PATH =$env:PATH + ";$Env:Programfiles\Amazon\AWSCLIV2"
+# Install Session Manager Plugin for the AWS CLI
+$sessionManagerName = "SessionManagerPluginSetup.exe"
+$sessionManagerUrl = "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/$sessionManagerName"
+Install-Binary -Url $sessionManagerUrl -Name $sessionManagerName -ArgumentList ("/silent", "/install")
+$env:Path = $env:Path + ";$env:ProgramFiles\Amazon\SessionManagerPlugin\bin"
 
-$command = Get-Command -Name 'aws'
+# Install AWS SAM CLI
+Install-Binary -Url "https://github.com/awslabs/aws-sam-cli/releases/latest/download/AWS_SAM_CLI_64_PY3.msi" -Name "AWS_SAM_CLI_64_PY3.msi"
 
-if ($command)
-{
-    Write-Host "awscli on path"
-}
-else
-{
-    Write-Host 'awscli is not on path'
-    exit 1
-}
-
-# Adding description of the software to Markdown
-$SoftwareName = "AWS CLI"
-
-$version = (aws --version).Split(" ")[0].Replace("/"," ")
-
-$Description = @"
-_Version:_ $version<br/>
-"@
-
-Add-SoftwareDetailsToMarkdown -SoftwareName $SoftwareName -DescriptionMarkdown $Description
+Invoke-PesterTests -TestFile "CLI.Tools" -TestName "AWS"

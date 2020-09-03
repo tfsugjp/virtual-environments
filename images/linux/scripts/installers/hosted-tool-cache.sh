@@ -12,11 +12,6 @@ set -e
 
 TOOLCACHE_REGISTRY="npm.pkg.github.com"
 
-AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
-mkdir $AGENT_TOOLSDIRECTORY
-echo "AGENT_TOOLSDIRECTORY=$AGENT_TOOLSDIRECTORY" | tee -a /etc/environment
-chmod -R 777 $AGENT_TOOLSDIRECTORY
-
 echo "Configure npm to use github package registry for '@actions' scope"
 npm config set @actions:registry "https://${TOOLCACHE_REGISTRY}"
 
@@ -53,10 +48,4 @@ DocumentInstalledItem "Ruby:"
 rubys=$(ls $AGENT_TOOLSDIRECTORY/Ruby)
 for ruby in $rubys; do
 	DocumentInstalledItemIndent "Ruby $ruby"
-done;
-
-DocumentInstalledItem "PyPy:"
-pypys=$(ls $AGENT_TOOLSDIRECTORY/PyPy)
-for pypy in $pypys; do
-	DocumentInstalledItemIndent "PyPy $pypy"
 done;

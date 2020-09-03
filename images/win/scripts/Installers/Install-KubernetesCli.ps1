@@ -4,3 +4,6 @@
 ################################################################################
 
 Choco-Install -PackageName kubernetes-cli
+Choco-Install -PackageName minikube
+
+Invoke-PesterTests -TestFile "Tools" -TestName "KubernetesCli"

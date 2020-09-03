@@ -7,6 +7,9 @@
 # ensure temp
 New-Item -Path C:\Temp -Force -ItemType Directory
 
+# Set environment variables
+Set-SystemVariable -SystemVariable DOTNET_MULTILEVEL_LOOKUP -Value "0"
+
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor "Tls12"
 
 $templates = @(
@@ -59,8 +62,7 @@ function InstallAllValidSdks()
 
     # Consider all channels except preview/eol channels.
     # Sort the channels in ascending order
-    # HACK: Explicitly adding eol channel 2.2 for a grace period as this channel is wierdly marked as eol with no higher 2.x channel
-    $dotnetChannels = $dotnetChannels.'releases-index' | Where-Object { (!$_."support-phase".Equals('preview') -and !$_."support-phase".Equals('eol')) -or ($_."channel-version" -eq "2.2") } | Sort-Object { [Version] $_."channel-version" }
+    $dotnetChannels = $dotnetChannels.'releases-index' | Where-Object { (!$_."support-phase".Equals('preview') -and !$_."support-phase".Equals('eol')) } | Sort-Object { [Version] $_."channel-version" }
 
     # Download installation script.
     $installationName = "dotnet-install.ps1"
@@ -114,3 +116,5 @@ function RunPostInstallationSteps()
 
 InstallAllValidSdks
 RunPostInstallationSteps
+
+Invoke-PesterTests -TestFile "DotnetSDK"
