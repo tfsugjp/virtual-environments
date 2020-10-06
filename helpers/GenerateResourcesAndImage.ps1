@@ -111,7 +111,7 @@ Function GenerateResourcesAndImage {
     $ServicePrincipalClientSecret = $env:UserName + [System.GUID]::NewGuid().ToString().ToUpper();
     $InstallPassword = $env:UserName + [System.GUID]::NewGuid().ToString().ToUpper();
 
-    Login-AzAccount
+    Connect-AzAccount
     Set-AzContext -SubscriptionId $SubscriptionId
 
     $alreadyExists = $true;
@@ -167,10 +167,10 @@ Function GenerateResourcesAndImage {
 
     New-AzStorageAccount -ResourceGroupName $ResourceGroupName -AccountName $storageAccountName -Location $AzureLocation -SkuName "Standard_LRS"
 
-	$spDisplayName = [System.GUID]::NewGuid().ToString().ToUpper()
-
-	$localcredentials = New-Object -TypeName Microsoft.Azure.Commands.ActiveDirectory.PSADPasswordCredential -Property @{ StartDate=Get-Date; EndDate=Get-Date -Year 2024; Password=$ServicePrincipalClientSecret}
-    $sp = New-AzADServicePrincipal -DisplayName $spDisplayName  -Password $localcredentials
+    $spDisplayName = [System.GUID]::NewGuid().ToString().ToUpper()
+    $credentialProperties = @{ StartDate=Get-Date; EndDate=Get-Date -Year 2024; Password=$ServicePrincipalClientSecret }
+    $credentials = New-Object -TypeName Microsoft.Azure.Commands.ActiveDirectory.PSADPasswordCredential -Property $credentialProperties
+    $sp = New-AzADServicePrincipal -DisplayName $spDisplayName -PasswordCredential $credentials
 
     $spAppId = $sp.ApplicationId
     $spClientId = $sp.ApplicationId
