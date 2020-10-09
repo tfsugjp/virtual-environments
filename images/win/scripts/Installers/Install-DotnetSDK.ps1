@@ -62,7 +62,7 @@ function InstallAllValidSdks()
 
     # Consider all channels except preview/eol channels.
     # Sort the channels in ascending order
-    $dotnetChannels = $dotnetChannels.'releases-index' | Where-Object { (!$_."support-phase".Equals('preview') -and !$_."support-phase".Equals('eol') -and !$_."support-phase".Equals('rc')) } | Sort-Object { [Version] $_."channel-version" }
+    $dotnetChannels = $dotnetChannels.'releases-index' | Where-Object { (!$_."support-phase".Equals('preview') -and !$_."support-phase".Equals('eol') -and !$_."support-phase".Equals('rc')) } | Sort-Object { [Version] $_."channel-version" } -Descending
 
     # Download installation script.
     $installationName = "dotnet-install.ps1"
@@ -75,10 +75,12 @@ function InstallAllValidSdks()
         $releasesJsonPath = Start-DownloadWithRetry -Url $dotnetChannel.'releases.json' -Name "releases-$channelVersion.json"
         $currentReleases = Get-Content -Path $releasesJsonPath | ConvertFrom-Json
         # filtering out the preview/rc releases
-        $currentReleases = $currentReleases.'releases' | Where-Object { !$_.'release-version'.Contains('-') } | Sort-Object { [Version] $_.'release-version' }
+        $currentReleases = $currentReleases.'releases' | Where-Object { !$_.'release-version'.Contains('-') } | Sort-Object { [Version] $_.'release-version' } -Descending
 
-        ForEach ($release in $currentReleases)
+		# use latest release only
+        if($currentReleases.Count -gt 0)
         {
+            $release = $currentReleases[0]
             if ($release.'sdks'.Count -gt 0)
             {
                 Write-Host 'Found sdks property in release: ' + $release.'release-version' + 'with sdks count: ' + $release.'sdks'.Count
@@ -88,10 +90,12 @@ function InstallAllValidSdks()
                 $sdks = @($release.'sdk');
 
                 $sdks += $release.'sdks' | Where-Object { !$_.'version'.Contains('-') -and !$_.'version'.Equals($release.'sdk'.'version') }
-                $sdks = $sdks | Sort-Object { [Version] $_.'version' }
+                $sdks = $sdks | Sort-Object { [Version] $_.'version' } -Descending
 
-                ForEach ($sdk in $sdks)
+				# use latest SDK only
+				if($sdks.Count -gt 0)
                 {
+                    $sdk = $sdks[0]
                     InstallSDKVersion -sdkVersion $sdk.'version'
                 }
             }
