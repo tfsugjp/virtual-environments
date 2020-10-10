@@ -12,7 +12,7 @@ if (-not $vsixPackagesList) {
 
 $vsVersion = $toolset.visualStudio.Version
 $vsixPackagesList | ForEach-Object {
-    Install-VsixExtension -Url $_.url -Name $_.name -VSversion $vsVersion -InstallOnly
+    Install-VsixExtension -Url $_.url -Name $_.name -VSversion $vsVersion
 }
 
 Invoke-PesterTests -TestFile "Vsix"
