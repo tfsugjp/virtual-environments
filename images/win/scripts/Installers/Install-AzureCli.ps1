@@ -6,7 +6,9 @@
 Choco-Install -PackageName azure-cli
 
 $AzureCliExtensionPath = Join-Path $Env:CommonProgramFiles 'AzureCliExtensionDirectory'
-New-Item -ItemType "directory" -Path $AzureCliExtensionPath
+if (-not(Test-Path -Path $AzureCliExtensionPath)) {
+	New-Item -ItemType "directory" -Path $AzureCliExtensionPath -Force
+}
 
 [Environment]::SetEnvironmentVariable("AZURE_EXTENSION_DIR", $AzureCliExtensionPath, [System.EnvironmentVariableTarget]::Machine)
 
