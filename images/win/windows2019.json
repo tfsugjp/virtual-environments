@@ -13,7 +13,7 @@
         "virtual_network_resource_group_name": "{{env `VNET_RESOURCE_GROUP`}}",
         "virtual_network_subnet_name": "{{env `VNET_SUBNET`}}",
         "private_virtual_network_with_public_ip": "{{env `PRIVATE_VIRTUAL_NETWORK_WITH_PUBLIC_IP`}}",
-        "vm_size": "Standard_D4d_v4",
+        "vm_size": "Standard_DS4_v2",
         "run_scan_antivirus": "false",
         "root_folder": "C:",
         "toolset_json_path": "{{env `TEMP`}}\\toolset.json",
@@ -86,7 +86,7 @@
         {
             "type": "file",
             "source": "{{ template_dir }}/post-generation",
-            "destination": "C:/post-generation"
+            "destination": "C:/"
         },
         {
             "type": "file",
@@ -250,9 +250,10 @@
                 "{{ template_dir }}/scripts/Installers/Install-PyPy.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-Toolset.ps1",
                 "{{ template_dir }}/scripts/Installers/Configure-Toolset.ps1",
-                "{{ template_dir }}/scripts/Installers/Install-YAMLLint.ps1",
                 "{{ template_dir }}/scripts/Installers/Update-AndroidSDK.ps1",
-                "{{ template_dir }}/scripts/Installers/Install-AzureModules.ps1"
+                "{{ template_dir }}/scripts/Installers/Install-AzureModules.ps1",
+                "{{ template_dir }}/scripts/Installers/Install-Pipx.ps1",
+                "{{ template_dir }}/scripts/Installers/Install-PipxPackages.ps1"
             ]
         },
         {

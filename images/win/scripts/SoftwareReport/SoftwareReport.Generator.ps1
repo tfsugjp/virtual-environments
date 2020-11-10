@@ -59,7 +59,8 @@ $markdown += New-MDList -Style Unordered -Lines @(
     (Get-RubyGemsVersion),
     (Get-HelmVersion),
     (Get-ComposerVersion),
-    (Get-NugetVersion)
+    (Get-NugetVersion),
+    (Get-PipxVersion)
 )
 
 $markdown += New-MDHeader "Project Management" -Level 3
@@ -165,6 +166,7 @@ $markdown += New-MDNewLine
 $markdown += New-MDHeader "Database tools" -Level 3
 $markdown += New-MDList -Style Unordered -Lines @(
     (Get-AzCosmosDBEmulatorVersion),
+    (Get-DacFxVersion),
     (Get-SQLPSVersion),
     (Get-MySQLVersion)
 )
@@ -234,6 +236,7 @@ $markdown += New-MDNewLine
 
 # Docker images section
 $markdown += New-MDHeader "Cached Docker images" -Level 3
-$markdown += New-MDList -Style Unordered -Lines @(Get-CachedDockerImages)
+$markdown += Get-CachedDockerImagesTableData | New-MDTable
+$markdown += New-MDNewLine
 
 $markdown | Out-File -FilePath "C:\InstalledSoftware.md"

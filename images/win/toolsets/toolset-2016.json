@@ -10,7 +10,8 @@
                 "3.5.*",
                 "3.6.*",
                 "3.7.*",
-                "3.8.*"
+                "3.8.*",
+                "3.9.*"
             ],
             "default": "3.7.*"
         },
@@ -24,7 +25,8 @@
                 "3.5.*",
                 "3.6.*",
                 "3.7.*",
-                "3.8.*"
+                "3.8.*",
+                "3.9.*"
             ]
         },
         {
@@ -71,7 +73,6 @@
             "platform" : "win32",
             "toolset": "msvc14.1",
             "versions": [
-                "1.69.0",
                 "1.72.0"
             ]
         }
@@ -236,5 +237,11 @@
             "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2016",
             "microsoft/aspnetcore-build:1.0-2.0"
         ]
-    }
+    },
+    "pipx": [
+        {
+            "package": "yamllint",
+            "cmd": "yamllint --version"
+        }
+    ]
 }

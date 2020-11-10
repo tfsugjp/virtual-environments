@@ -1,9 +1,7 @@
-#!/bin/sh
+#!/bin/bash -e -o pipefail
 
 # The script currently requires 2 external variables to be set: XCODE_INSTALL_USER
 # and XCODE_INSTALL_PASSWORD, in order to access the Apple Developer Center
-
-set -e
 
 source ~/utils/utils.sh
 source ~/utils/xcode-utils.sh
@@ -79,6 +77,7 @@ runFirstLaunch $DEFAULT_XCODE_VERSION
 if is_Catalina; then
     ln -sf /Applications/Xcode_11.2.1.app /Applications/Xcode_11.2.app
     ln -sf /Applications/Xcode_11.3.1.app /Applications/Xcode_11.3.app
+    ln -sf /Applications/Xcode_11.4.1.app /Applications/Xcode_11.4.app
 fi
 
 echo "Setting Xcode ${DEFAULT_XCODE_VERSION} as default"

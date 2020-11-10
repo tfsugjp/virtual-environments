@@ -1,6 +1,4 @@
-#!/bin/sh
-
-set -e
+#!/bin/bash -e -o pipefail
 
 echo Installing Rustup...
 brew install rustup-init
@@ -13,6 +11,7 @@ CARGO_HOME=$HOME/.cargo
 source $CARGO_HOME/env
 
 echo Install common tools...
+rustup component add rustfmt clippy
 cargo install bindgen cbindgen cargo-audit cargo-outdated
 
 echo Cleanup Cargo registry cached data...

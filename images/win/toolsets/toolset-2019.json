@@ -10,7 +10,8 @@
                 "3.5.*",
                 "3.6.*",
                 "3.7.*",
-                "3.8.*"
+                "3.8.*",
+                "3.9.*"
             ],
             "default": "3.7.*"
         },
@@ -24,7 +25,8 @@
                 "3.5.*",
                 "3.6.*",
                 "3.7.*",
-                "3.8.*"
+                "3.8.*",
+                "3.9.*"
             ]
         },
         {
@@ -57,16 +59,6 @@
                 "1.15.*"
             ],
             "default": "1.15.*"
-        },
-        {
-            "name": "Boost",
-            "url" : "https://raw.githubusercontent.com/actions/boost-versions/main/versions-manifest.json",
-            "arch": "x86_64",
-            "platform" : "win32",
-            "toolset": "msvc14.1",
-            "versions": [
-                "1.69.0"
-            ]
         },
         {
             "name": "Boost",
@@ -263,5 +255,11 @@
             "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019",
             "microsoft/aspnetcore-build:1.0-2.0"
         ]
-    }
+    },
+    "pipx": [
+        {
+            "package": "yamllint",
+            "cmd": "yamllint --version"
+        }
+    ]
 }

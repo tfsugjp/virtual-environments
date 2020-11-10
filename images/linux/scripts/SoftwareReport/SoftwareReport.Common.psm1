@@ -144,17 +144,17 @@ function Get-AntVersion {
 }
 
 function Get-GradleVersion {
-    $result = gradle -v | Out-String
-    $result -match "Gradle (?<version>\d+\.\d+\.\d+)" | Out-Null
-    $gradleVersion = $Matches.version
+    $gradleVersion = (gradle -v) -match "^Gradle \d" | Take-OutputPart -Part 1
     return "Gradle $gradleVersion"
 }
+
 function Get-MavenVersion {
     $result = mvn -version | Out-String
     $result -match "Apache Maven (?<version>\d+\.\d+\.\d+)" | Out-Null
     $mavenVersion = $Matches.version
     return "Maven $mavenVersion"
 }
+
 function Get-SbtVersion {
     $result = Get-CommandResult "sbt -version"
     $result.Output -match "sbt script version: (?<version>\d+\.\d+\.\d+)" | Out-Null
@@ -240,6 +240,17 @@ function Get-CachedDockerImages {
     return $images
 }
 
+function Get-CachedDockerImagesTableData {
+    return (sudo docker images --digests --format "*{{.Repository}}:{{.Tag}}|{{.Digest}} |{{.CreatedAt}}").Split("*")     | Where-Object { $_ } |  ForEach-Object {
+      $parts=$_.Split("|")
+      [PSCustomObject] @{
+             "Repository:Tag" = $parts[0]
+              "Digest" = $parts[1]
+              "Created" = $parts[2].split(' ')[0]
+         }
+    }
+}
+
 function Get-AptPackages {
     $toolsetJson = Get-ToolsetContent
     $apt = $toolsetJson.apt
@@ -248,5 +259,8 @@ function Get-AptPackages {
 }
 
 function Get-PipxVersion {
-    return "Pipx $(pipx --version 2> $null)"
+    $result = (Get-CommandResult "pipx --version").Output
+    $result -match "(?<version>\d+\.\d+\.\d+\.?\d*)" | Out-Null
+    $pipxVersion = $Matches.Version
+    return "Pipx $pipxVersion"
 }

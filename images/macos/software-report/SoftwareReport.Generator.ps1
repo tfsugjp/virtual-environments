@@ -82,7 +82,9 @@ $homebrewVersion = Run-Command "brew --version" | Select-Object -First 1
 $npmVersion = Run-Command "npm --version"
 $yarnVersion = Run-Command "yarn --version"
 $nugetVersion = Run-Command "nuget help" | Select-Object -First 1 | Take-Part -Part 2
+$pipVersion = Get-PipVersion -Version 2
 $pip3Version = Get-PipVersion -Version 3
+$pipxVersion = Get-PipxVersion
 $condaVersion = Invoke-Expression "conda --version"
 $rubyGemsVersion = Run-Command "gem --version"
 $composerVersion = Run-Command "composer --version" | Take-Part -Part 2
@@ -92,13 +94,11 @@ if ($os.IsHigherThanMojave) {
     $vcpkgVersion = Get-VcpkgVersion
     $markdown += New-MDList -Lines $vcpkgVersion -Style Unordered -NoNewLine
 }
-if ($os.IsLessThanBigSur) {
-    $pipVersion = Get-PipVersion -Version 2
-    $markdown += New-MDList -Style Unordered -Lines @("Pip ${pipVersion}") -NoNewLine
-}
 
 $markdown += New-MDList -Style Unordered -Lines @(
+    "Pip ${pipVersion}",
     "Pip ${pip3Version}",
+    $pipxVersion,
     $bundlerVersion,
     "Carthage ${carthageVersion}",
     "CocoaPods ${cocoaPodsVersion}",
@@ -141,7 +141,7 @@ $aria2Version = Run-Command "aria2c --version" | Select-Object -First 1 | Take-P
 $azcopyVersion = Run-Command "azcopy --version" | Take-Part -Part 2
 $zstdVersion = Run-Command "zstd --version" | Take-Part -Part 1 -Delimiter "v" | Take-Part -Part 0 -Delimiter ","
 $bazelVersion = Run-Command "bazel --version" | Take-Part -Part 0 -Delimiter "-"
-$bazeliskVersion = Run-Command "bazelisk version" | Select-String "Bazelisk version:" | Take-Part -Part 1 -Delimiter ":"
+$bazeliskVersion = Run-Command "brew list bazelisk --versions"
 $packerVersion = Run-Command "packer --version"
 $helmVersion = Run-Command "helm version --short"
 $mongo = Run-Command "mongo --version" | Select-String "MongoDB shell version" | Take-Part -Part 3
@@ -167,7 +167,7 @@ $markdown += New-MDList -Style Unordered -NoNewLine -Lines @(
     "azcopy $azcopyVersion",
     "zstd $zstdVersion",
     $bazelVersion,
-    "bazelisk $($bazeliskVersion.Trim())",
+    $bazeliskVersion,
     "helm $helmVersion",
     "mongo $mongo",
     "mongod $mongod",

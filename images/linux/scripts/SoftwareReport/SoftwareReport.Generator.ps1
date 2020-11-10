@@ -87,6 +87,7 @@ $markdown += New-MDHeader "Tools" -Level 3
 $toolsList = @(
     (Get-7zipVersion),
     (Get-AnsibleVersion),
+    (Get-AptFastVersion),
     (Get-AzCopy7Version),
     (Get-AzCopy10Version),
     (Get-BazelVersion),
@@ -223,7 +224,8 @@ $markdown += Build-AndroidTable | New-MDTable
 $markdown += New-MDNewLine
 
 $markdown += New-MDHeader "Cached Docker images" -Level 3
-$markdown += New-MDList -Style Unordered -Lines @(Get-CachedDockerImages)
+$markdown += Get-CachedDockerImagesTableData | New-MDTable
+$markdown += New-MDNewLine
 
 $markdown += New-MDHeader "Installed apt packages" -Level 3
 $markdown += New-MDList -Style Unordered -Lines @(Get-AptPackages)

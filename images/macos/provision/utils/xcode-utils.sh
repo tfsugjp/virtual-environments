@@ -1,6 +1,13 @@
+#!/bin/bash -e -o pipefail
+
 createXamarinProvisionatorSymlink() {
     local XCODE_VERSION="$1"
     local FULL_VERSION=$(echo "${XCODE_VERSION}.0.0" | cut -d'.' -f 1,2,3)
+
+    # temporary trick for 12.0.1
+    if [[ $XCODE_VERSION == "12" ]]; then
+        FULL_VERSION="12.0.1"
+    fi
 
     if [ $FULL_VERSION != $XCODE_VERSION ]; then
         ln -sf "/Applications/Xcode_${XCODE_VERSION}.app" "/Applications/Xcode_${FULL_VERSION}.app"
@@ -10,7 +17,9 @@ createXamarinProvisionatorSymlink() {
 getXcodeVersionToInstall() {
     local XCODE_VERSION="$1"
 
-    if  [[ ! $XCODE_VERSION =~ "_beta" ]]; then
+    if [[ $XCODE_VERSION == "12" ]]; then
+        echo "12.0.1"
+    elif [[ ! $XCODE_VERSION =~ "_beta" ]]; then
         echo "${XCODE_VERSION//_/ }"
     else
         local XCODE_BETA="${XCODE_VERSION/_/ }"
@@ -46,11 +55,12 @@ runFirstLaunch() {
 }
 
 setXcodeDeveloperDirVariables() {
-    stable_xcode_versions=$(get_xcode_list_from_toolset | tr " " "\n" | grep -v "beta")
+    stable_xcode_versions=$(get_xcode_list_from_toolset | tr " " "\n" | grep -v "beta" | grep -v "Release_Candidate")
     major_versions=($(echo ${stable_xcode_versions[@]} | tr " " "\n" | cut -d '.' -f 1 | uniq))
     for MAJOR_VERSION in "${major_versions[@]}"
     do
         LATEST_STABLE_VERSION=$(echo "${stable_xcode_versions[*]}" | grep "${MAJOR_VERSION}" | tail -n 1)
+        LATEST_STABLE_VERSION=$(echo $LATEST_STABLE_VERSION | cut -d"_" -f 1)
         echo "export XCODE_${MAJOR_VERSION}_DEVELOPER_DIR=/Applications/Xcode_${LATEST_STABLE_VERSION}.app/Contents/Developer" >> "$HOME/.bashrc"
     done
 }
@@ -60,7 +70,9 @@ extractXcodeXip() {
     local XCODE_VERSION="$2"
     XCODE_XIP="${WORKING_DIR}/Xcode_${XCODE_VERSION// /_}.xip"
 
-    open -W $XCODE_XIP
+    pushd $WORKING_DIR
+    xip -x "${XCODE_XIP}"
+    popd
 
     if [[ -d "${WORKING_DIR}/Xcode-beta.app" ]]; then
         mv -f "${WORKING_DIR}/Xcode-beta.app" "${WORKING_DIR}/Xcode.app"
