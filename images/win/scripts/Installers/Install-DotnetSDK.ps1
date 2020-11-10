@@ -92,10 +92,8 @@ function InstallAllValidSdks()
                 $sdks += $release.'sdks' | Where-Object { !$_.'version'.Contains('-') -and !$_.'version'.Equals($release.'sdk'.'version') }
                 $sdks = $sdks | Sort-Object { [Version] $_.'version' } -Descending
 
-				# use latest SDK only
-				if($sdks.Count -gt 0)
+				foreach($sdk in $sdks)
                 {
-                    $sdk = $sdks[0]
                     InstallSDKVersion -sdkVersion $sdk.'version'
                 }
             }

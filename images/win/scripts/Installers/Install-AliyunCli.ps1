@@ -11,7 +11,9 @@ $aliyunArchivePath = Start-DownloadWithRetry -Url $aliyunLatest -Name "aliyun-cl
 
 Write-Host "Expand aliyun-cli archive"
 $aliyunPath = "C:\aliyun-cli"
-New-Item -Path $aliyunPath -ItemType Directory -Force
+if (-not(Test-Path -Path $aliyunPath)) {
+	New-Item -Path $aliyunPath -ItemType Directory -Force
+}
 Extract-7Zip -Path $aliyunArchivePath -DestinationPath $aliyunPath
 
 # Add aliyun-cli to path
