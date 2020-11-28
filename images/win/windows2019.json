@@ -25,15 +25,11 @@
         "install_password": null,
         "capture_name_prefix": "packer",
         "image_version": "dev",
-        "image_os": "win19",
-        "github_feed_token": "{{env `GITHUB_FEED_TOKEN`}}",
-        "go_default": "1.15",
-        "announcements": "{{env `ANNOUNCEMENTS`}}"
+        "image_os": "win19"
     },
     "sensitive-variables": [
         "install_password",
-        "client_secret",
-        "github_feed_token"
+        "client_secret"
     ],
     "builders": [
         {
@@ -92,11 +88,6 @@
             "type": "file",
             "source": "{{ template_dir }}/scripts/Tests",
             "destination": "{{user `image_folder`}}"
-        },
-        {
-            "type": "file",
-            "source": "{{template_dir}}/toolsets/toolcache-2019.json",
-            "destination": "{{user `root_folder`}}/toolcache.json"
         },
         {
             "type": "file",
@@ -222,16 +213,6 @@
             "restart_timeout": "10m"
         },
         {
-            "type": "powershell",
-            "environment_vars": [
-                "GITHUB_FEED_TOKEN={{ user `github_feed_token` }}",
-                "ROOT_FOLDER={{user `root_folder`}}"
-            ],
-            "scripts": [
-                "{{ template_dir }}/scripts/Installers/Download-ToolCache.ps1"
-            ]
-        },
-        {
             "type": "windows-shell",
             "inline": [
                 "wmic product where \"name like '%%microsoft azure powershell%%'\" call uninstall /nointeractive"
@@ -245,12 +226,14 @@
                 "PSMODULES_ROOT_FOLDER={{user `psmodules_root_folder`}}"
             ],
             "scripts": [
+                "{{ template_dir }}/scripts/Installers/Install-Ruby.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-PyPy.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-Toolset.ps1",
                 "{{ template_dir }}/scripts/Installers/Configure-Toolset.ps1",
-                "{{ template_dir }}/scripts/Installers/Install-YAMLLint.ps1",
                 "{{ template_dir }}/scripts/Installers/Update-AndroidSDK.ps1",
-                "{{ template_dir }}/scripts/Installers/Install-AzureModules.ps1"
+                "{{ template_dir }}/scripts/Installers/Install-AzureModules.ps1",
+                "{{ template_dir }}/scripts/Installers/Install-Pipx.ps1",
+                "{{ template_dir }}/scripts/Installers/Install-PipxPackages.ps1"
             ]
         },
         {
@@ -290,6 +273,9 @@
         },
         {
             "type": "powershell",
+            "environment_vars": [
+                "TOOLSET_JSON_PATH={{user `toolset_json_path`}}"
+            ],
             "scripts": [
                 "{{ template_dir }}/scripts/Installers/Install-VSWhere.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-WinAppDriver.ps1",
@@ -328,9 +314,14 @@
         {
             "type": "powershell",
             "scripts": [
+                "{{ template_dir }}/scripts/Installers/Install-BizTalkBuildComponent.ps1"
+            ]
+        },
+        {
+            "type": "powershell",
+            "scripts": [
                 "{{ template_dir }}/scripts/Installers/Install-WindowsUpdates.ps1",
-                "{{ template_dir }}/scripts/Installers/Configure-DynamicPort.ps1",
-                "{{ template_dir }}/scripts/Installers/Configure-Shell.ps1"
+                "{{ template_dir }}/scripts/Installers/Configure-DynamicPort.ps1"
             ],
             "elevated_user": "{{user `install_user`}}",
             "elevated_password": "{{user `install_password`}}"
@@ -356,8 +347,7 @@
                 "pwsh -File '{{user `image_folder`}}\\SoftwareReport\\SoftwareReport.Generator.ps1'"
             ],
             "environment_vars": [
-                "TOOLSET_JSON_PATH={{user `toolset_json_path`}}",
-                "ANNOUNCEMENTS={{user `announcements`}}"
+                "TOOLSET_JSON_PATH={{user `toolset_json_path`}}"
             ]
         },
         {
