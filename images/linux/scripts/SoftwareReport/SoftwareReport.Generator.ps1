@@ -21,13 +21,6 @@ Restore-UserOwner
 
 $markdown = ""
 
-if ($env:ANNOUNCEMENTS) {
-    $markdown += $env:ANNOUNCEMENTS
-    $markdown += New-MDNewLine
-    $markdown += "***"
-    $markdown += New-MDNewLine
-}
-
 $OSName = Get-OSName
 $markdown += New-MDHeader "$OSName" -Level 1
 
@@ -47,7 +40,6 @@ $markdown += New-MDList -Style Unordered -Lines @(
         (Get-NodeVersion),
         (Get-PythonVersion),
         (Get-Python3Version),
-        (Get-PowershellVersion),
         (Get-RubyVersion),
         (Get-SwiftVersion),
         (Get-JuliaVersion)
@@ -101,7 +93,6 @@ $toolsList = @(
     (Get-GitVersion),
     (Get-GitLFSVersion),
     (Get-GitFTPVersion),
-    (Get-GoogleCloudSDKVersion),
     (Get-HavegedVersion),
     (Get-HerokuVersion),
     (Get-HHVMVersion),
@@ -111,6 +102,7 @@ $toolsList = @(
     (Get-KubectlVersion),
     (Get-KustomizeVersion),
     (Get-LeiningenVersion),
+    (Get-MediainfoVersion),
     (Get-M4Version),
     (Get-HGVersion),
     (Get-MinikubeVersion),
@@ -149,6 +141,7 @@ $markdown += New-MDList -Style Unordered -Lines @(
     (Get-AzureCliVersion),
     (Get-AzureDevopsVersion),
     (Get-GitHubCliVersion),
+    (Get-GoogleCloudSDKVersion),
     (Get-HubCliVersion),
     (Get-NetlifyCliVersion),
     (Get-OCCliVersion),
@@ -215,9 +208,17 @@ $markdown += New-MDList -Style Unordered -Lines @(
 )
 
 $markdown += Build-MySQLSection
+$markdown += Build-MSSQLToolsSection
 
 $markdown += New-MDHeader "Cached Tools" -Level 3
 $markdown += Build-CachedToolsSection
+
+$markdown += New-MDHeader "PowerShell Tools" -Level 3
+$markdown += New-MDList -Lines (Get-PowershellVersion) -Style Unordered
+
+$markdown += New-MDHeader "PowerShell Modules" -Level 4
+$markdown += Get-PowerShellModules | New-MDTable
+$markdown += New-MDNewLine
 
 $markdown += New-MDHeader "Android" -Level 3
 $markdown += Build-AndroidTable | New-MDTable
