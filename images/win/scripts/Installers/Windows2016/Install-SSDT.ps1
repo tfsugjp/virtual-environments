@@ -16,4 +16,6 @@ Write-Host "******** SSDT SETUP LOG START ********"
 Write-Host $(Get-Content $logFilePath | Out-String)
 Write-Host "******** SSDT SETUP LOG END ********"
 
-Invoke-PesterTests -TestFile "SSDTExtensions"
+# ignore test SSDT
+# Invoke-PesterTests -TestFile "SSDTExtensions"
+
