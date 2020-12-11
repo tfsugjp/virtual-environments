@@ -64,8 +64,11 @@ function Install-Ruby
             New-Item -ItemType Directory -Path $rubyToolcachePath | Out-Null
         }
 
-        Write-Host "Creating Ruby '${rubyVersion}' folder in '${rubyVersionPath}'"
-        New-Item -ItemType Directory -Path $rubyVersionPath -Force | Out-Null
+        if (-not (Test-Path $rubyVersionPath))
+        {
+			Write-Host "Creating Ruby '${rubyVersion}' folder in '${rubyVersionPath}'"
+			New-Item -ItemType Directory -Path $rubyVersionPath -Force | Out-Null
+		}
 
         Write-Host "Moving Ruby '${rubyVersion}' files to '${rubyArchPath}'"
         Move-Item -Path $tempFolder -Destination $rubyArchPath | Out-Null
@@ -73,8 +76,11 @@ function Install-Ruby
         Write-Host "Removing Ruby '${rubyVersion}' documentation '${rubyArchPath}\share\doc' folder"
         Remove-Item -Path "${rubyArchPath}\share\doc" -Force -Recurse -ErrorAction Ignore
 
-        Write-Host "Creating complete file"
-        New-Item -ItemType File -Path $rubyVersionPath -Name "$Architecture.complete" | Out-Null
+        if (-not (Test-Path $rubyVersionPath))
+        {
+			Write-Host "Creating complete file"
+			New-Item -ItemType File -Path $rubyVersionPath -Name "$Architecture.complete" | Out-Null
+		}
     }
     else
     {
