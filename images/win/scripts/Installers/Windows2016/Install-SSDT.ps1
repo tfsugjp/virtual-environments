@@ -16,10 +16,4 @@ Write-Host "******** SSDT SETUP LOG START ********"
 Write-Host $(Get-Content $logFilePath | Out-String)
 Write-Host "******** SSDT SETUP LOG END ********"
 
-<<<<<<< HEAD
-# ignore test SSDT
 Invoke-PesterTests -TestFile "SSDTExtensions"
-
-=======
-Invoke-PesterTests -TestFile "SSDTExtensions"
->>>>>>> parent of c4f20e6f (change : ignore ssdt test)
