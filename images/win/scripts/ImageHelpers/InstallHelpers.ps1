@@ -283,8 +283,8 @@ function Get-VSExtensionVersion
 
     if (-not $packageVersion)
     {
-        Write-Host "Installed package $packageName for Visual Studio 2019 was not found"
-        exit 1
+        Write-Host "WARNING:Installed package $packageName for Visual Studio 2019 was not found"
+#        exit 1
     }
 
     return $packageVersion
