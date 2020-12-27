@@ -8,6 +8,11 @@ function Get-OSVersion {
     return "OS Version: $OSVersion Build $OSBuild"
 }
 
+function Get-BashVersion {
+    $version = bash -c 'echo ${BASH_VERSION}'
+    return "Bash $version"
+}
+
 function Get-JavaVersionsList {
     param(
         [string] $DefaultVersion
@@ -104,7 +109,7 @@ function Get-VcpkgVersion {
     ($(vcpkg version) | Out-String) -match "version (?<version>\d+\.\d+\.\d+)" | Out-Null
     $vcpkgVersion = $Matches.Version
     $commitId = git -C "C:\vcpkg" rev-parse --short HEAD
-    return "Vcpkg $vcpkgVersion (build from master <$commitId>)"
+    return "Vcpkg $vcpkgVersion (build from master \<$commitId>)"
 }
 
 function Get-NPMVersion {

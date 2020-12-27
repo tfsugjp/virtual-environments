@@ -1,5 +1,10 @@
 Import-Module "$PSScriptRoot/../helpers/SoftwareReport.Helpers.psm1" -DisableNameChecking
 
+function Get-BashVersion {
+    $version = bash -c 'echo ${BASH_VERSION}'
+    return "Bash $version"
+}
+
 function Get-DotnetVersionList {
     $sdkRawList = Run-Command "dotnet --list-sdks"
     $sdkVersionList = $sdkRawList | ForEach-Object { Take-Part $_ -Part 0 }
@@ -52,7 +57,7 @@ function Get-RustupVersion {
 function Get-VcpkgVersion {
     $vcpkgVersion = Run-Command "vcpkg version" | Select-Object -First 1 | Take-Part -Part 5 | Take-Part -Part 0 -Delimiter "-"
     $commitId = git -C "/usr/local/share/vcpkg" rev-parse --short HEAD
-    return "Vcpkg $vcpkgVersion (build from master <$commitId>)"
+    return "Vcpkg $vcpkgVersion (build from master \<$commitId>)"
 }
 
 function Get-GccVersion {

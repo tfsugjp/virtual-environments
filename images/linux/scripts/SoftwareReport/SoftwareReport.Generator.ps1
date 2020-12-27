@@ -11,7 +11,8 @@ Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Browsers.psm1") -DisableN
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.CachedTools.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Common.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Databases.psm1") -DisableNameChecking
-Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Helpers.psm1") -DisableNameChecking
+Import-Module "$PSScriptRoot/../helpers/SoftwareReport.Helpers.psm1" -DisableNameChecking
+Import-Module "$PSScriptRoot/../helpers/Common.Helpers.psm1" -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Java.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Rust.psm1") -DisableNameChecking
 Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Tools.psm1") -DisableNameChecking
@@ -32,6 +33,7 @@ $markdown += New-MDHeader "Installed Software" -Level 2
 $markdown += New-MDHeader "Language and Runtime" -Level 3
 
 $markdown += New-MDList -Style Unordered -Lines @(
+        (Get-BashVersion),
         (Get-CPPVersions),
         (Get-FortranVersions),
         (Get-ClangVersions),
@@ -110,6 +112,7 @@ $toolsList = @(
     (Get-NewmanVersion),
     (Get-NvmVersion),
     (Get-PackerVersion),
+    (Get-PassVersion),
     (Get-PhantomJSVersion),
     (Get-PulumiVersion),
     (Get-RVersion),

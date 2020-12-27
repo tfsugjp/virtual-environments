@@ -1,7 +1,6 @@
-Import-Module (Join-Path $PSScriptRoot "SoftwareReport.Helpers.psm1") -DisableNameChecking
-
-function Get-OSName {
-    lsb_release -ds
+function Get-BashVersion {
+    $version = bash -c 'echo ${BASH_VERSION}'
+    return "Bash $version"
 }
 
 function Get-CPPVersions {
@@ -139,7 +138,7 @@ function Get-VcpkgVersion {
     $result.Output -match "version (?<version>\d+\.\d+\.\d+)" | Out-Null
     $vcpkgVersion = $Matches.version
     $commitId = git -C "/usr/local/share/vcpkg" rev-parse --short HEAD
-    return "Vcpkg $vcpkgVersion (build from master <$commitId>)"
+    return "Vcpkg $vcpkgVersion (build from master \<$commitId>)"
 }
 
 function Get-AntVersion {

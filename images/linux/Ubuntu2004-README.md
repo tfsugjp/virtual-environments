@@ -1,5 +1,10 @@
+| Announcements |
+|-|
+| [.NET 5.0 will become a default .NET version on December, 14](https://github.com/actions/virtual-environments/issues/1891) |
+| [Ubuntu-latest workflows will use Ubuntu-20.04](https://github.com/actions/virtual-environments/issues/1816) |
+***
 # Ubuntu 20.04.1 LTS
-- Image Version: dev
+- Image Version: 20201210.0
 
 ## Installed Software
 ### Language and Runtime
@@ -25,7 +30,7 @@
 - Pip 20.0.2
 - Pip3 20.0.2
 - Pipx 0.15.6.0
-- Vcpkg 2020.11.12 (build from master <7f328aa>)
+- Vcpkg 2020.11.12 (build from master <1d8728a>)
 - Yarn 1.22.5
 
 ### Project Management
@@ -53,12 +58,12 @@
 - Git LFS 2.13.1
 - Git-ftp 1.6.0
 - Haveged 1.9.1
-- Heroku 7.47.5
+- Heroku 7.47.4
 - HHVM (HipHop VM) 4.87.0
 - jq 1.6
 - Kind 0.9.0
 - Kubectl 1.19.0
-- Kustomize 3.8.8
+- Kustomize 3.8.7
 - Leiningen 2.9.5
 - m4 1.4.18
 - MediaInfo 19.09
@@ -69,7 +74,7 @@
 - Packer 1.6.5
 - PhantomJS 2.1.1
 - Podman 2.2.1
-- Pulumi 2.15.5
+- Pulumi 2.15.4
 - R 4.0.3
 - Skopeo 1.2.0
 - Sphinx Open Source Search Server 2.2.11
@@ -84,7 +89,7 @@
 
 ### CLI Tools
 - Alibaba Cloud CLI 3.0.64
-- AWS CLI 2.1.10
+- AWS CLI 2.1.9
 - AWS CLI Session manager plugin 1.2.30.0
 - AWS SAM CLI 1.13.2
 - Azure CLI (azure-cli) 2.16.0
@@ -92,7 +97,7 @@
 - GitHub CLI 1.3.1
 - Google Cloud SDK 320.0.0
 - Hub CLI 2.14.2
-- Netlify CLI 2.69.6
+- Netlify CLI 2.69.5
 - oc CLI 4.6.6
 - ORAS CLI 0.8.1
 - Vercel CLI 21.0.1
@@ -191,7 +196,7 @@
 | Module     | Version |
 | ---------- | ------- |
 | MarkdownPS | 1.9     |
-| Pester     | 5.1.1   |
+| Pester     | 5.1.0   |
 
 ### Android
 | Package Name               | Version                                                                                                                  |
