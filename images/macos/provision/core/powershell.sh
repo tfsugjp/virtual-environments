@@ -1,10 +1,8 @@
 #!/bin/bash -e -o pipefail
-
 source ~/utils/utils.sh
-source ~/utils/invoke-tests.sh
 
 echo Installing Azure CLI...
-brew install azure-cli
+brew_smart_install "azure-cli"
 
 echo Installing PowerShell...
 brew install --cask powershell

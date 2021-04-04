@@ -7,21 +7,21 @@
 # Source the helpers for use with the script
 source $HELPER_SCRIPTS/etc-environment.sh
 source $HELPER_SCRIPTS/os.sh
-source $HELPER_SCRIPTS/invoke-tests.sh
+source $HELPER_SCRIPTS/install.sh
 
 # add repository
 apt-add-repository ppa:ondrej/php -y
 apt-get update
 
 # Install PHP
-toolset="$INSTALLER_SCRIPT_FOLDER/toolset.json"
-
-php_versions=$(jq -r '.php.versions[]' $toolset)
+php_versions=$(get_toolset_value '.php.versions[]')
 
 for version in $php_versions; do
     echo "Installing PHP $version"
     apt-fast install -y --no-install-recommends \
         php$version \
+        php$version-amqp \
+        php$version-apcu \
         php$version-bcmath \
         php$version-bz2 \
         php$version-cgi \
@@ -34,11 +34,15 @@ for version in $php_versions; do
         php$version-fpm \
         php$version-gd \
         php$version-gmp \
+        php$version-igbinary \
         php$version-imap \
         php$version-interbase \
         php$version-intl \
         php$version-ldap \
         php$version-mbstring \
+        php$version-memcache \
+        php$version-memcached \
+        php$version-mongodb \
         php$version-mysql \
         php$version-odbc \
         php$version-opcache \
@@ -46,14 +50,18 @@ for version in $php_versions; do
         php$version-phpdbg \
         php$version-pspell \
         php$version-readline \
+        php$version-redis \
         php$version-snmp \
         php$version-soap \
         php$version-sqlite3 \
         php$version-sybase \
         php$version-tidy \
+        php$version-xdebug \
         php$version-xml \
         php$version-xsl \
-        php$version-zip
+        php$version-yaml \
+        php$version-zip \
+        php$version-zmq
 
     if [[ $version == "5.6" || $version == "7.0" || $version == "7.1" ]]; then
         apt-fast install -y --no-install-recommends php$version-mcrypt php$version-recode
@@ -68,18 +76,7 @@ for version in $php_versions; do
     fi
 done
 
-apt-fast install -y --no-install-recommends \
-    php-amqp \
-    php-apcu \
-    php-igbinary \
-    php-memcache \
-    php-memcached \
-    php-mongodb \
-    php-pear \
-    php-redis \
-    php-xdebug \
-    php-yaml \
-    php-zmq
+apt-fast install -y --no-install-recommends php-pear
 
 apt-fast install -y --no-install-recommends snmp
 
@@ -90,11 +87,8 @@ php composer-setup.php
 sudo mv composer.phar /usr/bin/composer
 php -r "unlink('composer-setup.php');"
 
-# Update /etc/environment
-prependEtcEnvironmentPath /home/runner/.config/composer/vendor/bin
-
 # Add composer bin folder to path
-echo 'export PATH="$PATH:$HOME/.config/composer/vendor/bin"' >> /etc/skel/.bashrc
+prependEtcEnvironmentPath '$HOME/.config/composer/vendor/bin'
 
 #Create composer folder for user to preserve folder permissions
 mkdir -p /etc/skel/.composer

@@ -1,5 +1,5 @@
 #!/bin/bash -e -o pipefail
-source ~/utils/invoke-tests.sh
+source ~/utils/utils.sh
 
 # MongoDB object-value database
 # installs last version of MongoDB Community Edition
@@ -8,6 +8,6 @@ source ~/utils/invoke-tests.sh
 echo "Installing mongodb..."
 
 brew tap mongodb/brew
-brew install mongodb-community
+brew_smart_install "mongodb-community"
 
-invoke_tests "Common" "Mongo"
+invoke_tests "Databases" "Mongo"

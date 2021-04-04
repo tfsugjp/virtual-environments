@@ -1,21 +1,56 @@
-Describe "7-Zip" {
-    It "7z" {
-        "7z" | Should -ReturnZeroExitCode
-    }
-}
-
 Describe "azcopy" {
     It "azcopy" {
-        #(azcopy --version) command returns exit code 1 (see details: https://github.com/Azure/azure-storage-azcopy/releases)
-        $azcopyVersion = (Get-CommandResult "azcopy --version").Output
-        $azcopyVersion | Should -BeLike "*azcopy*"
+        "azcopy --version" | Should -ReturnZeroExitCode
     }
 
-    It "azcopy10" {
+    It "azcopy10 link exists" {
         "azcopy10 --version" | Should -ReturnZeroExitCode
     }
 }
 
+Describe "Rust" {
+    It "Rustup is installed" {
+        "rustup --version" | Should -ReturnZeroExitCode
+    }
+
+    It "Rustc is installed" {
+        "rustc --version" | Should -ReturnZeroExitCode
+    }
+
+    It "Rustdoc is installed" {
+        "rustdoc --version" | Should -ReturnZeroExitCode
+    }
+
+    It "Rustfmt is installed" {
+        "rustfmt --version" | Should -ReturnZeroExitCode
+    }
+
+    Context "Cargo dependencies" {
+        It "bindgen" {
+            "bindgen --version" | Should -ReturnZeroExitCode
+        }
+
+        It "cbindgen" {
+            "cbindgen --version" | Should -ReturnZeroExitCode
+        }
+
+        It "cargo" {
+            "cargo --version" | Should -ReturnZeroExitCode
+        }
+
+        It "cargo-clippy" {
+            "cargo-clippy --version" | Should -ReturnZeroExitCode
+        }
+
+        It "Cargo audit" {
+            "cargo audit --version" | Should -ReturnZeroExitCode
+        }
+
+        It "Cargo outdated" {
+            "cargo outdated --version" | Should -ReturnZeroExitCode
+        }
+    }
+}
 Describe "Docker" {
     It "docker" {
         "docker --version" | Should -ReturnZeroExitCode
@@ -37,16 +72,6 @@ Describe "Docker" {
 Describe "Docker-compose" {
     It "docker-compose" {
         "docker-compose --version"| Should -ReturnZeroExitCode
-    }
-}
-
-Describe "PowerShell Core" {
-    It "pwsh" {
-        "pwsh --version" | Should -ReturnZeroExitCode
-    }
-
-    It "Execute 2+2 command" {
-        pwsh -Command "2+2" | Should -BeExactly 4
     }
 }
 
@@ -85,15 +110,15 @@ Describe "Cmake" {
 }
 
 Describe "erlang" {
-    $testCases = @("erl", "erlc", "rebar3") | ForEach-Object { @{ErlangCommand = $_} }
+    $testCases = @("erl -version", "erlc -v", "rebar3 -v") | ForEach-Object { @{ErlangCommand = $_} }
 
     It "erlang <ErlangCommand>" -TestCases $testCases {
         param (
             [string] $ErlangCommand
         )
 
-        "$ErlangCommand -v" | Should -ReturnZeroExitCode
-    }   
+        "$ErlangCommand" | Should -ReturnZeroExitCode
+    }
 }
 
 Describe "gcc" {
@@ -117,6 +142,52 @@ Describe "gfortran" {
         )
 
         "$GfortranVersion --version" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Mono" {
+    It "mono" {
+        "mono --version" | Should -ReturnZeroExitCode
+    }
+
+    It "nuget" {
+        "nuget" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "MSSQLCommandLineTools" {
+    It "sqlcmd" {
+        "sqlcmd -?" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "R" {
+    It "r" {
+        "R --version" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Sbt" {
+    It "sbt" {
+        "sbt --version" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Selenium" {
+    It "Selenium Server 'selenium-server-standalone.jar' is installed" {
+        "/usr/share/java/selenium-server-standalone.jar" | Should -Exist
+    }
+}
+
+Describe "Terraform" {
+    It "terraform" {
+        "terraform --version" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Vcpkg" {
+    It "vcpkg" {
+        "vcpkg version" | Should -ReturnZeroExitCode
     }
 }
 
@@ -202,21 +273,9 @@ Describe "Conda" {
     }
 }
 
-Describe "Netlify" {
-    It "netlify" {
-        "netlify --version" | Should -ReturnZeroExitCode
-    }
-}
-
 Describe "Packer" {
     It "packer" {
         "packer --version" | Should -ReturnZeroExitCode
-    }
-}
-
-Describe "Pollinate" {
-    It "pollinate" {
-        "sudo pollinate -r && sleep 5 && sudo grep pollinate /var/log/syslog" | Should -ReturnZeroExitCode
     }
 }
 
@@ -232,8 +291,65 @@ Describe "Phantomjs" {
     }
 }
 
-Describe "Haveged" {
-    It "haveged" {
-        "systemctl status haveged  | grep 'active (running)'" | Should -ReturnZeroExitCode
+Describe "GraalVM" -Skip:(-not (Test-IsUbuntu20)) {
+    It "graalvm" {
+        '$GRAALVM_11_ROOT/bin/java -version' | Should -ReturnZeroExitCode
+    }
+
+    It "native-image" {
+        '$GRAALVM_11_ROOT/bin/native-image --version' | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Containers" -Skip:(Test-IsUbuntu16) {
+    $testCases = @("podman", "buildah", "skopeo") | ForEach-Object { @{ContainerCommand = $_} }
+
+    It "<ContainerCommand>" -TestCases $testCases {
+        param (
+            [string] $ContainerCommand
+        )
+
+        "$ContainerCommand -v" | Should -ReturnZeroExitCode
+    }   
+}
+
+Describe "nvm" {
+    It "nvm" {
+        "source /etc/skel/.nvm/nvm.sh && nvm --version" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Python" {
+    $testCases = @("python", "pip", "python3", "pip3") | ForEach-Object { @{PythonCommand = $_} }
+
+    It "<PythonCommand>" -TestCases $testCases {
+        param (
+            [string] $PythonCommand
+        )
+
+        "$PythonCommand --version" | Should -ReturnZeroExitCode
+    }   
+}
+
+Describe "Ruby" {
+    $testCases = @("ruby", "gem") | ForEach-Object { @{RubyCommand = $_} }
+
+    It "<RubyCommand>" -TestCases $testCases {
+        param (
+            [string] $RubyCommand
+        )
+
+        "$RubyCommand --version" | Should -ReturnZeroExitCode
+    }
+
+    $gemTestCases = (Get-ToolsetContent).rubygems | ForEach-Object {
+        @{gemName = $_.name}
+    }
+
+    if ($gemTestCases)
+    {
+        It "Gem <gemName> is installed" -TestCases $gemTestCases {
+            "gem list -i '^$gemName$'" | Should -MatchCommandOutput "true"
+        }
     }
 }

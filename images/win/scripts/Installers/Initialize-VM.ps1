@@ -33,6 +33,11 @@ function Disable-UserAccessControl {
 # Enable $ErrorActionPreference='Stop' for AllUsersAllHosts
 Add-Content -Path $profile.AllUsersAllHosts -Value '$ErrorActionPreference="Stop"'
 
+# Set static env vars
+setx ImageVersion $env:IMAGE_VERSION /m
+setx ImageOS $env:IMAGE_OS /m
+setx AGENT_TOOLSDIRECTORY $env:AGENT_TOOLSDIRECTORY /m
+
 # Set TLS1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor "Tls12"
 
@@ -126,6 +131,10 @@ if (Test-IsWin19) {
     # Install vcredist2010
     Choco-Install -PackageName vcredist2010
 }
+
+# Initialize environmental variable ChocolateyToolsLocation by invoking choco Get-ToolsLocation function
+Import-Module "$env:ChocolateyInstall\helpers\chocolateyInstaller.psm1" -Force
+Get-ToolsLocation
 
 # Expand disk size of OS drive
 $driveLetter = "C"

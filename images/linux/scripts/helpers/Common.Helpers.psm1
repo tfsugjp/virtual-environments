@@ -17,6 +17,11 @@ function Get-OSName {
     lsb_release -ds
 }
 
+function Get-KernelVersion {
+    $kernelVersion = uname -r
+    return "Linux kernel version: $kernelVersion"
+}
+
 function Test-IsUbuntu16 {
     return (lsb_release -rs) -eq "16.04"
 }
@@ -54,4 +59,8 @@ function Get-AndroidPackages {
     $androidSDKManagerPath = "/usr/local/lib/android/sdk/tools/bin/sdkmanager"
     $androidPackages = & $androidSDKManagerPath --list --verbose
     return $androidPackages
+}
+
+function Get-EnvironmentVariable($variable) {
+    return [System.Environment]::GetEnvironmentVariable($variable)
 }
