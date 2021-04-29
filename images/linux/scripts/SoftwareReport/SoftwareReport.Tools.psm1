@@ -34,17 +34,20 @@ function Get-CodeQLBundleVersion {
 
 function Get-PodManVersion {
     $podmanVersion = podman --version | Take-OutputPart -Part 2
-    return "Podman $podmanVersion"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "containers"
+    return "Podman $podmanVersion (apt source repository: $aptSourceRepo)"
 }
 
 function Get-BuildahVersion {
     $buildahVersion = buildah --version | Take-OutputPart -Part 2
-    return "Buildah $buildahVersion"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "containers"
+    return "Buildah $buildahVersion (apt source repository: $aptSourceRepo)"
 }
 
 function Get-SkopeoVersion {
     $skopeoVersion = skopeo --version | Take-OutputPart -Part 2
-    return "Skopeo $skopeoVersion"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "containers"
+    return "Skopeo $skopeoVersion (apt source repository: $aptSourceRepo)"
 }
 
 function Get-CMakeVersion {
@@ -75,13 +78,15 @@ function Get-DockerBuildxVersion {
 function Get-GitVersion {
     $result = Get-CommandResult "git --version"
     $gitVersion = $result.Output | Take-OutputPart -Part 2
-    return "Git $gitVersion"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "git-core"
+    return "Git $gitVersion (apt source repository: $aptSourceRepo)"
 }
 
 function Get-GitLFSVersion {
     $result = Get-CommandResult "git-lfs --version"
     $gitlfsversion = $result.Output | Take-OutputPart -Part 0 | Take-OutputPart -Part 1 -Delimiter "/"
-    return "Git LFS $gitlfsversion"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "git-lfs"
+    return "Git LFS $gitlfsversion (apt source repository: $aptSourceRepo)"
 }
 
 function Get-GitFTPVersion {
@@ -90,7 +95,8 @@ function Get-GitFTPVersion {
 }
 
 function Get-GoogleCloudSDKVersion {
-    return "$(gcloud --version | Select-Object -First 1)"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "google-cloud-sdk"
+    return "$(gcloud --version | Select-Object -First 1) (apt source repository: $aptSourceRepo)"
 }
 
 function Get-HavegedVersion {
@@ -157,7 +163,10 @@ function Get-NvmVersion {
 }
 
 function Get-PackerVersion {
-    return "Packer $(packer --version)"
+    # Packer 1.7.1 has a bug and outputs version to stderr instead of stdout https://github.com/hashicorp/packer/issues/10855
+    $result = (Get-CommandResult -Command "packer --version").Output
+    $packerVersion = [regex]::matches($result, "(\d+.){2}\d+").Value
+    return "Packer $packerVersion"
 }
 
 function Get-PhantomJSVersion {
@@ -254,4 +263,9 @@ function Get-SphinxVersion {
 
 function Get-YamllintVersion {
     return "$(yamllint --version)"
+}
+
+function Get-ZstdVersion {
+    $zstdVersion = zstd --version | Take-OutputPart -Part 1 -Delimiter "v" | Take-OutputPart -Part 0 -Delimiter ","
+    return "zstd $zstdVersion (homebrew)"
 }

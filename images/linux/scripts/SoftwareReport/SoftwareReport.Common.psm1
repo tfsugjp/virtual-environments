@@ -61,6 +61,14 @@ function Get-MonoVersion {
     return "Mono $monoVersion"
 }
 
+function Get-MsbuildVersion {
+    $msbuildVersion = msbuild -version | Select-Object -Last 1
+    $result = Select-String -Path (Get-Command msbuild).Source -Pattern "msbuild"
+    $result -match "(?<path>\/\S*\.dll)" | Out-Null
+    $msbuildPath = $Matches.path
+    return "MSBuild $msbuildVersion (from $msbuildPath)"
+}
+
 function Get-NodeVersion {
     $nodeVersion = $(node --version).Substring(1)
     return "Node $nodeVersion"
@@ -243,7 +251,8 @@ function Build-PHPTable {
 function Get-GHCVersion {
     $(ghc --version) -match "version (?<version>\d+\.\d+\.\d+)" | Out-Null
     $ghcVersion = $Matches.version
-    return "GHC $ghcVersion"
+    $aptSourceRepo = Get-AptSourceRepository -PackageName "ghc"
+    return "GHC $ghcVersion (apt source repository: $aptSourceRepo)"
 }
 
 function Get-GHCupVersion {

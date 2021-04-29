@@ -32,6 +32,7 @@ $markdown += New-MDHeader "Installed Software" -Level 2
 $markdown += New-MDHeader "Language and Runtime" -Level 3
 $languageAndRuntimeList = @(
     (Get-BashVersion),
+    (Get-MSBuildVersion),
     (Get-NodeVersion),
     (Get-NVMVersion),
     (Get-NVMNodeVersionList),
@@ -164,7 +165,8 @@ if( -not $os.IsHighSierra) {
         (Get-GHCupVersion),
         (Get-GHCVersion),
         (Get-CabalVersion),
-        (Get-StackVersion)
+        (Get-StackVersion),
+        (Get-SwiftFormatVersion)
     )
 }
 
@@ -236,17 +238,9 @@ $markdown += New-MDHeader "Xamarin" -Level 3
 $markdown += New-MDHeader "Visual Studio for Mac" -Level 4
 $markdown += New-MDList -Lines @(Get-VSMacVersion) -Style Unordered
 
-$markdown += New-MDHeader "Mono" -Level 4
-$markdown += New-MDList -Lines (Build-MonoList) -Style Unordered
-
-$markdown += New-MDHeader "Xamarin.iOS" -Level 4
-$markdown += New-MDList -Lines (Build-XamarinIOSList) -Style Unordered
-
-$markdown += New-MDHeader "Xamarin.Mac" -Level 4
-$markdown += New-MDList -Lines (Build-XamarinMacList) -Style Unordered
-
-$markdown += New-MDHeader "Xamarin.Android" -Level 4
-$markdown += New-MDList -Lines (Build-XamarinAndroidList) -Style Unordered
+$markdown += New-MDHeader "Xamarin bundles" -Level 4
+$markdown += Build-XamarinTable | New-MDTable
+$markdown += New-MDNewLine
 
 $markdown += New-MDHeader "Unit Test Framework" -Level 4
 $markdown += New-MDList -Lines @(Get-NUnitVersion) -Style Unordered
