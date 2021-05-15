@@ -1,6 +1,6 @@
 # Microsoft Windows Server 2019 Datacenter
 - OS Version: 10.0.17763 Build 1879
-- Image Version: dev
+- Image Version: 20210509.1
 
 ## Enabled windows optional features
 - Windows Subsystem for Linux [WSLv1]
@@ -8,13 +8,13 @@
 ## Installed Software
 ### Language and Runtime
 - Bash 4.4.23(1)-release
-- Go 1.15.11
+- Go 1.15.12
 - Julia 1.6.1
 - Node 14.16.1
 - Perl 5.32.1
-- PHP 8.0.3
+- PHP 8.0.6
 - Python 3.7.9
-- Ruby 2.6.7p197
+- Ruby 2.5.9p229
 
 ### Package Management
 - Chocolatey 0.10.15
@@ -23,10 +23,10 @@
 - Miniconda 4.9.2
 - NPM 6.14.12
 - NuGet 5.9.1.11
-- pip 21.1 (python 3.7)
+- pip 21.1.1 (python 3.7)
 - Pipx 0.16.2.1
-- RubyGems 3.0.3.1
-- Vcpkg  (build from master \<63e7b48>)
+- RubyGems 2.7.6.3
+- Vcpkg  (build from master \<86d689b>)
 - Yarn 1.22.10
 
 #### Environment variables
@@ -39,35 +39,35 @@
 - Ant 1.10.10
 - Gradle 7.0
 - Maven 3.8.1
-- sbt 1.5.0
+- sbt 1.5.1
 
 ### Tools
 - 7zip 19.00
 - azcopy 10.10.0
 - Bazel 4.0.0
-- Bazelisk 1.8.0
+- Bazelisk 1.8.1
 - Cabal 3.4.0.0
 - CMake 3.20.2
-- CodeQL Action Bundle 2.5.2
+- CodeQL Action Bundle 2.5.4
 - Docker 20.10.4
 - Docker-compose 1.29.1
 - ghc 9.0.1
 - Git 2.31.1
 - Git LFS 2.13.3
-- Google Cloud SDK 338.0.0
+- Google Cloud SDK 339.0.0
 - InnoSetup 6.1.2
 - jq 1.6
 - Kind 0.10.0
 - Kubectl 1.21.0
 - Mercurial 5.0
 - Mingw-w64 8.1.0
-- Newman 5.2.2
+- Newman 5.2.3
 - NSIS v3.06.1
 - OpenSSL 1.1.1
 - Packer 1.7.2
-- Pulumi v3.1.0
+- Pulumi v3.2.1
 - R 4.0.5
-- Stack 2.5.1
+- Stack 2.7.1
 - Subversion (SVN) 1.14.1
 - VSWhere 2.8.4
 - WinAppDriver 1.2.2009.02003
@@ -75,11 +75,11 @@
 - zstd 1.4.9
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.0.73
-- AWS CLI 2.2.0
+- Alibaba Cloud CLI 3.0.74
+- AWS CLI 2.2.3
 - AWS SAM CLI 1.23.0
 - AWS Session Manager CLI 1.2.54.0
-- Azure CLI 2.22.1
+- Azure CLI 2.23.0
 - Azure Dev Spaces CLI 1.0.20210421.4
 - Azure DevOps CLI extension 0.18.0
 - Cloud Foundry CLI 6.53.0
@@ -87,9 +87,9 @@
 - Hub CLI 2.14.2
 
 ### Rust Tools
-- Cargo 1.51.0
-- Rust 1.51.0
-- Rustdoc 1.51.0
+- Cargo 1.52.0
+- Rust 1.52.0
+- Rustdoc 1.52.0
 - Rustup 1.24.1
 
 #### Packages
@@ -97,15 +97,15 @@
 - cargo-audit 0.14.1
 - cargo-outdated v0.9.15
 - cbindgen 0.19.0
-- Clippy 0.1.51
+- Clippy 0.1.52
 - Rustfmt 1.4.36
 
 ### Browsers and webdrivers
 - Google Chrome 90.0.4430.93
 - Chrome Driver 90.0.4430.24
-- Microsoft Edge 90.0.818.51
-- Microsoft Edge Driver 90.0.818.51
-- Mozilla Firefox 88.0
+- Microsoft Edge 90.0.818.56
+- Microsoft Edge Driver 90.0.818.56
+- Mozilla Firefox 88.0.1
 - Gecko Driver 0.29.1
 - IE Driver 3.150.1.0
 
@@ -146,8 +146,8 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | ------- | ------------ | -------------------- |
 | 1.13.15 | x64          | GOROOT_1_13_X64      |
 | 1.14.15 | x64          | GOROOT_1_14_X64      |
-| 1.15.11 (Default) | x64          | GOROOT_1_15_X64      |
-| 1.16.3  | x64          | GOROOT_1_16_X64      |
+| 1.15.12 (Default) | x64          | GOROOT_1_15_X64      |
+| 1.16.4  | x64          | GOROOT_1_16_X64      |
 
 
 #### Node
@@ -163,14 +163,16 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | ------- | ------------ |
 | 2.7.18  | x64, x86     |
 | 3.7.9 (Default) | x64, x86     |
-| 3.8.9   | x64, x86     |
-| 3.9.4   | x64, x86     |
+| 3.8.10  | x64, x86     |
+| 3.9.5   | x64, x86     |
 
 
 #### Ruby
 | Version | Architecture |
 | ------- | ------------ |
-| 2.6.7 (Default) | x64          |
+| 2.4.10  | x64          |
+| 2.5.9 (Default) | x64          |
+| 2.6.7   | x64          |
 | 2.7.3   | x64          |
 | 3.0.1   | x64          |
 
@@ -246,6 +248,10 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | Component.UnityEngine.x64                                                 | 16.9.31004.209 |
 | Component.Unreal                                                          | 16.1.28810.153 |
 | Component.Unreal.Android                                                  | 16.1.28810.153 |
+| Component.VSInstallerProjects                                             | 1.0.0          |
+| Component.WixToolset.VisualStudioExtension.Dev16                          | 1.0.0.4        |
+| Component.WixToolset.VisualStudioExtension.Schemas3                       | 1.0.0.4        |
+| Component.WixToolset.VisualStudioExtension.Schemas4                       | 1.0.0.4        |
 | Component.Xamarin                                                         | 16.9.31004.209 |
 | Component.Xamarin.RemotedSimulator                                        | 16.9.31004.209 |
 | Microsoft.Component.Azure.DataLake.Tools                                  | 16.9.31004.209 |
@@ -439,11 +445,11 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | Microsoft.VisualStudio.Workload.Python                                    | 16.9.31201.172 |
 | Microsoft.VisualStudio.Workload.Universal                                 | 16.9.31004.209 |
 | Microsoft.VisualStudio.Workload.VisualStudioExtension                     | 16.9.31004.209 |
-| ms-biztalk.BizTalk                                                        |                |
-| ProBITools.MicrosoftAnalysisServicesModelingProjects                      |                |
-| ProBITools.MicrosoftReportProjectsforVisualStudio                         |                |
-| SSIS.SqlServerIntegrationServicesProjects                                 |                |
-| VisualStudioClient.MicrosoftVisualStudio2017InstallerProjects             |                |
+| ms-biztalk.BizTalk                                                        | 3.13.2.0       |
+| ProBITools.MicrosoftAnalysisServicesModelingProjects                      | 2.9.17         |
+| ProBITools.MicrosoftReportProjectsforVisualStudio                         | 2.6.11         |
+| SSIS.SqlServerIntegrationServicesProjects                                 | 3.13.1         |
+| VisualStudioClient.MicrosoftVisualStudio2017InstallerProjects             | 1.0.0          |
 | Windows Driver Kit                                                        | 10.0.19030.0   |
 | Windows Driver Kit Visual Studio Extension                                | 10.1.19041.685 |
 | WIX Toolset                                                               |                |
@@ -509,7 +515,7 @@ All other versions are saved but not installed.
 | ------------------ | ---------------- |
 | DockerMsftProvider | 1.0.0.8          |
 | MarkdownPS         | 1.9              |
-| Pester             | 3.4.0<br>5.1.1   |
+| Pester             | 3.4.0<br>5.2.0   |
 | PowerShellGet      | 1.0.0.1<br>2.2.5 |
 | PSScriptAnalyzer   | 1.19.1           |
 | PSWindowsUpdate    | 2.2.0.2          |
@@ -525,7 +531,7 @@ All other versions are saved but not installed.
 | Android SDK Platform-Tools | 31.0.2                                                                                                                                                                                                                                                                                    |
 | Android SDK Tools          | 26.1.1                                                                                                                                                                                                                                                                                    |
 | Android Support Repository | 47.0.0                                                                                                                                                                                                                                                                                    |
-| CMake                      | 3.10.2                                                                                                                                                                                                                                                                                    |
+| CMake                      | 3.10.2<br>3.18.1                                                                                                                                                                                                                                                                          |
 | Google APIs                | addon-google_apis-google-21<br>addon-google_apis-google-22<br>addon-google_apis-google-23<br>addon-google_apis-google-24                                                                                                                                                                  |
 | Google Play services       | 49                                                                                                                                                                                                                                                                                        |
 | Google Repository          | 58                                                                                                                                                                                                                                                                                        |
