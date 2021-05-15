@@ -1,39 +1,36 @@
-| Announcements |
-|-|
-| [[windows, ubuntu] Few outdated Docker images will be removed on April, 12](https://github.com/actions/virtual-environments/issues/3111) |
-***
 # Ubuntu 20.04.2 LTS
 - Linux kernel version: 5.4.0-1046-azure
-- Image Version: 20210419.1
+- Image Version: dev
 
 ## Installed Software
 ### Language and Runtime
 - Bash 5.0.17(1)-release
 - Clang 9.0.1, 10.0.0, 11.0.0
 - Clang-format 9.0.1, 10.0.0, 11.0.0
-- Erlang 23.2.3 (Eshell 11.1.7)
+- Erlang 23.3.1 (Eshell 11.2)
 - GNU C++ 9.3.0, 10.2.0
 - GNU Fortran 9.3.0, 10.2.0
-- Julia 1.6.0
+- Julia 1.6.1
 - Mono 6.12.0.122
+- MSBuild 16.6.0.15201 (from /usr/lib/mono/msbuild/15.0/bin/MSBuild.dll)
 - Node 14.16.1
 - Perl 5.30.0
 - Python 3.8.5
 - Python3 3.8.5
 - Ruby 2.7.0p0
-- Swift 5.3.3
+- Swift 5.4
 
 ### Package Management
 - cpan 1.64
 - Helm 3.5.4
-- Homebrew 3.1.2
+- Homebrew 3.1.5
 - Miniconda 4.9.2
 - Npm 6.14.12
 - Pip 20.0.2
 - Pip3 20.0.2
-- Pipx 0.16.1.0
+- Pipx 0.16.2.1
 - RubyGems 3.1.2
-- Vcpkg  (build from master \<414bec0>)
+- Vcpkg  (build from master \<63e7b48>)
 - Yarn 1.22.10
 
 #### Environment variables
@@ -46,29 +43,29 @@
 - Ant 1.10.7
 - Gradle 7.0
 - Lerna 4.0.0
-- Maven 3.6.3
-- Sbt 1.5.0
+- Maven 3.8.1
+- Sbt 1.5.1
 
 ### Tools
 - Ansible 2.10.8
-- apt-fast 1.9.10
+- apt-fast 1.9.11
 - AzCopy 10.10.0 (available by `azcopy` and `azcopy10` aliases)
 - Bazel 4.0.0
-- Bazelisk 1.7.5
+- Bazelisk 1.8.0
 - Buildah 1.20.1 (apt source repository: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable)
-- CMake 3.20.1
-- CodeQL Action Bundle 2.5.0
+- CMake 3.20.2
+- CodeQL Action Bundle 2.5.2
 - Docker Compose 1.29.1
 - Docker-Buildx 0.5.1
 - Docker-Moby Client 20.10.6+azure
 - Docker-Moby Server 20.10.6+azure
-- Fastlane 2.180.1
+- Fastlane 2.181.0
 - Git 2.31.1 (apt source repository: ppa:git-core/ppa)
 - Git LFS 2.13.3 (apt source repository: https://packagecloud.io/install/repositories/github/git-lfs)
 - Git-ftp 1.6.0
 - Haveged 1.9.1
-- Heroku 7.52.0
-- HHVM (HipHop VM) 4.105.0
+- Heroku 7.53.0
+- HHVM (HipHop VM) 4.107.0
 - jq 1.6
 - Kind 0.10.0
 - Kubectl 1.20.1-5-g76a04fc
@@ -82,52 +79,52 @@
 - OpenSSL 1.1.1f  31 Mar 2020
 - Packer 1.7.2
 - PhantomJS 2.1.1
-- Podman 3.1.0 (apt source repository: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable)
-- Pulumi 2.25.2
+- Podman 3.1.2 (apt source repository: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable)
+- Pulumi 3.1.0
 - R 4.0.5
 - Skopeo 1.2.3 (apt source repository: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable)
 - Sphinx Open Source Search Server 2.2.11
 - SVN 1.13.0
-- Terraform 0.15.0
+- Terraform 0.15.1
 - yamllint 1.26.1
 - zstd 1.4.9 (homebrew)
 
 ### CLI Tools
 - Alibaba Cloud CLI 3.0.73
-- AWS CLI 2.1.38
+- AWS CLI 2.2.1
 - AWS CLI Session manager plugin 1.2.54.0
-- AWS SAM CLI 1.22.0
-- Azure CLI (azure-cli) 2.22.0
+- AWS SAM CLI 1.23.0
+- Azure CLI (azure-cli) 2.22.1
 - Azure CLI (azure-devops) 0.18.0
-- GitHub CLI 1.9.1
-- Google Cloud SDK 336.0.0 (apt source repository: https://packages.cloud.google.com/apt)
+- GitHub CLI 1.9.2
+- Google Cloud SDK 338.0.0 (apt source repository: https://packages.cloud.google.com/apt)
 - Hub CLI 2.14.2
-- Netlify CLI 3.18.3
-- OpenShift CLI 4.7.6
+- Netlify CLI 3.24.3
+- OpenShift CLI 4.7.8
 - ORAS CLI 0.11.1
-- Vercel CLI 21.3.3
+- Vercel CLI 22.0.1
 
 ### Java
 | Version             | Vendor        | Environment Variable |
 | ------------------- | ------------- | -------------------- |
-| 8.0.282+8           | Adopt OpenJDK | JAVA_HOME_8_X64      |
-| 11.0.10+9 (default) | Adopt OpenJDK | JAVA_HOME_11_X64     |
+| 8.0.292+1           | Adopt OpenJDK | JAVA_HOME_8_X64      |
+| 11.0.11+9 (default) | Adopt OpenJDK | JAVA_HOME_11_X64     |
 
 ### GraalVM
-| Version     | Environment variables |
-| ----------- | --------------------- |
-| CE 21.0.0.2 | GRAALVM_11_ROOT       |
+| Version   | Environment variables |
+| --------- | --------------------- |
+| CE 21.1.0 | GRAALVM_11_ROOT       |
 
 ### PHP
 | Tool     | Version      |
 | -------- | ------------ |
 | PHP      | 7.4.16 8.0.3 |
-| Composer | 2.0.12       |
+| Composer | 2.0.13       |
 | PHPUnit  | 8.5.15       |
 
 ### Haskell
 - Cabal 3.4.0.0
-- GHC 9.0.1
+- GHC 9.0.1 (apt source repository: ppa:hvr/ghc)
 - GHCup 0.1.14.1
 - Stack 2.5.1
 
@@ -135,20 +132,20 @@
 - Cargo 1.51.0
 - Rust 1.51.0
 - Rustdoc 1.51.0
-- Rustup 1.23.1
+- Rustup 1.24.1
 
 #### Packages
 - Bindgen 0.58.1
-- Cargo audit 0.14.0
+- Cargo audit 0.14.1
 - Cargo clippy 0.1.51
-- Cargo outdated 0.9.14
+- Cargo outdated 0.9.15
 - Cbindgen 0.19.0
 - Rustfmt 1.4.36
 
 ### Browsers and Drivers
-- Google Chrome 90.0.4430.72
+- Google Chrome 90.0.4430.93
 - ChromeDriver 90.0.4430.24
-- Mozilla Firefox 87.0
+- Mozilla Firefox 88.0
 - Geckodriver 0.29.1
 - Chromium 90.0.4430.0
 
@@ -236,10 +233,10 @@
 ### Android
 | Package Name               | Version                                                                                                                  |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Android Command Line Tools | 3.0                                                                                                                      |
+| Android Command Line Tools | 4.0                                                                                                                      |
 | Android SDK Build-tools    | 30.0.0 30.0.1 30.0.2 30.0.3<br>29.0.0 29.0.1 29.0.2 29.0.3<br>28.0.0 28.0.1 28.0.2 28.0.3<br>27.0.0 27.0.1 27.0.2 27.0.3 |
 | Android SDK Platform-Tools | 31.0.2                                                                                                                   |
-| Android SDK Platforms      | android-S (rev 2)<br>android-30 (rev 3)<br>android-29 (rev 5)<br>android-28 (rev 6)<br>android-27 (rev 3)                |
+| Android SDK Platforms      | android-S (rev 3)<br>android-30 (rev 3)<br>android-29 (rev 5)<br>android-28 (rev 6)<br>android-27 (rev 3)                |
 | Android SDK Tools          | 26.1.1                                                                                                                   |
 | Android Support Repository | 47.0.0                                                                                                                   |
 | CMake                      | 3.10.2                                                                                                                   |
@@ -258,7 +255,6 @@
 | ANDROID_SDK_ROOT        | /usr/local/lib/android/sdk                                                           |
 
 ### Cached Docker images
-
 | Repository:Tag         | Digest                                                                   | Created    |
 | ---------------------- | ------------------------------------------------------------------------ | ---------- |
 | alpine:3.11            | sha256:18a918a714d1368847b67173d120ebd110fcfae208305412f3005a61cdc7c20e  | 2021-04-14 |
@@ -274,9 +270,9 @@
 | node:12-alpine         | sha256:9923c9efb13cf7535f67e49b03010f0977a800068e4c8e0e2c93433a6bfa1e77  | 2021-04-14 |
 | node:14                | sha256:8eb45f4677c813ad08cef8522254640aa6a1800e75a9c213a0a651f6f3564189  | 2021-04-10 |
 | node:14-alpine         | sha256:ed51af876dd7932ce5c1e3b16c2e83a3f58419d824e366de1f7b00f40c848c40  | 2021-04-14 |
-| ubuntu:16.04           | sha256:bb84bbf2ff36d46acaf0bb0c6bcb33dae64cd93cba8652d74c9aaf438fada438  | 2021-03-25 |
-| ubuntu:18.04           | sha256:122f506735a26c0a1aff2363335412cfc4f84de38326356d31ee00c2cbe52171  | 2021-03-25 |
-| ubuntu:20.04           | sha256:3c9c713e0979e9bd6061ed52ac1e9e1f246c9495aa063619d9d695fb8039aa1f  | 2021-04-03 |
+| ubuntu:16.04           | sha256:eed7e1076bbc1f342c4474c718e5438af4784f59a4e88ad687dbb98483b59ee4  | 2021-04-23 |
+| ubuntu:18.04           | sha256:538529c9d229fb55f50e6746b119e899775205d62c0fc1b7e679b30d02ecb6e8  | 2021-04-23 |
+| ubuntu:20.04           | sha256:cf31af331f38d1d7158470e095b132acd126a7180a54f263d386da88eb681d93  | 2021-04-23 |
 
 ### Installed apt packages
 | Name                   | Version                           |
@@ -290,7 +286,7 @@
 | coreutils              | 8.30-3ubuntu2                     |
 | curl                   | 7.68.0-1ubuntu2.5                 |
 | dbus                   | 1.12.16-2ubuntu2.1                |
-| dnsutils               | 1:9.16.1-0ubuntu2.7               |
+| dnsutils               | 1:9.16.1-0ubuntu2.8               |
 | dpkg                   | 1.19.7ubuntu3                     |
 | fakeroot               | 1.24-1                            |
 | file                   | 1:5.38-4                          |
