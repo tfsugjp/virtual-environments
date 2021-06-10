@@ -88,7 +88,7 @@
         },
         {
             "type": "file",
-            "source": "./toolsets/toolset-11.0.json",
+            "source": "./toolsets/toolset-11.json",
             "destination": "~/image-generation/toolset.json"
         },
         {
@@ -182,11 +182,13 @@
                 "./provision/core/nginx.sh",
                 "./provision/core/postgresql.sh",
                 "./provision/core/mongodb.sh",
+                "./provision/core/audiodevice.sh",
                 "./provision/core/vcpkg.sh",
                 "./provision/core/miniconda.sh",
                 "./provision/core/chrome.sh",
                 "./provision/core/edge.sh",
                 "./provision/core/firefox.sh",
+                "./provision/core/pypy.sh",
                 "./provision/core/pipx-packages.sh"
             ]
         },

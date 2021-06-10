@@ -195,7 +195,6 @@
                 "{{ template_dir }}/scripts/Installers/Install-AzureCli.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-AzureDevOpsCli.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-AzCopy.ps1",
-                "{{ template_dir }}/scripts/Installers/Install-AzureDevSpacesCli.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-NodeLts.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-7zip.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-Packer.ps1",
@@ -256,7 +255,8 @@
                 "{{ template_dir }}/scripts/Installers/Install-Selenium.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-IEWebDriver.ps1",
                 "{{ template_dir }}/scripts/Installers/Install-Apache.ps1",
-                "{{ template_dir }}/scripts/Installers/Install-Nginx.ps1"
+                "{{ template_dir }}/scripts/Installers/Install-Nginx.ps1",
+                "{{ template_dir }}/scripts/Installers/Install-Swig.ps1"
             ]
         },
         {
@@ -269,6 +269,9 @@
         },
         {
             "type": "powershell",
+            "environment_vars": [
+                "TOOLSET_JSON_PATH={{user `toolset_json_path`}}"
+            ],
             "elevated_user": "SYSTEM",
             "elevated_password": "",
             "scripts": [
