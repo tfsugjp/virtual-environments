@@ -266,7 +266,6 @@
 | ANDROID_SDK_ROOT        | /usr/local/lib/android/sdk                                                           |
 
 ### Cached Docker images
-
 | Repository:Tag         | Digest                                                                   | Created    |
 | ---------------------- | ------------------------------------------------------------------------ | ---------- |
 | alpine:3.11            | sha256:20117524da64d995fd769f0aa3d7cfe2040518426f4b238f43e8373f4aa56c06  | 2021-04-14 |
