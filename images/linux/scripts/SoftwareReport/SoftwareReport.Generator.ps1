@@ -49,7 +49,8 @@ $runtimesList = @(
         (Get-Python3Version),
         (Get-RubyVersion),
         (Get-SwiftVersion),
-        (Get-JuliaVersion)
+        (Get-JuliaVersion),
+        (Get-KotlinVersion)
         ) 
 
 if (Test-IsUbuntu20) {
@@ -123,6 +124,7 @@ $toolsList = @(
     (Get-HHVMVersion),
     (Get-SVNVersion),
     (Get-JqVersion),
+    (Get-YqVersion),
     (Get-KindVersion),
     (Get-KubectlVersion),
     (Get-KustomizeVersion),
@@ -144,8 +146,9 @@ $toolsList = @(
 
 if (-not (Test-IsUbuntu16)) {
     $toolsList += @(
-        (Get-PodManVersion),
+        (Get-BicepVersion),
         (Get-BuildahVersion),
+        (Get-PodManVersion),
         (Get-SkopeoVersion),
         (Get-YamllintVersion)
     )

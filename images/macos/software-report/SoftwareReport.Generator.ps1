@@ -167,7 +167,8 @@ $toolsList = @(
     (Get-AWSSessionManagerCLIVersion),
     (Get-AliyunCLIVersion),
     (Get-XcodeCommandLineToolsVersion),
-    (Get-SwigVersion)
+    (Get-SwigVersion),
+    (Get-BicepVersion)
 )
 
 if( -not $os.IsHighSierra) {
@@ -275,7 +276,11 @@ $markdown += New-MDNewLine
 
 # Android section
 $markdown += New-MDHeader "Android" -Level 3
-$markdown += Build-AndroidTable | New-MDTable
+$androidTable = Build-AndroidTable
+if ($os.IsLessThanBigSur) {
+    $androidTable += Get-IntelHaxmVersion
+}
+$markdown += $androidTable | New-MDTable
 $markdown += New-MDNewLine
 $markdown += New-MDHeader "Environment variables" -Level 4
 $markdown += Build-AndroidEnvironmentTable | New-MDTable
