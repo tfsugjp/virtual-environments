@@ -177,9 +177,9 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | ------- | ------------ |
 | 2.4.10  | x64          |
 | 2.5.9 (Default) | x64          |
-| 2.6.8   | x64          |
-| 2.7.4   | x64          |
-| 3.0.2   | x64          |
+| 2.6.7   | x64          |
+| 2.7.3   | x64          |
+| 3.0.1   | x64          |
 
 
 #### PyPy
@@ -506,11 +506,11 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 - PowerShell 7.1.3
 
 #### Azure Powershell Modules
-| Module  | Version                                                                                                                                                           | Path                           |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| Az      | 1.0.0.zip<br>1.6.0.zip<br>2.3.2.zip<br>2.6.0.zip<br>3.1.0.zip<br>3.5.0.zip<br>3.8.0.zip<br>4.3.0.zip<br>4.4.0.zip<br>4.7.0.zip<br>5.5.0.zip<br>5.9.0.zip<br>6.1.0 | C:\Modules\az_\<version\>      |
-| Azure   | 2.1.0 [Installed]<br>3.8.0.zip<br>4.2.1.zip<br>5.1.1.zip<br>5.3.0                                                                                                 | C:\Modules\azure_\<version\>   |
-| AzureRM | 2.1.0 [Installed]<br>3.8.0.zip<br>4.2.1.zip<br>5.1.1.zip<br>6.7.0.zip<br>6.13.1                                                                                   | C:\Modules\azurerm_\<version\> |
+| Module  | Version                                                                                                                                              | Path                           |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| Az      | 1.0.0.zip<br>1.6.0.zip<br>2.3.2.zip<br>2.6.0.zip<br>3.1.0.zip<br>3.5.0.zip<br>3.8.0.zip<br>4.3.0.zip<br>4.4.0.zip<br>4.7.0.zip<br>5.5.0.zip<br>5.7.0 | C:\Modules\az_\<version\>      |
+| Azure   | 3.8.0.zip<br>4.2.1.zip<br>5.1.1.zip<br>5.3.0 [Installed]                                                                                             | C:\Modules\azure_\<version\>   |
+| AzureRM | 3.8.0.zip<br>4.2.1.zip<br>5.1.1.zip<br>6.7.0.zip<br>6.13.1 [Installed]                                                                               | C:\Modules\azurerm_\<version\> |
 ```
 Azure PowerShell module 2.1.0 and AzureRM PowerShell module 2.1.0 are installed
 and are available via 'Get-Module -ListAvailable'.
@@ -557,11 +557,8 @@ All other versions are saved but not installed.
 ### Cached Docker images
 | Repository:Tag                                                            | Digest                                                                   | Created    |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------- |
-| mcr.microsoft.com/dotnet/framework/aspnet:4.8-windowsservercore-ltsc2019  | sha256:a1ff3aa24d42ea02743db1599c9beece02d66d3b48d3876b185ab2a1110b420c  | 2021-07-13 |
-| mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019 | sha256:6196293feeaed05af457e937edd64dde27fd49f996c1a9e00e198afd5edc8929  | 2021-07-13 |
-| mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019     | sha256:c6e9c591b9e80e2cb0f8bcb736008ebbc3e3ed23de045523847ef0f9778dbaa6  | 2021-07-13 |
-| mcr.microsoft.com/windows/nanoserver:1809                                 | sha256:0cfbe14b2bcb1bd1af2bdc1603f9b60e63effaf25bce3fbab9ceb23e02b2b97f  | 2021-07-06 |
-| mcr.microsoft.com/windows/servercore:ltsc2019                             | sha256:cc8a0215d2d19516c23b5f8a8e04799631c5ff2fb9a3c509fbd46f7ef7057877  | 2021-07-06 |
-
-
-
+| mcr.microsoft.com/dotnet/framework/aspnet:4.8-windowsservercore-ltsc2019  | sha256:6c8ea03414851b5a77a951a9fc82a43e580e816b12e9d05d6a5918a76c2dd7c1  | 2021-05-11 |
+| mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019 | sha256:c615be2cb06c4f4386f4ba424239f2172af7a3c8360ab0008131828d50fe020f  | 2021-05-11 |
+| mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019     | sha256:a3b51566290b6aa485de6d8ac3d8cbf008f560feda73ed1addb208166cbdd3ad  | 2021-05-25 |
+| mcr.microsoft.com/windows/nanoserver:1809                                 | sha256:7810b00b2b0ce434cf8a420627b3aba335a40e1b805e1be2e02241b7446f7a00  | 2021-05-07 |
+| mcr.microsoft.com/windows/servercore:ltsc2019                             | sha256:edd6d6de1e7252d2d434af58798db1d96762d738f60e15b24ed631f55e26681d  | 2021-05-08 |
