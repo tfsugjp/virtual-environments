@@ -101,7 +101,7 @@ function InstallAllValidSdks()
 
 				foreach($sdk in $sdks)
                 {
-                    InstallSDKVersion -sdkVersion $sdk.'version'
+                    InstallSDKVersion -sdkVersion $sdk.'version' -Warmup $warmup
                 }
             }
             elseif (!$release.'sdk'.'version'.Contains('-'))
