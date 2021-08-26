@@ -12,6 +12,32 @@ Set-SystemVariable -SystemVariable DOTNET_MULTILEVEL_LOOKUP -Value "0"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor "Tls12"
 
+function Get-SDKVersionsToInstall (
+    $DotnetVersion
+) {
+    $releaseJson = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/${DotnetVersion}/releases.json"
+    $releasesJsonPath = Start-DownloadWithRetry -Url $releaseJson -Name "releases-${DotnetVersion}.json"
+    $currentReleases = Get-Content -Path $releasesJsonPath | ConvertFrom-Json
+    # filtering out the preview/rc releases
+    $currentReleases = $currentReleases.'releases' | Where-Object { !$_.'release-version'.Contains('-') }
+
+    $sdks = @()
+    ForEach ($release in $currentReleases)
+    {
+        $sdks += $release.'sdk'
+        $sdks += $release.'sdks'
+    }
+
+    $sortedSdkVersions = $sdks.version | Sort-Object { [Version] $_ } -Unique
+
+    if (Test-IsWin22)
+    {
+        return $sortedSdkVersions | Group-Object { $_.Substring(0, $_.LastIndexOf('.') + 2) } | Foreach-Object { $_.Group[-1] }
+    }
+
+    return $sortedSdkVersions
+}
+
 function Invoke-Warmup (
     $SdkVersion
 ) {
