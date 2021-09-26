@@ -4,9 +4,10 @@ $ErrorActionPreference = 'Stop'
 enum ImageType {
     Windows2016 = 0
     Windows2019 = 1
-    Ubuntu1604 = 2
-    Ubuntu1804 = 3
-    Ubuntu2004 = 4
+    Windows2022 = 2
+    Ubuntu1604 = 3
+    Ubuntu1804 = 4
+    Ubuntu2004 = 5
 }
 
 Function Get-PackerTemplatePath {
@@ -23,6 +24,9 @@ Function Get-PackerTemplatePath {
         }
         ([ImageType]::Windows2019) {
             $relativeTemplatePath = Join-Path "win" "windows2019.json"
+        }
+        ([ImageType]::Windows2022) {
+            $relativeTemplatePath = Join-Path "win" "windows2022.json"
         }
         ([ImageType]::Ubuntu1604) {
             $relativeTemplatePath = Join-Path "linux" "ubuntu1604.json"
