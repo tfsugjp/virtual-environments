@@ -4,32 +4,33 @@
 ***
 # Microsoft Windows Server 2016 Datacenter
 - OS Version: 10.0.14393 Build 4651
-- Image Version: 20210919.1
+- Image Version: 20211011.0
 
 ## Installed Software
 ### Language and Runtime
 - Bash 4.4.23(1)-release
 - Go 1.15.15
-- Julia 1.6.2
-- Kotlin 1.5.30
-- Node 14.17.6
+- Julia 1.6.3
+- Kotlin 1.5.31
+- LLVM 13.0.0
+- Node 14.18.0
 - Perl 5.32.1
 - PHP 8.0.10
 - Python 3.7.9
 - Ruby 2.5.9p229
 
 ### Package Management
-- Chocolatey 0.11.1
-- Composer 2.1.8
-- Helm 3.6.3
+- Chocolatey 0.11.2
+- Composer 2.1.9
+- Helm 3.7.0
 - Miniconda 4.10.3 (pre-installed on the image but not added to PATH)
 - NPM 6.14.15
 - NuGet 5.11.0.10
 - pip 21.2.4 (python 3.7)
 - Pipx 0.16.4
 - RubyGems 2.7.6.3
-- Vcpkg  (build from master \<4428702>)
-- Yarn 1.22.11
+- Vcpkg  (build from master \<1d4128f>)
+- Yarn 1.22.15
 
 #### Environment variables
 | Name                    | Value        |
@@ -40,26 +41,26 @@
 ### Project Management
 - Ant 1.10.11
 - Gradle 7.2
-- Maven 3.8.2
+- Maven 3.8.3
 - sbt 1.5.5
 
 ### Tools
 - 7zip 19.00
 - aria2 1.36.0
-- azcopy 10.12.1
+- azcopy 10.12.2
 - Bazel 4.2.1
 - Bazelisk 1.10.1
 - Bicep 0.4.613
 - Cabal 3.4.0.0
-- CMake 3.21.2
-- CodeQL Action Bundle 2.6.1
+- CMake 3.21.3
+- CodeQL Action Bundle 2.6.3
 - Docker 20.10.7
 - Docker-compose 1.29.2
 - ghc 9.0.1
 - Git 2.33.0
 - Git LFS 2.13.3
-- Google Cloud SDK 357.0.0
-- GVFS 1.0.21085.9
+- Google Cloud SDK 360.0.0
+- GVFS 1.0.21229.1
 - InnoSetup 6.2.0
 - jq 1.6
 - Kind 0.11.1
@@ -69,8 +70,8 @@
 - Newman 5.3.0
 - NSIS v3.06.1
 - OpenSSL 1.1.1
-- Packer 1.7.4
-- Pulumi v3.12.0
+- Packer 1.7.5
+- Pulumi v3.14.0
 - R 4.1.1
 - Stack 2.7.3
 - Subversion (SVN) 1.14.1
@@ -81,9 +82,9 @@
 - zstd 1.5.0
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.0.90
-- AWS CLI 2.2.39
-- AWS SAM CLI 1.31.0
+- Alibaba Cloud CLI 3.0.94
+- AWS CLI 2.2.43
+- AWS SAM CLI 1.33.0
 - AWS Session Manager CLI 1.2.245.0
 - Azure CLI 2.28.0
 - Azure DevOps CLI extension 0.20.0
@@ -106,11 +107,11 @@
 - Rustfmt 1.4.37
 
 ### Browsers and webdrivers
-- Google Chrome 93.0.4577.82
-- Chrome Driver 93.0.4577.63
-- Microsoft Edge 93.0.961.52
-- Microsoft Edge Driver 93.0.961.52
-- Mozilla Firefox 92.0
+- Google Chrome 94.0.4606.81
+- Chrome Driver 94.0.4606.61
+- Microsoft Edge 94.0.992.38
+- Microsoft Edge Driver 94.0.992.38
+- Mozilla Firefox 93.0
 - Gecko Driver 0.30.0
 - IE Driver 3.150.1.1
 
@@ -127,6 +128,7 @@
 | 8.0.302+8 (default) | Eclipse Temurin | JAVA_HOME_8_X64      |
 | 11.0.12+7           | Eclipse Temurin | JAVA_HOME_11_X64     |
 | 13.0.2+8.1          | Adopt OpenJDK   | JAVA_HOME_13_X64     |
+| 17.0.0+35           | Eclipse Temurin | JAVA_HOME_17_X64     |
 
 ### Shells
 | Name          | Target                            |
@@ -149,8 +151,8 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | 1.13.15 | x64          | GOROOT_1_13_X64      |
 | 1.14.15 | x64          | GOROOT_1_14_X64      |
 | 1.15.15 (Default) | x64          | GOROOT_1_15_X64      |
-| 1.16.8  | x64          | GOROOT_1_16_X64      |
-| 1.17.1  | x64          | GOROOT_1_17_X64      |
+| 1.16.9  | x64          | GOROOT_1_16_X64      |
+| 1.17.2  | x64          | GOROOT_1_17_X64      |
 
 
 #### Node
@@ -158,7 +160,7 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | ------- | ------------ |
 | 10.24.1 | x64          |
 | 12.22.6 | x64          |
-| 14.17.6 | x64          |
+| 14.18.0 | x64          |
 
 
 #### Python
@@ -170,6 +172,7 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | 3.7.9 (Default) | x64, x86     |
 | 3.8.10  | x64, x86     |
 | 3.9.7   | x64, x86     |
+| 3.10.0  | x64          |
 
 
 #### Ruby
@@ -195,12 +198,12 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 #### PostgreSQL
 | Property             | Value                                                                                                                                |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| ServiceName          | postgresql-x64-13                                                                                                                    |
-| Version              | 13.4                                                                                                                                 |
+| ServiceName          | postgresql-x64-14                                                                                                                    |
+| Version              | 14.0                                                                                                                                 |
 | ServiceStatus        | Stopped                                                                                                                              |
 | ServiceStartType     | Disabled                                                                                                                             |
-| EnvironmentVariables | PGBIN=C:\Program Files\PostgreSQL\13\bin <br> PGDATA=C:\Program Files\PostgreSQL\13\data <br> PGROOT=C:\Program Files\PostgreSQL\13  |
-| Path                 | C:\Program Files\PostgreSQL\13                                                                                                       |
+| EnvironmentVariables | PGBIN=C:\Program Files\PostgreSQL\14\bin <br> PGDATA=C:\Program Files\PostgreSQL\14\data <br> PGROOT=C:\Program Files\PostgreSQL\14  |
+| Path                 | C:\Program Files\PostgreSQL\14                                                                                                       |
 | UserName             | postgres                                                                                                                             |
 | Password             | root                                                                                                                                 |
 
@@ -208,7 +211,7 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 #### MongoDB
 | Version | ServiceName | ServiceStatus | ServiceStartType |
 | ------- | ----------- | ------------- | ---------------- |
-| 5.0.2.0 | MongoDB     | Running       | Automatic        |
+| 5.0.3.0 | MongoDB     | Running       | Automatic        |
 
 
 
@@ -222,7 +225,7 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 ### Web Servers
 | Name   | Version | ConfigFile                            | ServiceName | ServiceStatus | ListenPort |
 | ------ | ------- | ------------------------------------- | ----------- | ------------- | ---------- |
-| Apache | 2.4.49  | C:\tools\Apache24\conf\httpd.conf     | Apache      | Stopped       | 80         |
+| Apache | 2.4.51  | C:\tools\Apache24\conf\httpd.conf     | Apache      | Stopped       | 80         |
 | Nginx  | 1.21.3  | C:\tools\nginx-1.21.3\conf\nginx.conf | nginx       | Stopped       | 80         |
 
 ### Visual Studio Enterprise 2017
@@ -490,10 +493,10 @@ Note: MSYS2 is pre-installed on image but not added to PATH.
 | Microsoft Visual C++ 2013 Minimum Runtime    | x86          | 12.0.21005  |
 | Microsoft Visual C++ 2017 Debug Runtime      | x64          | 14.16.27033 |
 | Microsoft Visual C++ 2017 Debug Runtime      | x86          | 14.16.27033 |
-| Microsoft Visual C++ 2019 Additional Runtime | x64          | 14.29.30133 |
-| Microsoft Visual C++ 2019 Minimum Runtime    | x64          | 14.29.30133 |
-| Microsoft Visual C++ 2019 Additional Runtime | x86          | 14.29.30133 |
-| Microsoft Visual C++ 2019 Minimum Runtime    | x86          | 14.29.30133 |
+| Microsoft Visual C++ 2019 Additional Runtime | x64          | 14.29.30135 |
+| Microsoft Visual C++ 2019 Minimum Runtime    | x64          | 14.29.30135 |
+| Microsoft Visual C++ 2019 Additional Runtime | x86          | 14.29.30135 |
+| Microsoft Visual C++ 2019 Minimum Runtime    | x86          | 14.29.30135 |
 
 ### .NET Core SDK
 `Location C:\Program Files\dotnet\sdk`
@@ -536,7 +539,7 @@ All other versions are saved but not installed.
 | ------------------ | ---------------- |
 | DockerMsftProvider | 1.0.0.8          |
 | MarkdownPS         | 1.9              |
-| Pester             | 3.4.0<br>5.3.0   |
+| Pester             | 3.4.0<br>5.3.1   |
 | PowerShellGet      | 1.0.0.1<br>2.2.5 |
 | PSScriptAnalyzer   | 1.20.0           |
 | PSWindowsUpdate    | 2.2.0.2          |
@@ -556,7 +559,7 @@ All other versions are saved but not installed.
 | Google APIs                | addon-google_apis-google-21<br>addon-google_apis-google-22<br>addon-google_apis-google-23<br>addon-google_apis-google-24                                                                                                                                                                        |
 | Google Play services       | 49                                                                                                                                                                                                                                                                                              |
 | Google Repository          | 58                                                                                                                                                                                                                                                                                              |
-| NDK                        | 21.4.7075529<br>22.1.7171670                                                                                                                                                                                                                                                                    |
+| NDK                        | 21.4.7075529 (default)<br>22.1.7171670<br>23.0.7599858                                                                                                                                                                                                                                          |
 | SDK Patch Applier v4       | 1                                                                                                                                                                                                                                                                                               |
 
 #### Environment variables
@@ -564,7 +567,7 @@ All other versions are saved but not installed.
 | ----------------------- | ---------------------------------------------------------------------------- |
 | ANDROID_HOME            | C:\Android\android-sdk                                                       |
 | ANDROID_NDK_HOME        | C:\Android\android-sdk\ndk-bundle -> C:\Android\android-sdk\ndk\21.4.7075529 |
-| ANDROID_NDK_LATEST_HOME | C:\Android\android-sdk\ndk\22.1.7171670                                      |
+| ANDROID_NDK_LATEST_HOME | C:\Android\android-sdk\ndk\23.0.7599858                                      |
 | ANDROID_NDK_PATH        | C:\Android\android-sdk\ndk-bundle -> C:\Android\android-sdk\ndk\21.4.7075529 |
 | ANDROID_NDK_ROOT        | C:\Android\android-sdk\ndk-bundle -> C:\Android\android-sdk\ndk\21.4.7075529 |
 | ANDROID_SDK_ROOT        | C:\Android\android-sdk                                                       |
