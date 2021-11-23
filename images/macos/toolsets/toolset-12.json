@@ -1,10 +1,9 @@
 {
     "xcode": {
-        "default": "13.0",
+        "default": "13.1",
         "versions": [
             { "link": "13.2", "version": "13.2.0" },
-            { "link": "13.1", "version": "13.1.0" },
-            { "link": "13.0", "version": "13.0.0"}
+            { "link": "13.1", "version": "13.1.0" }
         ]
     },
     "xamarin": {
@@ -13,16 +12,23 @@
             "6.12.0.140"
         ],
         "ios-versions": [
-            "15.0.0.6"
+            "15.2.0.17", "15.0.0.6"
         ],
         "mac-versions": [
-            "7.14.0.27"
+            "8.2.0.17", "7.14.0.27"
         ],
         "android-versions": [
-            "11.3.0.4"
+            "12.0.0.3", "11.3.0.4"
         ],
         "bundle-default": "6_12_10",
         "bundles": [
+            {
+                "symlink": "6_12_11",
+                "mono":"6.12",
+                "ios": "15.2",
+                "mac": "8.2",
+                "android": "12.0"
+            },
             {
                 "symlink": "6_12_10",
                 "mono":"6.12",
@@ -125,7 +131,6 @@
             "platform" : "darwin",
             "arch": "x64",
             "versions": [
-                "10.*",
                 "12.*",
                 "14.*",
                 "16.*"
@@ -177,5 +182,22 @@
     },
     "go": {
         "default": "1.17"
+    },
+    "node": {
+        "default": "14",
+        "nvm_versions": [
+            "12",
+            "14",
+            "16"
+        ]
+    },
+    "php": {
+        "version": "8.0"
+    },
+    "mongodb": {
+        "version": "5.0"
+    },
+    "postgresql": {
+        "version": "14"
     }
 }

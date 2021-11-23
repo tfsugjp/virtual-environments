@@ -24,6 +24,18 @@
             "default": "3.9.*"
         },
         {
+            "name": "Python",
+            "url" : "https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json",
+            "arch": "x86",
+            "platform" : "win32",
+            "versions": [
+                "3.7.*",
+                "3.8.*",
+                "3.9.*",
+                "3.10.*"
+            ]
+        },
+        {
             "name": "PyPy",
             "arch": "x86",
             "platform" : "win64",
@@ -39,7 +51,6 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "10.*",
                 "12.*",
                 "14.*",
                 "16.*"
@@ -158,7 +169,7 @@
         "version" : "2022",
         "subversion" : "17",
         "edition" : "Enterprise",
-        "channel": "pre",
+        "channel": "release",
         "workloads": [
             "Component.Linux.CMake",
             "Component.UnityEngine.x64",
@@ -225,7 +236,8 @@
             "Microsoft.VisualStudio.Workload.Python",
             "Microsoft.VisualStudio.Workload.Universal",
             "Microsoft.VisualStudio.Workload.VisualStudioExtension",
-            "Component.MDD.Linux"
+            "Component.MDD.Linux",
+            "wasm.tools"
         ],
         "vsix": []
     },
@@ -245,8 +257,8 @@
         }
     ],
     "selenium": {
-        "version": "3",
-        "binary_name": "selenium-server-standalone"
+        "version": "4",
+        "binary_name": "selenium-server"
     },
     "npm": {
         "global_packages": [
@@ -289,5 +301,20 @@
                 "args": [ "--installargs", "ADD_CMAKE_TO_PATH=\"System\"" ]
             }
         ]
+    },
+    "node": {
+        "default": "14"
+    },
+    "Mysql": {
+        "version": "8.0"
+    },
+    "mongodb": {
+        "version": "5.0"
+    },
+    "php": {
+        "version": "8.0"
+    },
+    "postgresql": {
+        "version": "14"
     }
 }

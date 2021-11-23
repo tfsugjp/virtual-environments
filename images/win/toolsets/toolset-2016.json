@@ -60,7 +60,6 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "10.*",
                 "12.*",
                 "14.*",
                 "16.*"
@@ -72,8 +71,6 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "1.13.*",
-                "1.14.*",
                 "1.15.*",
                 "1.16.*",
                 "1.17.*"
@@ -365,8 +362,8 @@
         }
     ],
     "selenium": {
-        "version": "3",
-        "binary_name": "selenium-server-standalone"
+        "version": "4",
+        "binary_name": "selenium-server"
     },
     "npm": {
         "global_packages": [
@@ -400,7 +397,6 @@
             { "name": "gitversion.portable" },
             { "name": "innosetup" },
             { "name": "jq" },
-            { "name": "llvm" },
             { "name": "NuGet.CommandLine" },
             {
                 "name": "openssl.light",
@@ -421,5 +417,23 @@
                 "args": [ "--installargs", "ADD_CMAKE_TO_PATH=\"System\"" ]
             }
         ]
+    },
+    "node": {
+        "default": "14"
+    },
+    "Mysql": {
+        "version": "5.7"
+    },
+    "mongodb": {
+        "version": "5.0"
+    },
+    "php": {
+        "version": "8.0"
+    },
+    "llvm": {
+        "version": "13"
+    },
+    "postgresql": {
+        "version": "14"
     }
 }
