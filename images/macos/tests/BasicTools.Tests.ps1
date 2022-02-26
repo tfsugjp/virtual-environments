@@ -6,7 +6,13 @@ Describe "Azure CLI" {
     }
 }
 
-Describe "Carthage" -Skip:($os.IsMonterey) {
+Describe "Azure DevOps CLI" {
+    It "az devops" {
+        "az devops -h" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Carthage" {
     It "Carthage" {
         "carthage version" | Should -ReturnZeroExitCode
     }
@@ -30,7 +36,7 @@ Describe "SwiftFormat" -Skip:($os.IsMonterey) {
     }
 }
 
-Describe "GnuPG" -Skip:($os.IsMonterey) {
+Describe "GnuPG" {
     It "GnuPG" {
         "gpg --version" | Should -ReturnZeroExitCode
     }
@@ -150,7 +156,7 @@ Describe "xctool" -Skip:($os.IsHigherThanCatalina) {
     }
 }
 
-Describe "R" -Skip:($os.IsHigherThanCatalina) {
+Describe "R" {
     It "R" {
         "R --version" | Should -ReturnZeroExitCode
     }
