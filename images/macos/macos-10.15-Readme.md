@@ -1,15 +1,16 @@
 | Announcements |
 |-|
-| [[All OSs] .NET 2.1 will be removed from the images on February, 21](https://github.com/actions/virtual-environments/issues/4871) |
+| [[macOS] Default Xcode on Monterey image will be set to Xcode 13.3 on April, 11](https://github.com/actions/virtual-environments/issues/5328) |
+| [[All OSs] Go versions less than 1.16 will be removed on April, 11](https://github.com/actions/virtual-environments/issues/5280) |
 ***
 # macOS 10.15 info
-- System Version: macOS 10.15.7 (19H1715)
+- System Version: macOS 10.15.7 (19H1824)
 - Kernel Version: Darwin 19.6.0
-- Image Version: 20220219.1
+- Image Version: 20220403.1
 
 ## Installed Software
 ### Language and Runtime
-- .NET SDK 3.1.101 3.1.201 3.1.302 3.1.416 5.0.102 5.0.202 5.0.302 5.0.405
+- .NET SDK 3.1.101 3.1.201 3.1.302 3.1.417 5.0.102 5.0.202 5.0.302 5.0.406
 - Bash 3.2.57(1)-release
 - Clang/LLVM 12.0.0 is default
 - Clang/LLVM 13.0.1 is available on `'$(brew --prefix llvm)/bin/clang'`
@@ -23,31 +24,31 @@
 - julia 1.7.2
 - Kotlin 1.6.10-release-923
 - MSBuild 16.10.1.58001 (from /Library/Frameworks/Mono.framework/Versions/6.12.0/lib/mono/msbuild/15.0/bin/MSBuild.dll)
-- Node.js v16.14.0
+- Node.js v16.14.2
 - NVM 0.39.1
-- NVM - Cached node versions: v12.22.10 v14.19.0 v16.14.0
+- NVM - Cached node versions: v12.22.11 v14.19.1 v16.14.2
 - Perl 5.34.0
-- PHP 8.1.3
+- PHP 8.1.4
 - Python 2.7.18
-- Python 3.9.10
-- R 4.1.2
+- Python 3.9.12
+- R 4.1.3
 - Ruby 2.7.5p203
 
 ### Package Management
-- Bundler version 2.3.7
+- Bundler version 2.3.10
 - Carthage 0.38.0
-- CocoaPods 1.11.2
-- Composer 2.2.6
-- Homebrew 3.3.15
+- CocoaPods 1.11.3
+- Composer 2.3.3
+- Homebrew 3.4.4
 - Miniconda 4.11.0
-- NPM 8.3.1
+- NPM 8.5.0
 - NuGet 5.9.0.7134
 - Pip 20.3.4 (python 2.7)
-- Pip 21.3.1 (python 3.9)
+- Pip 22.0.4 (python 3.9)
 - Pipx 1.0.0
 - RubyGems 3.2.33
-- Vcpkg 2022 (build from master \<5cf60186a>)
-- Yarn 1.22.17
+- Vcpkg 2022 (build from master \<01d6f6ff1>)
+- Yarn 1.22.18
 
 #### Environment variables
 | Name                    | Value                  |
@@ -57,33 +58,33 @@
 
 ### Project Management
 - Apache Ant(TM) 1.10.12
-- Apache Maven 3.8.4
-- Gradle 7.4
+- Apache Maven 3.8.5
+- Gradle 7.4.2
 - Sbt 1.6.2
 
 ### Utilities
 - 7-Zip 17.04
 - aria2 1.36.0
-- azcopy 10.13.0
-- bazel 5.0.0
+- azcopy 10.14.1
+- bazel 5.1.0
 - bazelisk 1.11.0
 - bsdtar 3.3.2 - available by 'tar' alias
-- Curl 7.81.0
+- Curl 7.82.0
 - Git 2.35.1
 - Git LFS: 3.1.2
-- GitHub CLI: 2.5.1
-- GNU parallel 20220122
+- GitHub CLI: 2.7.0
+- GNU parallel 20220322
 - GNU Tar 1.34 - available by 'gtar' alias
-- GNU Wget 1.21.2
+- GNU Wget 1.21.3
 - gpg (GnuPG) 2.3.4
-- helm v3.8.0+gd141386
+- helm v3.8.1+g5cb9af4
 - Hub CLI: 2.14.2
 - jq 1.6
 - mongo v5.0.6
 - mongod v5.0.6
-- Newman 5.3.1
-- OpenSSL 1.1.1m  14 Dec 2021 `(/usr/local/opt/openssl@1.1 -> ../Cellar/openssl@1.1/1.1.1m)`
-- Packer 1.7.10
+- Newman 5.3.2
+- OpenSSL 1.1.1n  15 Mar 2022 `(/usr/local/opt/openssl@1.1 -> ../Cellar/openssl@1.1/1.1.1n)`
+- Packer 1.8.0
 - PostgreSQL 14.2
 - psql (PostgreSQL) 14.2
 - Sox 14.4.2
@@ -91,47 +92,48 @@
 - Switchaudio-osx 1.1.0
 - Vagrant 2.2.19
 - virtualbox 6.1.32r149290
+- yq (https://github.com/mikefarah/yq/) version 4.24.2
 - zstd 1.5.2
 
 ### Tools
-- Aliyun CLI 3.0.109
+- Aliyun CLI 3.0.113
 - App Center CLI 2.10.8
-- AWS CLI 2.4.19
-- AWS SAM CLI 1.38.1
+- AWS CLI 2.5.2
+- AWS SAM CLI 1.43.0
 - AWS Session Manager CLI 1.2.295.0
-- Azure CLI (azure-devops) 0.23.0
-- Azure CLI 2.33.1
-- Bicep CLI 0.4.1272
+- Azure CLI (azure-devops) 0.25.0
+- Azure CLI 2.34.1
+- Bicep CLI 0.4.1318
 - Cabal 3.6.2.0
-- Cmake 3.22.2
-- Fastlane 2.204.3
-- GHC 9.2.1
-- GHCup 0.1.17.4
-- Jazzy 0.14.1
-- Stack 2.7.3
-- SwiftFormat 0.49.4
+- Cmake 3.23.0
+- Fastlane 2.205.1
+- GHC 9.2.2
+- GHCup v0.1.17.6
+- Jazzy 0.14.2
+- Stack 2.7.5
+- SwiftFormat 0.49.6
 - Swig 4.0.2
 - Xcode Command Line Tools 12.4.0.0.1.1610135815
 
 ### Linters
-- SwiftLint 0.46.2
+- SwiftLint 0.47.0
 - yamllint 1.26.3
 
 ### Browsers
-- Safari 15.3 (15612.4.9.1.8)
-- SafariDriver 15.3 (15612.4.9.1.8)
-- Google Chrome 98.0.4758.102 
-- ChromeDriver 98.0.4758.102
-- Microsoft Edge 98.0.1108.56 
-- MSEdgeDriver 98.0.1108.56
-- Mozilla Firefox 97.0.1
+- Safari 15.4 (15613.1.17.1.11)
+- SafariDriver 15.4 (15613.1.17.1.11)
+- Google Chrome 100.0.4896.60 
+- ChromeDriver 100.0.4896.60
+- Microsoft Edge 100.0.1185.29 
+- MSEdgeDriver 100.0.1185.29
+- Mozilla Firefox 98.0.2
 - geckodriver 0.30.0
-- Selenium server 4.1.2
+- Selenium server 4.1.3
 
 #### Environment variables
 | Name            | Value                                          |
 | --------------- | ---------------------------------------------- |
-| CHROMEWEBDRIVER | /usr/local/Caskroom/chromedriver/98.0.4758.102 |
+| CHROMEWEBDRIVER | /usr/local/Caskroom/chromedriver/100.0.4896.60 |
 | EDGEWEBDRIVER   | /usr/local/share/edge_driver                   |
 | GECKOWEBDRIVER  | /usr/local/opt/geckodriver/bin                 |
 
@@ -163,43 +165,45 @@
 - 3.6.15
 - 3.7.12
 - 3.8.12
-- 3.9.10
-- 3.10.2
+- 3.9.12
+- 3.10.4
 
 #### PyPy
-- 2.7.18 [PyPy 7.3.6]
+- 2.7.18 [PyPy 7.3.9]
 - 3.6.12 [PyPy 7.3.3]
-- 3.7.12 [PyPy 7.3.7]
-- 3.8.12 [PyPy 7.3.7]
+- 3.7.13 [PyPy 7.3.9]
+- 3.8.13 [PyPy 7.3.9]
+- 3.9.12 [PyPy 7.3.9]
 
 #### Node.js
-- 12.22.10
-- 14.19.0
-- 16.14.0
+- 12.22.11
+- 14.19.1
+- 16.14.2
 
 #### Go
 | Version | Architecture | Environment Variable |
 | ------- | ------------ | -------------------- |
 | 1.15.15 (Default) | x64          | GOROOT_1_15_X64      |
-| 1.16.14 | x64          | GOROOT_1_16_X64      |
-| 1.17.7  | x64          | GOROOT_1_17_X64      |
+| 1.16.15 | x64          | GOROOT_1_16_X64      |
+| 1.17.8  | x64          | GOROOT_1_17_X64      |
+| 1.18.0  | x64          | GOROOT_1_18_X64      |
 
 ### Rust Tools
-- Cargo 1.58.0
-- Rust 1.58.1
-- Rustdoc 1.58.1
+- Cargo 1.59.0
+- Rust 1.59.0
+- Rustdoc 1.59.0
 - Rustup 1.24.3
 
 #### Packages
 - Bindgen 0.59.2
 - Cargo-audit 0.16.0
-- Cargo-outdated v0.10.2
-- Cbindgen 0.20.0
-- Clippy 0.1.58
+- Cargo-outdated 0.11.0
+- Cbindgen 0.21.0
+- Clippy 0.1.59
 - Rustfmt 1.4.38-stable
 
 ### PowerShell Tools
-- PowerShell 7.2.1
+- PowerShell 7.2.2
 
 #### PowerShell Modules
 | Module           | Version |
@@ -210,14 +214,14 @@
 | PSScriptAnalyzer | 1.20.0  |
 
 ### Web Servers
-| Name  | Version | ConfigFile                      | ServiceStatus | ListenPort |
-| ----- | ------- | ------------------------------- | ------------- | ---------- |
-| httpd | 2.4.52  | /usr/local/etc/httpd/httpd.conf | none          | 80         |
-| nginx | 1.21.6  | /usr/local/etc/nginx/nginx.conf | none          | 80         |
+| Name  | Version  | ConfigFile                      | ServiceStatus | ListenPort |
+| ----- | -------- | ------------------------------- | ------------- | ---------- |
+| httpd | 2.4.53   | /usr/local/etc/httpd/httpd.conf | none          | 80         |
+| nginx | 1.21.6_1 | /usr/local/etc/nginx/nginx.conf | none          | 80         |
 
 ### Xamarin
 #### Visual Studio for Mac
-- 8.10.19.2
+- 8.10.21.4
 
 #### Xamarin bundles
 | symlink          | Xamarin.Mono | Xamarin.iOS | Xamarin.Mac | Xamarin.Android |
@@ -356,10 +360,10 @@
 | Package Name               | Version                                                                                                                                                                                                                                   |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Android Command Line Tools | 4.0                                                                                                                                                                                                                                       |
-| Android Emulator           | 31.2.8                                                                                                                                                                                                                                    |
+| Android Emulator           | 31.2.9                                                                                                                                                                                                                                    |
 | Android SDK Build-tools    | 32.0.0<br>31.0.0<br>30.0.0 30.0.1 30.0.2 30.0.3<br>29.0.0 29.0.1 29.0.2 29.0.3<br>28.0.0 28.0.1 28.0.2 28.0.3<br>27.0.0 27.0.1 27.0.2 27.0.3<br>26.0.0 26.0.1 26.0.2 26.0.3<br>25.0.0 25.0.1 25.0.2 25.0.3<br>24.0.0 24.0.1 24.0.2 24.0.3 |
 | Android SDK Platforms      | android-32 (rev 1)<br>android-31 (rev 1)<br>android-30 (rev 3)<br>android-29 (rev 5)<br>android-28 (rev 6)<br>android-27 (rev 3)<br>android-26 (rev 2)<br>android-25 (rev 3)<br>android-24 (rev 2)                                        |
-| Android SDK Platform-Tools | 32.0.0                                                                                                                                                                                                                                    |
+| Android SDK Platform-Tools | 33.0.1                                                                                                                                                                                                                                    |
 | Android Support Repository | 47.0.0                                                                                                                                                                                                                                    |
 | CMake                      | 3.10.2<br>3.18.1                                                                                                                                                                                                                          |
 | Google APIs                | addon-google_apis-google-21<br>addon-google_apis-google-22<br>addon-google_apis-google-23<br>addon-google_apis-google-24                                                                                                                  |
