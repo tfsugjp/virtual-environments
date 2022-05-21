@@ -88,7 +88,7 @@
         }
     ],
     "java": {
-        "default": "11",
+        "default": "8",
         "default_vendor": "Temurin-Hotspot",
         "vendors": [
             {
