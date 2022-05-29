@@ -120,6 +120,9 @@ Describe "clang" {
 
         "clang-$ClangVersion --version" | Should -ReturnZeroExitCode
         "clang++-$ClangVersion --version" | Should -ReturnZeroExitCode
+        "clang-format-$ClangVersion --version" | Should -ReturnZeroExitCode
+        "clang-tidy-$ClangVersion --version" | Should -ReturnZeroExitCode
+        "run-clang-tidy-$ClangVersion --help" | Should -ReturnZeroExitCode
     }
 }
 
@@ -203,7 +206,7 @@ Describe "Sbt" {
     }
 }
 
-Describe "Selenium" -Skip:(Test-IsUbuntu22) {
+Describe "Selenium" {
     It "Selenium is installed" {
         $seleniumBinaryName = (Get-ToolsetContent).selenium.binary_name
         $seleniumPath = Join-Path "/usr/share/java" "$seleniumBinaryName.jar"
@@ -295,7 +298,7 @@ Describe "Kubernetes tools" {
     }
 }
 
-Describe "Leiningen" -Skip:(Test-IsUbuntu22) {
+Describe "Leiningen" {
     It "leiningen" {
         "lein --version" | Should -ReturnZeroExitCode
     }
@@ -335,7 +338,7 @@ Describe "GraalVM" -Skip:(Test-IsUbuntu18) {
     }
 }
 
-Describe "Containers" -Skip:(-not (Test-IsUbuntu22)) {
+Describe "Containers" {
     $testCases = @("podman", "buildah", "skopeo") | ForEach-Object { @{ContainerCommand = $_} }
 
     It "<ContainerCommand>" -TestCases $testCases {
@@ -394,7 +397,7 @@ Describe "yq" {
     }
 }
 
-Describe "Kotlin" -Skip:(Test-IsUbuntu22) {
+Describe "Kotlin" {
     It "kapt" {
         "kapt -version"| Should -ReturnZeroExitCode
     }
