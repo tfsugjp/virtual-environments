@@ -103,6 +103,7 @@
         ]
     },
     "android": {
+        "cmdline-tools": "latest",
         "platform_min_version": "19",
         "build_tools_min_version": "19.1.0",
         "extra_list": [
@@ -126,11 +127,14 @@
             "patcher;v4"
         ],
         "ndk": {
-            "default": "21",
+            "default": "23",
             "versions": [
-                "21", "22", "23"
+                "21", "23", "24"
             ]
         }
+    },
+    "mingw": {
+	"version": "8.1.0"
     },
     "MsysPackages": {
         "msys2": [
@@ -356,7 +360,7 @@
             { "name": "cordova" },
             { "name": "grunt-cli", "test": "grunt --version" },
             { "name": "gulp-cli", "test": "gulp --version" },
-            { "name": "parcel@2.5.0", "test": "parcel --version"},
+            { "name": "parcel", "test": "parcel --version"},
             { "name": "webpack" },
             { "name": "webpack-cli" },
             { "name": "node-sass" }
