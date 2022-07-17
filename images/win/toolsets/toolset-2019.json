@@ -5,12 +5,10 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "2.6",
-                "2.7",
                 "3.0",
                 "3.1"
             ],
-            "default": "2.6"
+            "default": "3.1"
         },
         {
             "name": "Python",
@@ -18,14 +16,10 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "2.7.*",
-                "3.6.*",
-                "3.7.*",
-                "3.8.*",
                 "3.9.*",
                 "3.10.*"
             ],
-            "default": "3.7.*"
+            "default": "3.9.*"
         },
         {
             "name": "Python",
@@ -33,10 +27,6 @@
             "arch": "x86",
             "platform" : "win32",
             "versions": [
-                "2.7.*",
-                "3.6.*",
-                "3.7.*",
-                "3.8.*",
                 "3.9.*",
                 "3.10.*"
             ]
@@ -46,9 +36,6 @@
             "arch": "x86",
             "platform" : "win64",
             "versions": [
-                "2.7",
-                "3.6",
-                "3.7",
                 "3.8",
                 "3.9"
             ]
@@ -70,11 +57,10 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "1.16.*",
                 "1.17.*",
                 "1.18.*"
             ],
-            "default": "1.17.*"
+            "default": "1.18.*"
         }
     ],
     "powershellModules": [
@@ -91,50 +77,12 @@
     ],
     "azureModules": [
         {
-            "name": "azurerm",
-            "blob_url": "https://vstsagenttools.blob.core.windows.net/tools/azurepowershellmodules/",
-            "versions": [
-                "6.13.1"
-            ],
-            "zip_versions": [
-                "3.8.0",
-                "4.2.1",
-                "5.1.1",
-                "6.7.0"
-            ],
-            "default": "6.13.1"
-        },
-        {
-            "name": "azure",
-            "blob_url": "https://vstsagenttools.blob.core.windows.net/tools/azurepowershellmodules/",
-            "versions": [
-                "5.3.0"
-            ],
-            "zip_versions": [
-                "3.8.0",
-                "4.2.1",
-                "5.1.1"
-            ],
-            "default": "5.3.0"
-        },
-        {
             "name": "az",
             "url" : "https://raw.githubusercontent.com/Azure/az-ps-module-versions/main/versions-manifest.json",
             "versions": [
                 "7.5.0"
             ],
             "zip_versions": [
-                "1.0.0",
-                "1.6.0",
-                "2.3.2",
-                "2.6.0",
-                "3.1.0",
-                "3.5.0",
-                "3.8.0",
-                "4.3.0",
-                "4.4.0",
-                "4.7.0",
-                "5.5.0",
                 "5.9.0",
                 "6.6.0"
             ]
@@ -421,7 +369,7 @@
     "dotnet": {
         "versions": [
             "3.1",
-            "5.0"
+            "6.0"
         ],
         "tools": [
             { "name": "nbgv", "test": "nbgv --version", "getversion": "nbgv --version" }
@@ -462,7 +410,7 @@
         "default": "16"
     },
     "mysql": {
-        "version": "5.7"
+        "version": "8.0"
     },
     "mongodb": {
         "version": "5.0"
