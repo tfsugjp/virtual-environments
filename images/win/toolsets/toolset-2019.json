@@ -58,7 +58,8 @@
             "platform" : "win32",
             "versions": [
                 "1.17.*",
-                "1.18.*"
+                "1.18.*",
+                "1.19.*"
             ],
             "default": "1.18.*"
         }
@@ -124,12 +125,13 @@
         "additional_tools": [
             "cmake;3.10.2.4988404",
             "cmake;3.18.1",
+            "cmake;3.22.1",
             "patcher;v4"
         ],
         "ndk": {
-            "default": "23",
+            "default": "25",
             "versions": [
-                "21", "23", "24"
+                "23", "24", "25"
             ]
         }
     },
@@ -267,6 +269,7 @@
             "Microsoft.VisualStudio.Component.VC.MFC.ARM64",
             "Microsoft.VisualStudio.Component.VC.MFC.ARM64.Spectre",
             "Microsoft.VisualStudio.Component.VC.Modules.x86.x64",
+            "Microsoft.VisualStudio.Component.VC.Tools.ARM64EC",
             "Microsoft.VisualStudio.Component.VC.Redist.MSM",
             "Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre",
             "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre",

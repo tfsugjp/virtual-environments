@@ -58,7 +58,8 @@
             "platform" : "win32",
             "versions": [
                 "1.17.*",
-                "1.18.*"
+                "1.18.*",
+                "1.19.*"
             ],
             "default": "1.18.*"
         }
@@ -113,12 +114,13 @@
         "addon_list": [],
         "additional_tools": [
             "cmake;3.18.1",
+            "cmake;3.22.1",
             "patcher;v4"
         ],
         "ndk": {
-            "default": "23",
+            "default": "25",
             "versions": [
-                "21", "23", "24"
+                "23", "24", "25"
             ]
         }
     },
@@ -143,12 +145,16 @@
         "edition" : "Enterprise",
         "channel": "release",
         "workloads": [
+            "Component.Dotfuscator",
             "Component.Linux.CMake",
             "Component.UnityEngine.x64",
             "Component.Unreal.Android",
+            "Component.Xamarin",
             "Microsoft.Component.VC.Runtime.UCRTSDK",
             "Microsoft.Net.Component.4.7.TargetingPack",
             "Microsoft.Net.Component.4.7.2.TargetingPack",
+            "Microsoft.Net.Component.4.8.1.SDK",
+            "Microsoft.Net.Component.4.8.1.TargetingPack",
             "Microsoft.VisualStudio.Component.AspNet45",
             "Microsoft.VisualStudio.Component.Azure.ServiceFabric.Tools",
             "Microsoft.VisualStudio.Component.Debugger.JustInTime",
@@ -203,8 +209,34 @@
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.x86.x64.Spectre",
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL",
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.ARM64.Spectre",
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC",
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.x86.x64",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.x86.x64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ATL",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ATL.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ATL.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ATL.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ATL.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.ATL.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.MFC",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.MFC.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.MFC.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.MFC.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.MFC.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.33.17.3.MFC.ARM64.Spectre",
             "Microsoft.VisualStudio.Component.VC.ATLMFC",
             "Microsoft.VisualStudio.Component.VC.ATLMFC.Spectre",
             "Microsoft.VisualStudio.Component.Windows10SDK.19041",
@@ -239,7 +271,8 @@
         "vsix": [
             "VisualStudioClient.MicrosoftVisualStudio2022InstallerProjects",
             "WixToolset.WixToolsetVisualStudio2022Extension",
-            "ProBITools.MicrosoftReportProjectsforVisualStudio2022"
+            "ProBITools.MicrosoftReportProjectsforVisualStudio2022",
+            "ProBITools.MicrosoftAnalysisServicesModelingProjects2022"
         ]
     },
     "docker": {
