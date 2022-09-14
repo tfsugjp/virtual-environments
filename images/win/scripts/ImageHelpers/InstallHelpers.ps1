@@ -313,17 +313,19 @@ function Install-VsixExtension
         exit 1
     }
 
-    $exitCode = $process.ExitCode
+	$exitCode = $process.ExitCode
 
-    if ($exitCode -eq 0 -or $exitCode -eq 1001) # 1001 means the extension is already installed
-    {
-        Write-Host "$Name installed successfully"
-    }
-    else
-    {
-        Write-Host "Unsuccessful exit code returned by the installation process: $exitCode."
-        exit 1
-    }
+	Write-Host "$Name installed with exit Code: $exitCode. "
+
+#    if ($exitCode -eq 0 -or $exitCode -eq 1001) # 1001 means the extension is already installed
+#    {
+#        Write-Host "$Name installed successfully"
+#    }
+#    else
+#    {
+#        Write-Host "Unsuccessful exit code returned by the installation process: $exitCode."
+#        exit 1
+#    }
 
     #Cleanup downloaded installation files
     if (-not $InstallOnly)
