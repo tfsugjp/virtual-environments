@@ -162,6 +162,12 @@ $toolsList = @(
     (Get-AWSSessionManagerCLIVersion)
 )
 
+if (-not $os.IsCatalina) {
+    $toolsList += @(
+        (Get-CodeQLBundleVersion)
+    )
+}
+
 if ($os.IsLessThanMonterey) {
     $toolsList += @(
         (Get-AliyunCLIVersion)
