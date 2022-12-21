@@ -17,7 +17,8 @@
             "platform" : "win32",
             "versions": [
                 "3.9.*",
-                "3.10.*"
+                "3.10.*",
+                "3.11.*"
             ],
             "default": "3.9.*"
         },
@@ -28,7 +29,8 @@
             "platform" : "win32",
             "versions": [
                 "3.9.*",
-                "3.10.*"
+                "3.10.*",
+                "3.11.*"
             ]
         },
         {
@@ -46,9 +48,9 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "12.*",
                 "14.*",
-                "16.*"
+                "16.*",
+                "18.*"
             ]
         },
         {
@@ -81,11 +83,12 @@
             "name": "az",
             "url" : "https://raw.githubusercontent.com/Azure/az-ps-module-versions/main/versions-manifest.json",
             "versions": [
-                "7.5.0"
+                "9.0.1"
             ],
             "zip_versions": [
                 "5.9.0",
-                "6.6.0"
+                "6.6.0",
+                "7.5.0"
             ]
         }
     ],
@@ -372,6 +375,7 @@
     "dotnet": {
         "versions": [
             "3.1",
+            "7.0",
             "6.0"
         ],
         "tools": [
@@ -423,7 +427,7 @@
         "version": "3.08"
     },
     "php": {
-        "version": "8.1"
+        "version": "8.2"
     },
     "llvm": {
         "version": "14"

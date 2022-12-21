@@ -1,5 +1,3 @@
-Import-Module (Join-Path $PSScriptRoot "..\SoftwareReport\SoftwareReport.Common.psm1") -DisableNameChecking
-
 Describe "Azure Cosmos DB Emulator" {
     $cosmosDbEmulatorRegKey = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Get-ItemProperty | Where-Object { $_.DisplayName -eq 'Azure Cosmos DB Emulator' }
     $installDir = $cosmosDbEmulatorRegKey.InstallLocation
@@ -103,7 +101,7 @@ Describe "GoogleCloudSDK" -Skip:(Test-IsWin22) {
 
 Describe "NET48" {
     It "NET48" {
-        (Get-DotnetFrameworkTools).Versions | Should -Contain "4.8"
+        Get-ChildItem -Path "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows\*\*\NETFX 4.8 Tools" -Directory | Should -HaveCount 1
     }
 }
 
@@ -154,12 +152,8 @@ Describe "Vcpkg" {
         $env:VCPKG_INSTALLATION_ROOT | Should -Not -BeNullOrEmpty
     }
 
-    It "env variable VCPKG_ROOT is set" {
-        $env:VCPKG_ROOT | Should -Not -BeNullOrEmpty
-    }
-  
-    It "VCPKG_ROOT directory" {
-        $env:VCPKG_ROOT | Should -Exist
+    It "VCPKG_INSTALLATION_ROOT directory" {
+        $env:VCPKG_INSTALLATION_ROOT | Should -Exist
     }
 }
 
