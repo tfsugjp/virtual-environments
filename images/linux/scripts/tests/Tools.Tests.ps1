@@ -120,6 +120,9 @@ Describe "clang" {
 
         "clang-$ClangVersion --version" | Should -ReturnZeroExitCode
         "clang++-$ClangVersion --version" | Should -ReturnZeroExitCode
+        "clang-format-$ClangVersion --version" | Should -ReturnZeroExitCode
+        "clang-tidy-$ClangVersion --version" | Should -ReturnZeroExitCode
+        "run-clang-tidy-$ClangVersion --help" | Should -ReturnZeroExitCode
     }
 }
 
@@ -165,7 +168,7 @@ Describe "gfortran" {
     }
 }
 
-Describe "Mono" -Skip:(Test-IsUbuntu22) {
+Describe "Mono" {
     It "mono" {
         "mono --version" | Should -ReturnZeroExitCode
     }
@@ -179,7 +182,7 @@ Describe "Mono" -Skip:(Test-IsUbuntu22) {
     }
 }
 
-Describe "MSSQLCommandLineTools" -Skip:(Test-IsUbuntu22) {
+Describe "MSSQLCommandLineTools" {
     It "sqlcmd" {
         "sqlcmd -?" | Should -ReturnZeroExitCode
     }
@@ -203,7 +206,7 @@ Describe "Sbt" {
     }
 }
 
-Describe "Selenium" -Skip:(Test-IsUbuntu22) {
+Describe "Selenium" {
     It "Selenium is installed" {
         $seleniumBinaryName = (Get-ToolsetContent).selenium.binary_name
         $seleniumPath = Join-Path "/usr/share/java" "$seleniumBinaryName.jar"
@@ -214,6 +217,16 @@ Describe "Selenium" -Skip:(Test-IsUbuntu22) {
 Describe "Terraform" {
     It "terraform" {
         "terraform --version" | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "Zstd" {
+    It "zstd" {
+        "zstd --version" | Should -ReturnZeroExitCode
+    }
+
+    It "pzstd" {
+        "pzstd --version" | Should -ReturnZeroExitCode
     }
 }
 
@@ -255,15 +268,7 @@ Describe "HHVM" -Skip:(Test-IsUbuntu22) {
 
 Describe "Homebrew" {
     It "homebrew" {
-        "brew --version" | Should -ReturnZeroExitCode
-    }
-
-    Context "Packages" {
-        $testCases = (Get-ToolsetContent).brew | ForEach-Object { @{ ToolName = $_.name } }
-
-        It "<ToolName>" -TestCases $testCases {
-           "$ToolName --version" | Should -Not -BeNullOrEmpty
-        }
+        "/home/linuxbrew/.linuxbrew/bin/brew --version" | Should -ReturnZeroExitCode
     }
 }
 
@@ -295,7 +300,7 @@ Describe "Kubernetes tools" {
     }
 }
 
-Describe "Leiningen" -Skip:(Test-IsUbuntu22) {
+Describe "Leiningen" {
     It "leiningen" {
         "lein --version" | Should -ReturnZeroExitCode
     }
@@ -335,7 +340,7 @@ Describe "GraalVM" -Skip:(Test-IsUbuntu18) {
     }
 }
 
-Describe "Containers" -Skip:(-not (Test-IsUbuntu22)) {
+Describe "Containers" {
     $testCases = @("podman", "buildah", "skopeo") | ForEach-Object { @{ContainerCommand = $_} }
 
     It "<ContainerCommand>" -TestCases $testCases {
@@ -394,7 +399,7 @@ Describe "yq" {
     }
 }
 
-Describe "Kotlin" -Skip:(Test-IsUbuntu22) {
+Describe "Kotlin" {
     It "kapt" {
         "kapt -version"| Should -ReturnZeroExitCode
     }
@@ -405,10 +410,6 @@ Describe "Kotlin" -Skip:(Test-IsUbuntu22) {
 
     It "kotlinc" {
         "kotlinc -version"| Should -ReturnZeroExitCode
-    }
-
-    It "kotlinc-js" {
-        "kotlinc-js -version"| Should -ReturnZeroExitCode
     }
 
     It "kotlinc-jvm" {

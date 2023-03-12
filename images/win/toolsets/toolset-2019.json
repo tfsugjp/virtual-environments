@@ -17,7 +17,8 @@
             "platform" : "win32",
             "versions": [
                 "3.9.*",
-                "3.10.*"
+                "3.10.*",
+                "3.11.*"
             ],
             "default": "3.9.*"
         },
@@ -28,7 +29,8 @@
             "platform" : "win32",
             "versions": [
                 "3.9.*",
-                "3.10.*"
+                "3.10.*",
+                "3.11.*"
             ]
         },
         {
@@ -46,9 +48,9 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "12.*",
                 "14.*",
-                "16.*"
+                "16.*",
+                "18.*"
             ]
         },
         {
@@ -58,7 +60,9 @@
             "platform" : "win32",
             "versions": [
                 "1.17.*",
-                "1.18.*"
+                "1.18.*",
+                "1.19.*",
+                "1.20.*"
             ],
             "default": "1.18.*"
         }
@@ -80,11 +84,16 @@
             "name": "az",
             "url" : "https://raw.githubusercontent.com/Azure/az-ps-module-versions/main/versions-manifest.json",
             "versions": [
+<<<<<<< HEAD
                 "7.5.0"
+=======
+                "9.3.0"
+>>>>>>> 1822632ce60ea5238445194474ed5e535322ecf2
             ],
             "zip_versions": [
                 "5.9.0",
-                "6.6.0"
+                "6.6.0",
+                "7.5.0"
             ]
         }
     ],
@@ -123,14 +132,18 @@
         "additional_tools": [
             "cmake;3.10.2.4988404",
             "cmake;3.18.1",
+            "cmake;3.22.1",
             "patcher;v4"
         ],
         "ndk": {
-            "default": "21",
+            "default": "25",
             "versions": [
-                "21", "22", "23"
+                "23", "24", "25"
             ]
         }
+    },
+    "mingw": {
+	"version": "8.1.0"
     },
     "MsysPackages": {
         "msys2": [
@@ -263,6 +276,7 @@
             "Microsoft.VisualStudio.Component.VC.MFC.ARM64",
             "Microsoft.VisualStudio.Component.VC.MFC.ARM64.Spectre",
             "Microsoft.VisualStudio.Component.VC.Modules.x86.x64",
+            "Microsoft.VisualStudio.Component.VC.Tools.ARM64EC",
             "Microsoft.VisualStudio.Component.VC.Redist.MSM",
             "Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre",
             "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre",
@@ -362,6 +376,14 @@
             { "name": "node-sass" }
         ]
     },
+    "serviceFabric": {
+        "runtime": {
+            "version": "9.1.1436.9590"
+        },
+        "sdk": {
+            "version": "6.1.1436"
+        }
+    },
     "dotnet": {
         "versions": [
             "3.1",
@@ -399,11 +421,15 @@
             {
                 "name": "cmake.install",
                 "args": [ "--installargs", "ADD_CMAKE_TO_PATH=\"System\"" ]
-            }
+            },
+            { "name": "imagemagick" }
         ]
     },
     "node": {
-        "default": "16"
+        "default": "18"
+    },
+    "maven": {
+        "version": "3.8"
     },
     "mysql": {
         "version": "8.0"
@@ -415,10 +441,10 @@
         "version": "3.08"
     },
     "php": {
-        "version": "8.1"
+        "version": "8.2"
     },
     "llvm": {
-        "version": "13"
+        "version": "15"
     },
     "postgresql": {
         "version": "14"

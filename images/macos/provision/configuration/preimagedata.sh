@@ -8,15 +8,12 @@ os_name=$(sw_vers -productName)
 os_version=$(sw_vers -productVersion)
 os_build=$(sw_vers -buildVersion)
 label_version=$(echo $os_version | cut -d. -f1,2)
-if is_Catalina; then
-    label_version=$(echo $os_version | cut -d. -f1,2)
-else
-    label_version=$(echo $os_version | cut -d. -f1)
-fi
+label_version=$(echo $os_version | cut -d. -f1)
+
 image_label="macos-${label_version}"
 release_label="macOS-${label_version}"
-software_url="https://github.com/actions/virtual-environments/blob/${release_label}/${image_version}/images/macos/${image_label}-Readme.md"
-releaseUrl="https://github.com/actions/virtual-environments/releases/tag/${release_label}%2F${image_version}"
+software_url="https://github.com/actions/runner-images/blob/${release_label}/${image_version}/images/macos/${image_label}-Readme.md"
+releaseUrl="https://github.com/actions/runner-images/releases/tag/${release_label}%2F${image_version}"
 
 cat <<EOF > $imagedata_file
     [
@@ -25,8 +22,8 @@ cat <<EOF > $imagedata_file
         "detail": "${os_name}\n${os_version}\n${os_build}"
       },
       {
-        "group": "Virtual Environment",
-        "detail": "Environment: ${image_label}\nVersion: ${image_version}\nIncluded Software: ${software_url}\nImage Release: ${releaseUrl}"
+        "group": "Runner Image",
+        "detail": "Image: ${image_label}\nVersion: ${image_version}\nIncluded Software: ${software_url}\nImage Release: ${releaseUrl}"
       }
     ]
 EOF

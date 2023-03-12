@@ -58,7 +58,7 @@ Describe "AzCopy" {
     }
 }
 
-Describe "Miniconda" -Skip:($os.IsMonterey) {
+Describe "Miniconda" {
     It "Conda" {
         Get-EnvironmentVariable "CONDA" | Should -Not -BeNullOrEmpty
         $condaBinPath = Join-Path $env:CONDA "bin" "conda"
@@ -79,15 +79,26 @@ Describe "CocoaPods" {
 }
 
 Describe "VSMac" {
-    It "VS4Mac is installed" {
-        $vsPath = "/Applications/Visual Studio.app"
+    $vsMacVersions = Get-ToolsetValue "xamarin.vsmac.versions"
+    $defaultVSMacVersion = Get-ToolsetValue "xamarin.vsmac.default"
+
+    $testCases = $vsMacVersions | ForEach-Object {
+        $vsPath = "/Applications/Visual Studio $_.app"
+        if ($_ -eq $defaultVSMacVersion) {
+            $vsPath = "/Applications/Visual Studio.app"
+        }
+
+        @{ vsversion = $_ ; vspath = $vsPath }
+    }
+
+    It "Visual Studio <vsversion> for Mac is installed" -TestCases $testCases {
         $vstoolPath = Join-Path $vsPath "Contents/MacOS/vstool"
         $vsPath | Should -Exist
         $vstoolPath | Should -Exist
     }
 
-    It "VS4Mac Preview is installed" -Skip:(-not $os.IsMonterey) {
-        $vsPath = "/Applications/Visual Studio Preview.app"
+    It "Visual Studio $defaultVSMacVersion for Mac is default" {
+        $vsPath = "/Applications/Visual Studio.app"
         $vstoolPath = Join-Path $vsPath "Contents/MacOS/vstool"
         $vsPath | Should -Exist
         $vstoolPath | Should -Exist
@@ -119,5 +130,53 @@ Describe "GraalVM" {
 
     It "native-image" {
         '$GRAALVM_11_ROOT/native-image --version' | Should -ReturnZeroExitCode
+    }
+}
+
+Describe "VirtualBox" -Skip:($os.IsBigSur) {
+    It "Check kext kernel modules" {
+        kextstat | Out-String | Should -Match "org.virtualbox.kext"
+    }
+}
+
+Describe "CodeQLBundles" {
+    It "Latest CodeQL Bundle" {
+        $CodeQLVersionWildcards = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+        $LatestCodeQLVersionPath = Get-ChildItem $CodeQLVersionWildcards | Sort-Object -Property { [SemVer]$_.name } -Descending | Select-Object -First 1 -Expand FullName
+        $LatestCodeQLPath = Join-Path $LatestCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql"
+        "$LatestCodeQLPath version --quiet" | Should -ReturnZeroExitCode
+
+        $LatestCodeQLPacksPath = Join-Path $LatestCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "qlpacks"
+        $LatestCodeQLPacksPath | Should -Exist
+    }
+
+    It "Prior CodeQL Bundle" {
+        $CodeQLVersionWildcards = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+        $PriorCodeQLVersionPath = Get-ChildItem $CodeQLVersionWildcards | Sort-Object -Property { [SemVer]$_.name } -Descending | Select-Object -Last 1 -Expand FullName
+        $PriorCodeQLPath = Join-Path $PriorCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql"
+        "$PriorCodeQLPath version --quiet" | Should -ReturnZeroExitCode
+
+        $PriorCodeQLPacksPath = Join-Path $PriorCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "qlpacks"
+        $PriorCodeQLPacksPath | Should -Exist
+    }
+
+    It "Latest and Prior CodeQL Bundles are unique" {
+        $CodeQLVersionWildcards = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+
+        $LatestCodeQLVersionPath = Get-ChildItem $CodeQLVersionWildcards | Sort-Object -Property { [SemVer]$_.name } -Descending | Select-Object -First 1 -Expand FullName
+        $LatestCodeQLPath = Join-Path $LatestCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql"
+        $LatestCodeQLVersion = & $LatestCodeQLPath version --quiet
+
+        $PriorCodeQLVersionPath = Get-ChildItem $CodeQLVersionWildcards | Sort-Object -Property { [SemVer]$_.name } -Descending | Select-Object -Last 1 -Expand FullName
+        $PriorCodeQLPath = Join-Path $PriorCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql"
+        $PriorCodeQLVersion = & $PriorCodeQLPath version --quiet
+
+        $LatestCodeQLVersion | Should -Not -Match $PriorCodeQLVersion
+    }
+}
+
+Describe "Colima" {
+    It "Colima" {
+        "colima version" | Should -ReturnZeroExitCode
     }
 }

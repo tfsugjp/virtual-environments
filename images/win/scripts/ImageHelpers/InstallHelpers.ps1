@@ -239,6 +239,22 @@ function Get-VsixExtenstionFromMarketplace {
     $request -match 'Microsoft\.VisualStudio\.Services\.Payload\.FileName":"(?<filename>[^"]*)' | Out-Null
     $fileName = $Matches.filename
     $downloadUri = $assetUri + "/" + $fileName
+    # ProBITools.MicrosoftReportProjectsforVisualStudio2022 has different URL https://github.com/actions/runner-images/issues/5340
+    switch ($ExtensionMarketPlaceName) {
+        "ProBITools.MicrosoftReportProjectsforVisualStudio2022" {
+            $fileName = "Microsoft.DataTools.ReportingServices.vsix"
+            $downloadUri = "https://download.microsoft.com/download/b/b/5/bb57be7e-ae72-4fc0-b528-d0ec224997bd/Microsoft.DataTools.ReportingServices.vsix"
+        }
+        "ProBITools.MicrosoftAnalysisServicesModelingProjects2022" {
+            $fileName = "Microsoft.DataTools.AnalysisServices.vsix"
+            $downloadUri = "https://download.microsoft.com/download/c/8/9/c896a7f2-d0fd-45ac-90e6-ff61f67523cb/Microsoft.DataTools.AnalysisServices.vsix"
+        }
+        # Starting from version 4.1 SqlServerIntegrationServicesProjects extension is distributed as exe file
+        "SSIS.SqlServerIntegrationServicesProjects" {
+            $fileName = "Microsoft.DataTools.IntegrationServices.exe"
+            $downloadUri = $assetUri + "/" + $fileName
+        }
+    }
 
     return [PSCustomObject] @{
         "ExtensionName" = $extensionName
@@ -258,7 +274,7 @@ function Install-VsixExtension
         [string] $FilePath,
         [Parameter(Mandatory = $true)]
         [string] $VSversion,
-        [int] $retries = 20,
+        [int] $Retries = 20,
         [switch] $InstallOnly
     )
 
@@ -269,45 +285,54 @@ function Install-VsixExtension
 
     $argumentList = ('/quiet', "`"$FilePath`"")
 
-    Write-Host "Starting Install $Name..."
-    $vsEdition = (Get-ToolsetContent).visualStudio.edition
-    try
+    do
     {
-        $installPath = ${env:ProgramFiles(x86)}
-
-        if (Test-IsWin22)
+        Write-Host "Starting Install $Name..."
+        $vsEdition = (Get-ToolsetContent).visualStudio.edition
+        try
         {
-            $installPath = ${env:ProgramFiles}
+            $installPath = ${env:ProgramFiles(x86)}
+
+            if (Test-IsWin22)
+            {
+                $installPath = ${env:ProgramFiles}
+            }
+
+            #There are 2 types of packages at the moment - exe and vsix
+            if ($Name -match "vsix")
+            {
+                $process = Start-Process -FilePath "${installPath}\Microsoft Visual Studio\${VSversion}\${vsEdition}\Common7\IDE\VSIXInstaller.exe" -ArgumentList $argumentList -Wait -PassThru
+            }
+            else
+            {
+                $process = Start-Process -FilePath ${env:Temp}\$Name /Q -Wait -PassThru
+            }
+        }
+        catch
+        {
+            Write-Host "There is an error during $Name installation"
+            $_
+            exit 1
         }
 
-        #There are 2 types of packages at the moment - exe and vsix
-        if ($Name -match "vsix")
+        $exitCode = $process.ExitCode
+
+        if ($exitCode -eq 0 -or $exitCode -eq 1001) # 1001 means the extension is already installed
         {
-            $process = Start-Process -FilePath "${installPath}\Microsoft Visual Studio\${VSversion}\${vsEdition}\Common7\IDE\VSIXInstaller.exe" -ArgumentList $argumentList -Wait -PassThru
+            Write-Host "$Name installed successfully"
         }
         else
         {
-            $process = Start-Process -FilePath ${env:Temp}\$Name /Q -Wait -PassThru
+            Write-Host "Unsuccessful exit code returned by the installation process: $exitCode."
+            $Retries--
+            if ($Retries -eq 0) {
+                Write-Host "The $Name couldn't be installed after 20 attempts."
+            }else {
+                Write-Host "Waiting 10 seconds before retrying. Retries left: $Retries"
+                Start-Sleep -Seconds 10
+            }
         }
-    }
-    catch
-    {
-        Write-Host "There is an error during $Name installation"
-        $_
-        exit 1
-    }
-
-    $exitCode = $process.ExitCode
-
-    if ($exitCode -eq 0 -or $exitCode -eq 1001) # 1001 means the extension is already installed
-    {
-        Write-Host "$Name installed successfully"
-    }
-    else
-    {
-        Write-Host "Unsuccessful exit code returned by the installation process: $exitCode."
-        exit 1
-    }
+    } until ($exitCode -eq 0 -or $exitCode -eq 1001 -or $Retries -eq 0 )
 
     #Cleanup downloaded installation files
     if (-not $InstallOnly)
@@ -418,11 +443,6 @@ function Test-IsWin22
 function Test-IsWin19
 {
     (Get-WinVersion) -match "2019"
-}
-
-function Test-IsWin16
-{
-    (Get-WinVersion) -match "2016"
 }
 
 function Extract-7Zip {
@@ -584,15 +604,24 @@ function Get-GitHubPackageDownloadUrl {
     if ($Version -eq "latest") {
         $Version = "*"
     }
+
     $json = Invoke-RestMethod -Uri "https://api.github.com/repos/${RepoOwner}/${RepoName}/releases?per_page=${SearchInCount}"
-    $versionToDownload = ($json.Where{ $_.prerelease -eq $IsPrerelease }.tag_name |
-        Select-String -Pattern "\d+.\d+.\d+").Matches.Value |
-            Where-Object {$_ -Like "${Version}.*" -or $_ -eq ${Version}} |
-            Sort-Object {[version]$_} |
+    $tags = $json.Where{ $_.prerelease -eq $IsPrerelease -and $_.assets }.tag_name
+    $versionToDownload = $tags |
+            Select-String -Pattern "\d+.\d+.\d+" |
+            ForEach-Object { $_.Matches.Value } |
+            Where-Object { $_ -like "$Version.*" -or $_ -eq $Version } |
+            Sort-Object { [version]$_ } |
             Select-Object -Last 1
+
+    if (-not $versionToDownload) {
+        Write-Host "Failed to get a tag name from ${RepoOwner}/${RepoName} releases"
+        exit 1
+    }
 
     $UrlFilter = $UrlFilter -replace "{BinaryName}",$BinaryName -replace "{Version}",$versionToDownload
     $downloadUrl = $json.assets.browser_download_url -like $UrlFilter
 
     return $downloadUrl
 }
+

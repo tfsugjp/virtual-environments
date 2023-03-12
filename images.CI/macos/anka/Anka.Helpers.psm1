@@ -16,7 +16,7 @@ function Push-AnkaTemplateToRegistry {
     # if registry uuid doesn't match than delete an image in registry
     $images = anka --machine-readable registry --registry-path $RegistryUrl list | ConvertFrom-Json | ForEach-Object body
     $images | Where-Object name -eq $TemplateName | ForEach-Object {
-        $id = $_.id
+        $id = $_.uuid
         Show-StringWithFormat "Deleting '$TemplateName[$id]' VM and '$TagName' tag"
         $uri = '{0}/registry/vm?id={1}' -f $RegistryUrl, $id
         Invoke-WebRequest -Uri $uri -Method Delete | Out-Null
@@ -197,7 +197,14 @@ function Wait-AnkaVMIPAddress {
         [int] $Seconds = 60
     )
 
-    $condition = { Get-AnkaVMIPAddress -VMName $VMName }
+    $condition = {
+        $vmStatus = Get-AnkaVMStatus -VMName $VMName
+        if ($vmStatus -eq "failed") {
+            Write-Host "`t    [-] $VMName is in failed status"
+            exit 1
+        }
+        Get-AnkaVMIPAddress -VMName $VMName
+    }
     $null = Invoke-WithRetry -BreakCondition $condition -RetryCount $RetryCount -Seconds $Seconds
 }
 

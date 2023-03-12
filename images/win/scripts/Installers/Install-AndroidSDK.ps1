@@ -3,8 +3,11 @@
 ##  Desc:  Install and update Android SDK and tools
 ################################################################################
 
-# install command-line tools
-$cmdlineToolsUrl = "https://dl.google.com/android/repository/commandlinetools-win-7302050_latest.zip"
+# get packages to install from the toolset
+$androidToolset = (Get-ToolsetContent).android
+# Newer version(s) require Java 11 by default
+# See https://github.com/actions/runner-images/issues/6960
+$cmdlineToolsUrl = "https://dl.google.com/android/repository/commandlinetools-win-9123335_latest.zip"
 $cmdlineToolsArchPath = Start-DownloadWithRetry -Url $cmdlineToolsUrl -Name "cmdline-tools.zip"
 $sdkInstallRoot = "C:\Program Files (x86)\Android\android-sdk"
 $sdkRoot = "C:\Android\android-sdk"
@@ -16,7 +19,7 @@ Invoke-SBWithRetry -Command {
     Rename-Item "${sdkInstallRoot}\cmdline-tools\cmdline-tools" "latest" -ErrorAction Stop
 }
 
-# ANDROID_NDK_PATH/HOME should not contain spaces. Otherwise, the script ndk-build.cmd gives an error https://github.com/actions/virtual-environments/issues/1122
+# ANDROID_NDK_PATH/HOME should not contain spaces. Otherwise, the script ndk-build.cmd gives an error https://github.com/actions/runner-images/issues/1122
 # create "C:\Android" directory and a hardlink inside pointed to sdk in Program Files
 New-Item -Path "C:\Android" -ItemType Directory
 New-Item -Path "$sdkRoot" -ItemType SymbolicLink -Value "$sdkInstallRoot"
@@ -49,9 +52,6 @@ if (Test-Path $platformToolsPath)
 Install-AndroidSDKPackages -AndroidSDKManagerPath $sdkManager `
                 -AndroidSDKRootPath $sdkRoot `
                 -AndroidPackages "platform-tools"
-
-# get packages to install from the toolset
-$androidToolset = (Get-ToolsetContent).android
 
 # get packages info
 $androidPackages = Get-AndroidPackages -AndroidSDKManagerPath $sdkManager
@@ -107,27 +107,17 @@ Install-AndroidSDKPackages -AndroidSDKManagerPath $sdkManager `
                 -AndroidSDKRootPath $sdkRoot `
                 -AndroidPackages $androidNDKs
 
-$ndkDefaultVersion = ($androidNDKs | Where-Object { $_ -match "ndk;$ndkDefaultMajorVersion" }).Split(';')[1]
 $ndkLatestVersion = ($androidNDKs | Where-Object { $_ -match "ndk;$ndkLatestMajorVersion" }).Split(';')[1]
+$ndkDefaultVersion = ($androidNDKs | Where-Object { $_ -match "ndk;$ndkDefaultMajorVersion" }).Split(';')[1]
+$ndkRoot = "$sdkRoot\ndk\$ndkDefaultVersion"
 
-# Android NDK root path.
-$ndkRoot = "$sdkRoot\ndk-bundle"
-# This changes were added due to incompatibility with android ndk-bundle (ndk;22.0.7026061).
-# Link issue virtual-environments: https://github.com/actions/virtual-environments/issues/2481
-# Link issue xamarin-android: https://github.com/xamarin/xamarin-android/issues/5526
-New-Item -Path $ndkRoot -ItemType SymbolicLink -Value "$sdkRoot\ndk\$ndkDefaultVersion"
-
-if (Test-Path $ndkRoot) {
-    setx ANDROID_HOME $sdkRoot /M
-    setx ANDROID_SDK_ROOT $sdkRoot /M
-    setx ANDROID_NDK_HOME $ndkRoot /M
-    setx ANDROID_NDK_PATH $ndkRoot /M
-    setx ANDROID_NDK_ROOT $ndkRoot /M
-    (Get-Content -Encoding UTF8 "${ndkRoot}\ndk-build.cmd").replace('%~dp0\build\ndk-build.cmd','"%~dp0\build\ndk-build.cmd"')|Set-Content -Encoding UTF8 "${ndkRoot}\ndk-build.cmd"
-} else {
-    Write-Host "Default NDK $ndkDefaultVersion is not installed at path $ndkRoot"
-    exit 1
-}
+# Create env variables
+setx ANDROID_HOME $sdkRoot /M
+setx ANDROID_SDK_ROOT $sdkRoot /M
+# ANDROID_NDK, ANDROID_NDK_HOME, and ANDROID_NDK_ROOT variables should be set as many customer builds depend on them https://github.com/actions/runner-images/issues/5879
+setx ANDROID_NDK $ndkRoot /M
+setx ANDROID_NDK_HOME $ndkRoot /M
+setx ANDROID_NDK_ROOT $ndkRoot /M
 
 $ndkLatestPath = "$sdkRoot\ndk\$ndkLatestVersion"
 if (Test-Path $ndkLatestPath) {

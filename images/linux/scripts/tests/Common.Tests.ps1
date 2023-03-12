@@ -29,13 +29,17 @@ Describe "PHP" {
     }
 }
 
-Describe "Swift" -Skip:(Test-IsUbuntu22) {
+Describe "Swift" {
     It "swift" {
         "swift --version" | Should -ReturnZeroExitCode
     }
 
     It "swiftc" {
         "swiftc --version" | Should -ReturnZeroExitCode
+    }
+
+    It "libsourcekitd" {
+        "/usr/local/lib/libsourcekitdInProc.so" | Should -Exist
     }
 }
 

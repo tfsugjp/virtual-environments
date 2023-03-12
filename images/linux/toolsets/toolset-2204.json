@@ -10,7 +10,8 @@
                 "3.7.*",
                 "3.8.*",
                 "3.9.*",
-                "3.10.*"
+                "3.10.*",
+                "3.11.*"
             ]
         },
         {
@@ -30,7 +31,8 @@
             "arch": "x64",
             "versions": [
                 "14.*",
-                "16.*"
+                "16.*",
+                "18.*"
             ]
         },
         {
@@ -40,7 +42,9 @@
             "platform" : "linux",
             "versions": [
                 "1.17.*",
-                "1.18.*"
+                "1.18.*",
+                "1.19.*",
+                "1.20.*"
             ],
             "default": "1.18.*"
         },
@@ -70,9 +74,10 @@
                 "versions": [ "8", "11", "17" ]
             }
         ],
-        "maven": "3.8.5"
+        "maven": "3.8.7"
     },
     "android": {
+        "cmdline-tools": "latest",
         "platform_min_version": "27",
         "build_tools_min_version": "27.0.0",
         "extra_list": [
@@ -84,12 +89,13 @@
         ],
         "additional_tools": [
             "cmake;3.10.2.4988404",
-            "cmake;3.18.1"
+            "cmake;3.18.1",
+            "cmake;3.22.1"
         ],
         "ndk": {
-            "default": "21",
+            "default": "25",
             "versions": [
-                "21", "22", "23"
+                "23", "24", "25"
             ]
         }
     },
@@ -104,7 +110,7 @@
             "name": "az",
             "url" : "https://raw.githubusercontent.com/Azure/az-ps-module-versions/main/versions-manifest.json",
             "versions": [
-                "7.3.2"
+                "9.3.0"
             ],
             "zip_versions": [
             ]
@@ -137,6 +143,7 @@
             "libmagickwand-dev",
             "libsecret-1-dev",
             "libsqlite3-dev",
+            "libyaml-dev",
             "libtool",
             "libunwind8",
             "libxkbfile-dev",
@@ -149,6 +156,7 @@
             "pkg-config",
             "python-is-python3",
             "rpm",
+            "tar",
             "texinfo",
             "tk",
             "tzdata",
@@ -172,6 +180,7 @@
             "ftp",
             "haveged",
             "jq",
+            "lz4",
             "m4",
             "mediainfo",
             "netcat",
@@ -198,12 +207,12 @@
         ]
     },
     "brew": [
-        {"name": "zstd"}
     ],
     "docker": {
         "images": [
             "alpine:3.14",
             "alpine:3.15",
+            "alpine:3.16",
             "buildpack-deps:buster",
             "buildpack-deps:bullseye",
             "debian:10",
@@ -211,8 +220,10 @@
             "moby/buildkit:latest",
             "node:14",
             "node:16",
+            "node:18",
             "node:14-alpine",
             "node:16-alpine",
+            "node:18-alpine",
             "ubuntu:18.04",
             "ubuntu:20.04",
             "ubuntu:22.04"
@@ -230,10 +241,12 @@
     ],
     "dotnet": {
         "aptPackages": [
-            "dotnet-sdk-6.0"
+            "dotnet-sdk-6.0",
+            "dotnet-sdk-7.0"
         ],
         "versions": [
-            "6.0"
+            "6.0",
+            "7.0"
         ],
         "tools": [
             { "name": "nbgv", "test": "nbgv --version", "getversion" : "nbgv --version" }
@@ -241,21 +254,24 @@
     },
     "clang": {
         "versions": [
-            "11",
-            "12"
+            "12",
+            "13",
+            "14"
         ],
-        "default_version": "11"
+        "default_version": "14"
     },
     "gcc": {
         "versions": [
             "g++-9",
-            "g++-10"
+            "g++-10",
+            "g++-12"
         ]
     },
     "gfortran": {
         "versions": [
             "gfortran-9",
-            "gfortran-10"
+            "gfortran-10",
+            "gfortran-12"
         ]
     },
     "php": {
@@ -271,7 +287,7 @@
         "binary_name": "selenium-server"
     },
     "node": {
-        "default": "16"
+        "default": "18"
     },
     "node_modules": [
         {
@@ -328,5 +344,8 @@
     },
     "postgresql": {
         "version": "14"
+    },
+    "pwsh": {
+        "version": "7.2"
     }
 }

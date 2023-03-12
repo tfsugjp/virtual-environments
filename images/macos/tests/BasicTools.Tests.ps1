@@ -24,7 +24,7 @@ Describe "cmake" {
     }
 }
 
-Describe "Subversion" {
+Describe "Subversion" -Skip:($os.IsVentura) {
     It "Subversion" {
         "svn --version" | Should -ReturnZeroExitCode
     }
@@ -60,7 +60,7 @@ Describe "Perl" {
     }
 }
 
-Describe "Helm" -Skip:($os.IsMonterey) {
+Describe "Helm" -Skip:($os.IsMonterey -or $os.IsVentura) {
     It "Helm" {
         "helm version --short" | Should -ReturnZeroExitCode
     }
@@ -108,7 +108,7 @@ Describe "bazel" {
     }
 }
 
-Describe "Aliyun CLI" -Skip:($os.IsMonterey) {
+Describe "Aliyun CLI" -Skip:($os.IsMonterey -or $os.IsVentura) {
     It "Aliyun CLI" {
         "aliyun --version" | Should -ReturnZeroExitCode
     }
@@ -138,21 +138,15 @@ Describe "wget" {
     }
 }
 
-Describe "vagrant" -Skip:($os.IsHigherThanCatalina) {
+Describe "vagrant" -Skip:($os.IsBigSur) {
     It "vagrant" {
         "vagrant --version" | Should -ReturnZeroExitCode
     }
 }
 
-Describe "virtualbox" -Skip:($os.IsHigherThanCatalina) {
+Describe "virtualbox" -Skip:($os.IsBigSur -or $os.IsVentura) {
     It "virtualbox" {
         "vboxmanage -v" | Should -ReturnZeroExitCode
-    }
-}
-
-Describe "xctool" -Skip:($os.IsHigherThanCatalina) {
-    It "xctool" {
-        "xctool --version" | Should -ReturnZeroExitCode
     }
 }
 
@@ -169,14 +163,14 @@ Describe "Homebrew" {
 }
 
 Describe "Kotlin" {
-    $kotlinPackages =  @("kapt", "kotlin", "kotlinc", "kotlinc-js", "kotlinc-jvm", "kotlin-dce-js")
+    $kotlinPackages =  @("kapt", "kotlin", "kotlinc", "kotlinc-jvm", "kotlin-dce-js")
 
     It "<toolName> is available" -TestCases ($kotlinPackages | ForEach-Object {  @{ toolName = $_ } })  { 
         "$toolName -version" | Should -ReturnZeroExitCode
     }
 }
 
-Describe "sbt" {
+Describe "sbt" -Skip:($os.IsVentura) {
     It "sbt" {
         "sbt -version" | Should -ReturnZeroExitCode
     }
@@ -188,7 +182,7 @@ Describe "yq" {
     }
 }
 
-Describe "imagemagick" {
+Describe "imagemagick" -Skip:($os.IsVentura) {
     It "imagemagick" {
         "magick -version" | Should -ReturnZeroExitCode
     }

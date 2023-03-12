@@ -64,11 +64,6 @@ createBundleLink $CURRENT_SDK_SYMLINK "Current"
 # Fix nuget in some mono versions because of known bugs
 #
 
-if is_Catalina; then
-  # Fix Mono issue with default nuget: https://github.com/mono/mono/issues/17637
-  installNuget "6.4.0" "5.3.1"
-fi
-
 # Creating UWP Shim to hack UWP build failure
 createUWPShim
 
@@ -81,5 +76,9 @@ sudo rm -rf "$TMPMOUNT"
 PREFERENCES_XAMARIN_DIR="${HOME}/Library/Preferences/Xamarin"
 mkdir -p $PREFERENCES_XAMARIN_DIR
 /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string /Applications/Xcode_${DEFAULT_XCODE_VERSION}.app" $PREFERENCES_XAMARIN_DIR/Settings.plist
+
+# Temporary workaround to recreate nuget.config file with a correct feed https://github.com/actions/runner-images/issues/5768
+rm -rf $HOME/.config/NuGet/NuGet.Config
+nuget config
 
 invoke_tests "Xamarin"

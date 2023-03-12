@@ -33,8 +33,12 @@ $xcodeVersions | ForEach-Object -ThrottleLimit $threadCount -Parallel {
 
 Write-Host "Configuring Xcode versions..."
 $xcodeVersions | ForEach-Object {
+    Write-Host "Configuring Xcode $($_.link) ..."
+
     Invoke-XcodeRunFirstLaunch -Version $_.link
+    Install-AdditionalSimulatorRuntimes -Version $_.link
 }
+
 Invoke-XcodeRunFirstLaunch -Version $defaultXcode
 
 Write-Host "Configuring Xcode symlinks..."

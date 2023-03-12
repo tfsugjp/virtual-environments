@@ -32,11 +32,7 @@ Describe "Audio device" {
         "SwitchAudioSource -c" | Should -ReturnZeroExitCode
     }
 
-    It "Audio channel Soundflower (2ch)" -Skip:($os.IsHigherThanCatalina) {
-        SwitchAudioSource -c | Should -BeLikeExactly "Soundflower (2ch)"
-    }
-
-    It "Audio channel BlackHole 2ch" -Skip:($os.IsCatalina) {
+    It "Audio channel BlackHole 2ch" {
         SwitchAudioSource -c | Should -BeLikeExactly "BlackHole 2ch"
     }
 }
@@ -49,7 +45,8 @@ Describe "Screen Resolution" {
 
 Describe "Open windows" {
     It "Opened windows not found" {
-        $cmd = "osascript -e 'tell application \""System Events\"" to get every window of (every process whose class of windows contains window)'"
+        'tell application id "com.apple.systemevents" to get every window of (every process whose class of windows contains window)' | Tee-Object /tmp/windows.osascript
+        $cmd = "osascript /tmp/windows.osascript"
         $openWindows = bash -c $cmd
         $openWindows.Split(",").Trim() | Where-Object { $_ -notmatch "NotificationCenter" } | Should -BeNullOrEmpty
     }

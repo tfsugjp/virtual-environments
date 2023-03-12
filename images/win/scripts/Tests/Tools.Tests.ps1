@@ -1,5 +1,3 @@
-Import-Module (Join-Path $PSScriptRoot "..\SoftwareReport\SoftwareReport.Common.psm1") -DisableNameChecking
-
 Describe "Azure Cosmos DB Emulator" {
     $cosmosDbEmulatorRegKey = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Get-ItemProperty | Where-Object { $_.DisplayName -eq 'Azure Cosmos DB Emulator' }
     $installDir = $cosmosDbEmulatorRegKey.InstallLocation
@@ -23,13 +21,41 @@ Describe "Bazel" {
     }
 }
 
-Describe "CodeQLBundle" {
-    It "CodeQLBundle" {
-        $CodeQLVersionsWildcard = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "codeql" | Join-Path -ChildPath "*"
-        $CodeQLVersionPath = Get-ChildItem $CodeQLVersionsWildcard | Select-Object -First 1 -Expand FullName
-        $CodeQLPath = Join-Path $CodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql.exe"
-        "$CodeQLPath version" | Should -ReturnZeroExitCode
+Describe "CodeQLBundles" {
+    It "Latest CodeQL Bundle" {
+        $CodeQLVersionsWildcard = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+        $LatestCodeQLVersionPath = Get-ChildItem $CodeQLVersionsWildcard | Sort-Object -Descending | Select-Object -First 1 -Expand FullName
+        $LatestCodeQLPath = Join-Path $LatestCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql.exe"
+        "$LatestCodeQLPath version --quiet" | Should -ReturnZeroExitCode
+
+        $LatestCodeQLPacksPath = Join-Path $LatestCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "qlpacks"
+        $LatestCodeQLPacksPath | Should -Exist
     }
+
+    It "Prior CodeQL Bundle" {
+        $CodeQLVersionsWildcard = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+        $PriorCodeQLVersionPath = Get-ChildItem $CodeQLVersionsWildcard | Sort-Object -Descending | Select-Object -Last 1 -Expand FullName
+        $PriorCodeQLPath = Join-Path $PriorCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql.exe"
+        "$PriorCodeQLPath version --quiet" | Should -ReturnZeroExitCode
+
+        $PriorCodeQLPacksPath = Join-Path $PriorCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "qlpacks"
+        $PriorCodeQLPacksPath | Should -Exist
+    }
+
+    It "Latest and Prior CodeQL Bundles are unique" {
+        $CodeQLVersionsWildcard = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+
+        $LatestCodeQLVersionPath = Get-ChildItem $CodeQLVersionsWildcard | Sort-Object -Descending | Select-Object -First 1 -Expand FullName
+        $LatestCodeQLPath = Join-Path $LatestCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql.exe"
+        $LatestCodeQLVersion = & $LatestCodeQLPath version --quiet
+
+        $PriorCodeQLVersionPath = Get-ChildItem $CodeQLVersionsWildcard | Sort-Object -Descending | Select-Object -Last 1 -Expand FullName
+        $PriorCodeQLPath = Join-Path $PriorCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql.exe"
+        $PriorCodeQLVersion = & $PriorCodeQLPath version --quiet
+
+        $LatestCodeQLVersion | Should -Not -Match $PriorCodeQLVersion
+    }
+
 }
 
 Describe "R" {
@@ -40,7 +66,7 @@ Describe "R" {
 
 Describe "DACFx" {
     It "DACFx" {
-        (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*).DisplayName -Contains "Microsoft SQL Server Data-Tier Application Framework (x64)" | Should -BeTrue
+        (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*).DisplayName -Contains "Microsoft SQL Server Data-Tier Application Framework" | Should -BeTrue
         $sqlPackagePath = 'C:\Program Files\Microsoft SQL Server\160\DAC\bin\SqlPackage.exe'
         "${sqlPackagePath}" | Should -Exist
     }
@@ -103,7 +129,7 @@ Describe "GoogleCloudSDK" -Skip:(Test-IsWin22) {
 
 Describe "NET48" {
     It "NET48" {
-        (Get-DotnetFrameworkTools).Versions | Should -Contain "4.8"
+        Get-ChildItem -Path "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows\*\*\NETFX 4.8 Tools" -Directory | Should -HaveCount 1
     }
 }
 
@@ -147,11 +173,11 @@ Describe "Stack" {
 
 Describe "Vcpkg" {
     It "vcpkg" {
-      "vcpkg version" | Should -ReturnZeroExitCode
+        "vcpkg version" | Should -ReturnZeroExitCode
     }
 
     It "env variable VCPKG_INSTALLATION_ROOT is set" {
-      $env:VCPKG_INSTALLATION_ROOT | Should -Not -BeNullOrEmpty
+        $env:VCPKG_INSTALLATION_ROOT | Should -Not -BeNullOrEmpty
     }
 
     It "VCPKG_INSTALLATION_ROOT directory" {
@@ -160,16 +186,7 @@ Describe "Vcpkg" {
 }
 
 Describe "VCRedist" -Skip:(Test-IsWin22) {
-    It "vcredist_140" -Skip:(Test-IsWin19) {
-        "C:\Windows\System32\vcruntime140.dll" | Should -Exist
-    }
-
-    It "vcredist_2010_x64" -Skip:(Test-IsWin16) {
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1D8E6291-B0D5-35EC-8441-6616F567A0F7}" | Should -Exist
-        "C:\Windows\System32\msvcr100.dll" | Should -Exist
-    }
-
-    It "vcredist_2010_x64" -Skip:(Test-IsWin16) {
+    It "vcredist_2010_x64" {
         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{1D8E6291-B0D5-35EC-8441-6616F567A0F7}" | Should -Exist
         "C:\Windows\System32\msvcr100.dll" | Should -Exist
     }
@@ -194,14 +211,14 @@ Describe "Pipx" {
 }
 
 Describe "Kotlin" {
-    $kotlinPackages =  @("kapt", "kotlin", "kotlinc", "kotlin-dce-js", "kotlinc-js", "kotlinc-jvm")
+    $kotlinPackages =  @("kapt", "kotlin", "kotlinc", "kotlin-dce-js", "kotlinc-jvm")
 
     It "<toolName> is available" -TestCases ($kotlinPackages | ForEach-Object { @{ toolName = $_ } })  {
         "$toolName -version" | Should -ReturnZeroExitCode
     }
 }
 
-Describe "SQL OLEDB Driver" -Skip:(Test-IsWin16) {
+Describe "SQL OLEDB Driver" {
     It "SQL OLEDB Driver" {
         "HKLM:\SOFTWARE\Microsoft\MSOLEDBSQL" | Should -Exist
     }
