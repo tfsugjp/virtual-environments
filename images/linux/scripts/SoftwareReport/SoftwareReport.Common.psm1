@@ -220,7 +220,7 @@ function Get-SbtVersion {
 function Get-PHPVersions {
     $result = Get-CommandResult "apt list --installed" -Multiline
     return $result.Output | Where-Object { $_ -match "^php\d+\.\d+/"} | ForEach-Object {
-        $_ -match "now (\d+:)?(?<version>\d+\.\d+\.\d+)-" | Out-Null
+        $_ -match "now (\d+:)?(?<version>\d+\.\d+\.\d+)" | Out-Null
         $Matches.version
     }
 }
@@ -241,7 +241,7 @@ function Get-GHCVersion {
 }
 
 function Get-GHCupVersion {
-    $(ghcup --version) -match "version v(?<version>\d+(\.\d+){2,})" | Out-Null
+    $(ghcup --version) -match "version (?<version>\d+(\.\d+){2,})" | Out-Null
     return $Matches.version
 }
 
@@ -344,21 +344,6 @@ function Get-PipxVersion {
     return $Matches.Version
 }
 
-function Get-GraalVMVersion {
-    $version = & "$env:GRAALVM_11_ROOT\bin\java" --version | Select-String -Pattern "GraalVM" | Take-OutputPart -Part 5,6
-    return $version
-}
-
-function Build-GraalVMTable {
-    $version = Get-GraalVMVersion
-    $envVariables = "GRAALVM_11_ROOT"
-
-    return [PSCustomObject] @{
-        "Version" = $version
-        "Environment variables" = $envVariables
-    }
-}
-
 function Build-PackageManagementEnvironmentTable {
     return @(
         [PSCustomObject] @{
@@ -370,4 +355,10 @@ function Build-PackageManagementEnvironmentTable {
             "Value" = $env:VCPKG_INSTALLATION_ROOT
         }
     )
+}
+
+function Get-SystemdVersion {
+    $matches = [regex]::Matches((systemctl --version | head -n 1), "\((.*?)\)")
+    $result = foreach ($match in $matches) {$match.Groups[1].Value}
+    return $result
 }

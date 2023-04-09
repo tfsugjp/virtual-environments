@@ -59,11 +59,11 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "1.17.*",
                 "1.18.*",
-                "1.19.*"
+                "1.19.*",
+                "1.20.*"
             ],
-            "default": "1.18.*"
+            "default": "1.20.*"
         }
     ],
     "powershellModules": [
@@ -83,7 +83,7 @@
             "name": "az",
             "url" : "https://raw.githubusercontent.com/Azure/az-ps-module-versions/main/versions-manifest.json",
             "versions": [
-                "9.0.1"
+                "9.3.0"
             ],
             "zip_versions": [
                 "5.9.0",
@@ -107,7 +107,6 @@
         ]
     },
     "android": {
-        "cmdline-tools": "latest",
         "platform_min_version": "19",
         "build_tools_min_version": "19.1.0",
         "extra_list": [
@@ -372,10 +371,17 @@
             { "name": "node-sass" }
         ]
     },
+    "serviceFabric": {
+        "runtime": {
+            "version": "9.1.1436.9590"
+        },
+        "sdk": {
+            "version": "6.1.1436"
+        }
+    },
     "dotnet": {
         "versions": [
             "3.1",
-            "7.0",
             "6.0"
         ],
         "tools": [
@@ -393,10 +399,6 @@
             { "name": "innosetup" },
             { "name": "jq" },
             { "name": "NuGet.CommandLine" },
-            {
-                "name": "openssl.light",
-                "args": [ "--version=1.1.1.20181020" ]
-            },
             { "name": "packer" },
             { "name": "strawberryperl" },
             { "name": "pulumi" },
@@ -415,7 +417,10 @@
         ]
     },
     "node": {
-        "default": "16"
+        "default": "18"
+    },
+    "maven": {
+        "version": "3.8"
     },
     "mysql": {
         "version": "8.0"
@@ -430,7 +435,7 @@
         "version": "8.2"
     },
     "llvm": {
-        "version": "14"
+        "version": "15"
     },
     "postgresql": {
         "version": "14"
@@ -438,5 +443,8 @@
     "kotlin": {
         "version": "latest",
         "binary_name": "kotlin-compiler"
+    },
+    "openssl": {
+        "version": "1.1.1"
     }
 }

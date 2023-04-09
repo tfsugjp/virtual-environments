@@ -158,11 +158,7 @@ function Build-OSInfoSection {
     $fieldsToInclude = @("System Version:", "Kernel Version:")
     $rawSystemInfo = Invoke-Expression "system_profiler SPSoftwareDataType"
     $parsedSystemInfo = $rawSystemInfo | Where-Object { -not ($_ | Select-String -NotMatch $fieldsToInclude) } | ForEach-Object { $_.Trim() }
-    if ($os.IsCatalina) {
-        $parsedSystemInfo[0] -match "System Version: macOS (?<version>\d+\.\d+)" | Out-Null
-    } else {
-        $parsedSystemInfo[0] -match "System Version: macOS (?<version>\d+)" | Out-Null
-    }
+    $parsedSystemInfo[0] -match "System Version: macOS (?<version>\d+)" | Out-Null
     $version = $Matches.Version
     $systemVersion = $parsedSystemInfo[0].Replace($fieldsToInclude[0],"").Trim()
     $kernelVersion = $parsedSystemInfo[1].Replace($fieldsToInclude[1],"").Trim()
@@ -385,12 +381,12 @@ function Get-HelmVersion {
 
 function Get-MongoVersion {
     $mongo = Run-Command "mongo --version" | Select-String "MongoDB shell version" | Take-Part -Part 3
-    return $mongo
+    return $mongo.TrimStart("v").Trim()
 }
 
 function Get-MongodVersion {
     $mongod = Run-Command "mongod --version" | Select-String "db version " | Take-Part -Part 2
-    return $mongod
+    return $mongod.TrimStart("v").Trim()
 }
 
 function Get-7zipVersion {
@@ -617,30 +613,25 @@ function Build-MiscellaneousEnvironmentTable {
     }
 }
 
-function Get-GraalVMVersion {
-    $version = & "$env:GRAALVM_11_ROOT\java" --version | Select-String -Pattern "GraalVM" | Take-Part -Part 5,6
-    return $version
-}
-
-function Build-GraalVMTable {
-    $version = Get-GraalVMVersion
-    $envVariables = "GRAALVM_11_ROOT"
-
-    return [PSCustomObject] @{
-        "Version" = $version
-        "Environment variables" = $envVariables
+function Get-CodeQLBundleVersions {
+    $CodeQLVersionsWildcard = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
+    $CodeQLVersionPaths = Get-ChildItem $CodeQLVersionsWildcard 
+    $CodeQlVersions=@()
+    foreach ($CodeQLVersionPath in $CodeQLVersionPaths) {
+        $FullCodeQLVersionPath = $CodeQLVersionPath | Select-Object -Expand FullName
+        $CodeQLPath = Join-Path $FullCodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql"
+        $CodeQLVersion = & $CodeQLPath version --quiet
+        $CodeQLVersions += $CodeQLVersion
     }
-}
-
-function Get-CodeQLBundleVersion {
-    $CodeQLVersionWildcard = Join-Path $Env:AGENT_TOOLSDIRECTORY -ChildPath "CodeQL" | Join-Path -ChildPath "*"
-    $CodeQLVersionPath = Get-ChildItem $CodeQLVersionWildcard | Select-Object -First 1 -Expand FullName
-    $CodeQLPath = Join-Path $CodeQLVersionPath -ChildPath "x64" | Join-Path -ChildPath "codeql" | Join-Path -ChildPath "codeql"
-    $CodeQLVersion = & $CodeQLPath version --quiet
-    return $CodeQLVersion
+    return $CodeQLVersions
 }
 
 function Get-ColimaVersion {
     $colimaVersion = Run-Command "colima version" | Select-String "colima version" | Take-Part -Part 2
     return $colimaVersion
+}
+
+function Get-PKGConfigVersion {
+    $pkgconfigVersion = Run-Command "pkg-config --version"
+    return $pkgconfigVersion
 }
