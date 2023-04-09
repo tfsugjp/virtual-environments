@@ -223,3 +223,10 @@ Describe "SQL OLEDB Driver" {
         "HKLM:\SOFTWARE\Microsoft\MSOLEDBSQL" | Should -Exist
     }
 }
+
+Describe "OpenSSL" {
+    It "OpenSSL" {
+        $OpenSSLVersion = (Get-ToolsetContent).openssl.version
+        openssl version | Should -BeLike "* ${OpenSSLVersion}*"
+    }
+}
