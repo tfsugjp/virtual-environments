@@ -247,113 +247,105 @@ build {
   provisioner "shell" {
     environment_vars = ["IMAGE_VERSION=${var.image_version}", "IMAGEDATA_FILE=${var.imagedata_file}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/preimagedata.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/preimagedata.sh"]
   }
 
   provisioner "shell" {
     environment_vars = ["IMAGE_VERSION=${var.image_version}", "IMAGE_OS=${var.image_os}", "HELPER_SCRIPTS=${var.helper_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/configure-environment.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/configure-environment.sh"]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/complete-snap-setup.sh", "${path.root}/scripts/installers/powershellcore.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/complete-snap-setup.sh", "${path.root}/scripts/installers_arm64/powershellcore.sh"]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} pwsh -f {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/Install-PowerShellModules.ps1", "${path.root}/scripts/installers/Install-AzureModules.ps1"]
+    scripts          = ["${path.root}/scripts/installers_arm64/Install-PowerShellModules.ps1", "${path.root}/scripts/installers_arm64/Install-AzureModules.ps1"]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DOCKERHUB_LOGIN=${var.dockerhub_login}", "DOCKERHUB_PASSWORD=${var.dockerhub_password}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/docker-compose.sh", "${path.root}/scripts/installers/docker-moby.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/docker-compose.sh", "${path.root}/scripts/installers_arm64/docker-moby.sh"]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
-                        "${path.root}/scripts/installers/azcopy.sh",
-                        "${path.root}/scripts/installers/azure-cli.sh",
-                        "${path.root}/scripts/installers/azure-devops-cli.sh",
-                        "${path.root}/scripts/installers/basic.sh",
-                        "${path.root}/scripts/installers/bicep.sh",
-                        "${path.root}/scripts/installers/aliyun-cli.sh",
-                        "${path.root}/scripts/installers/apache.sh",
-                        "${path.root}/scripts/installers/aws.sh",
-                        "${path.root}/scripts/installers/clang.sh",
-                        "${path.root}/scripts/installers/swift.sh",
-                        "${path.root}/scripts/installers/cmake.sh",
-                        "${path.root}/scripts/installers/codeql-bundle.sh",
-                        "${path.root}/scripts/installers/containers.sh",
-                        "${path.root}/scripts/installers/dotnetcore-sdk.sh",
-                        "${path.root}/scripts/installers/firefox.sh",
-                        "${path.root}/scripts/installers/microsoft-edge.sh",
-                        "${path.root}/scripts/installers/gcc.sh",
-                        "${path.root}/scripts/installers/gfortran.sh",
-                        "${path.root}/scripts/installers/git.sh",
-                        "${path.root}/scripts/installers/github-cli.sh",
-                        "${path.root}/scripts/installers/google-chrome.sh",
-                        "${path.root}/scripts/installers/google-cloud-sdk.sh",
-                        "${path.root}/scripts/installers/haskell.sh",
-                        "${path.root}/scripts/installers/heroku.sh",
-                        "${path.root}/scripts/installers/java-tools.sh",
-                        "${path.root}/scripts/installers/kubernetes-tools.sh",
-                        "${path.root}/scripts/installers/oc.sh",
-                        "${path.root}/scripts/installers/leiningen.sh",
-                        "${path.root}/scripts/installers/miniconda.sh",
-                        "${path.root}/scripts/installers/mono.sh",
-                        "${path.root}/scripts/installers/kotlin.sh",
-                        "${path.root}/scripts/installers/mysql.sh",
-                        "${path.root}/scripts/installers/mssql-cmd-tools.sh",
-                        "${path.root}/scripts/installers/sqlpackage.sh",
-                        "${path.root}/scripts/installers/nginx.sh",
-                        "${path.root}/scripts/installers/nvm.sh",
-                        "${path.root}/scripts/installers/nodejs.sh",
-                        "${path.root}/scripts/installers/bazel.sh",
-                        "${path.root}/scripts/installers/oras-cli.sh",
-                        "${path.root}/scripts/installers/php.sh",
-                        "${path.root}/scripts/installers/postgresql.sh",
-                        "${path.root}/scripts/installers/pulumi.sh",
-                        "${path.root}/scripts/installers/ruby.sh",
-                        "${path.root}/scripts/installers/r.sh",
-                        "${path.root}/scripts/installers/rust.sh",
-                        "${path.root}/scripts/installers/julia.sh",
-                        "${path.root}/scripts/installers/sbt.sh",
-                        "${path.root}/scripts/installers/selenium.sh",
-                        "${path.root}/scripts/installers/terraform.sh",
-                        "${path.root}/scripts/installers/packer.sh",
-                        "${path.root}/scripts/installers/vcpkg.sh",
-                        "${path.root}/scripts/installers/dpkg-config.sh",
-                        "${path.root}/scripts/installers/yq.sh",
-                        "${path.root}/scripts/installers/android.sh",
-                        "${path.root}/scripts/installers/pypy.sh",
-                        "${path.root}/scripts/installers/python.sh",
-                        "${path.root}/scripts/installers/graalvm.sh"
+                        "${path.root}/scripts/installers_arm64/azcopy.sh",
+                        "${path.root}/scripts/installers_arm64/azure-cli.sh",
+                        "${path.root}/scripts/installers_arm64/azure-devops-cli.sh",
+                        "${path.root}/scripts/installers_arm64/basic.sh",
+                        "${path.root}/scripts/installers_arm64/bicep.sh",
+                        "${path.root}/scripts/installers_arm64/aliyun-cli.sh",
+                        "${path.root}/scripts/installers_arm64/apache.sh",
+                        "${path.root}/scripts/installers_arm64/clang.sh",
+                        "${path.root}/scripts/installers_arm64/swift.sh",
+                        "${path.root}/scripts/installers_arm64/cmake.sh",
+                        "${path.root}/scripts/installers_arm64/containers.sh",
+                        "${path.root}/scripts/installers_arm64/dotnetcore-sdk.sh",
+                        "${path.root}/scripts/installers_arm64/gcc.sh",
+                        "${path.root}/scripts/installers_arm64/git.sh",
+                        "${path.root}/scripts/installers_arm64/github-cli.sh",
+                        "${path.root}/scripts/installers_arm64/haskell.sh",
+                        "${path.root}/scripts/installers_arm64/heroku.sh",
+                        "${path.root}/scripts/installers_arm64/java-tools.sh",
+                        "${path.root}/scripts/installers_arm64/kubernetes-tools.sh",
+                        "${path.root}/scripts/installers_arm64/oc.sh",
+                        "${path.root}/scripts/installers_arm64/leiningen.sh",
+                        "${path.root}/scripts/installers_arm64/miniconda.sh",
+                        "${path.root}/scripts/installers_arm64/mono.sh",
+                        "${path.root}/scripts/installers_arm64/kotlin.sh",
+                        "${path.root}/scripts/installers_arm64/mysql.sh",
+                        "${path.root}/scripts/installers_arm64/mssql-cmd-tools.sh",
+                        "${path.root}/scripts/installers_arm64/sqlpackage.sh",
+                        "${path.root}/scripts/installers_arm64/nginx.sh",
+                        "${path.root}/scripts/installers_arm64/nvm.sh",
+                        "${path.root}/scripts/installers_arm64/nodejs.sh",
+                        "${path.root}/scripts/installers_arm64/bazel.sh",
+                        "${path.root}/scripts/installers_arm64/oras-cli.sh",
+                        "${path.root}/scripts/installers_arm64/php.sh",
+                        "${path.root}/scripts/installers_arm64/postgresql.sh",
+                        "${path.root}/scripts/installers_arm64/pulumi.sh",
+                        "${path.root}/scripts/installers_arm64/ruby.sh",
+                        "${path.root}/scripts/installers_arm64/r.sh",
+                        "${path.root}/scripts/installers_arm64/rust.sh",
+                        "${path.root}/scripts/installers_arm64/julia.sh",
+                        "${path.root}/scripts/installers_arm64/sbt.sh",
+                        "${path.root}/scripts/installers_arm64/selenium.sh",
+                        "${path.root}/scripts/installers_arm64/terraform.sh",
+                        "${path.root}/scripts/installers_arm64/packer.sh",
+                        "${path.root}/scripts/installers_arm64/vcpkg.sh",
+                        "${path.root}/scripts/installers_arm64/dpkg-config.sh",
+                        "${path.root}/scripts/installers_arm64/yq.sh",
+                        "${path.root}/scripts/installers_arm64/pypy.sh",
+                        "${path.root}/scripts/installers_arm64/python.sh",
+                        "${path.root}/scripts/installers_arm64/graalvm.sh"
                         ]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} pwsh -f {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/Install-Toolset.ps1", "${path.root}/scripts/installers/Configure-Toolset.ps1"]
+    scripts          = ["${path.root}/scripts/installers_arm64/Install-Toolset.ps1", "${path.root}/scripts/installers_arm64/Configure-Toolset.ps1"]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/pipx-packages.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/pipx-packages.sh"]
   }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "DEBIAN_FRONTEND=noninteractive", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
     execute_command  = "/bin/sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/homebrew.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/homebrew.sh"]
   }
 
   provisioner "shell" {
@@ -370,7 +362,7 @@ build {
   provisioner "shell" {
     execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     pause_before        = "1m0s"
-    scripts             = ["${path.root}/scripts/installers/cleanup.sh"]
+    scripts             = ["${path.root}/scripts/installers_arm64/cleanup.sh"]
     start_retry_timeout = "10m"
   }
 
@@ -399,12 +391,12 @@ build {
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPT_FOLDER=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "IMAGE_FOLDER=${var.image_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/scripts/installers/post-deployment.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/post-deployment.sh"]
   }
 
   provisioner "shell" {
     environment_vars = ["RUN_VALIDATION=${var.run_validation_diskspace}"]
-    scripts          = ["${path.root}/scripts/installers/validate-disk-space.sh"]
+    scripts          = ["${path.root}/scripts/installers_arm64/validate-disk-space.sh"]
   }
 
   provisioner "file" {
