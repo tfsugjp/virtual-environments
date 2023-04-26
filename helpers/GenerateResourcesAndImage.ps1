@@ -1,3 +1,4 @@
+import-module az.Resources
 $ErrorActionPreference = 'Stop'
 
 enum ImageType {

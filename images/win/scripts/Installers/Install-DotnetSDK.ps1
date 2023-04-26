@@ -101,11 +101,37 @@ function InstallAllValidSdks()
 
     ForEach ($dotnetVersion in $dotnetVersions)
     {
-        $sdkVersionsToInstall = Get-SDKVersionsToInstall -DotnetVersion $dotnetVersion
-        
-        ForEach ($sdkVersion in $sdkVersionsToInstall)
+        $releaseJson = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/${dotnetVersion}/releases.json"
+        $releasesJsonPath = Start-DownloadWithRetry -Url $releaseJson -Name "releases-${dotnetVersion}.json"
+        $currentReleases = Get-Content -Path $releasesJsonPath | ConvertFrom-Json
+        # filtering out the preview/rc releases
+        $currentReleases = $currentReleases.'releases' | Where-Object { !$_.'release-version'.Contains('-') } | Sort-Object { [Version] $_.'release-version' } -Descending
+
+		# use latest release only
+        if($currentReleases.Count -gt 0)
         {
-            InstallSDKVersion -SdkVersion $sdkVersion -Warmup $warmup
+            $release = $currentReleases[0]
+            if ($release.'sdks'.Count -gt 0)
+            {
+                Write-Host 'Found sdks property in release: ' + $release.'release-version' + 'with sdks count: ' + $release.'sdks'.Count
+
+                # Remove duplicate entries & preview/rc version from download list
+                # Sort the sdks on version
+                $sdks = @($release.'sdk');
+
+                $sdks += $release.'sdks' | Where-Object { !$_.'version'.Contains('-') -and !$_.'version'.Equals($release.'sdk'.'version') }
+                $sdks = $sdks | Sort-Object { [Version] $_.'version' } -Descending
+
+				foreach($sdk in $sdks)
+                {
+                    InstallSDKVersion -sdkVersion $sdk.'version' -Warmup $warmup
+                }
+            }
+            elseif (!$release.'sdk'.'version'.Contains('-'))
+            {
+                $sdkVersion = $release.'sdk'.'version'
+                InstallSDKVersion -SdkVersion $sdkVersion -Warmup $warmup
+            }
         }
     }
 }

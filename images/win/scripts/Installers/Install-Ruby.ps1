@@ -66,8 +66,17 @@ function Install-Ruby
         $rubyVersionPath = Join-Path -Path $rubyToolcachePath -ChildPath $rubyVersion
         $rubyArchPath = Join-Path -Path $rubyVersionPath -ChildPath $Architecture
 
-        Write-Host "Creating Ruby '${rubyVersion}' folder in '${rubyVersionPath}'"
-        New-Item -ItemType Directory -Path $rubyVersionPath -Force | Out-Null
+        if (-not (Test-Path $rubyToolcachePath))
+        {
+            Write-Host "Creating Ruby toolcache folder"
+            New-Item -ItemType Directory -Path $rubyToolcachePath | Out-Null
+        }
+
+        if (-not (Test-Path $rubyVersionPath))
+        {
+			Write-Host "Creating Ruby '${rubyVersion}' folder in '${rubyVersionPath}'"
+			New-Item -ItemType Directory -Path $rubyVersionPath -Force | Out-Null
+		}
 
         Write-Host "Moving Ruby '${rubyVersion}' files to '${rubyArchPath}'"
         Invoke-SBWithRetry -Command {
@@ -77,8 +86,11 @@ function Install-Ruby
         Write-Host "Removing Ruby '${rubyVersion}' documentation '${rubyArchPath}\share\doc' folder"
         Remove-Item -Path "${rubyArchPath}\share\doc" -Force -Recurse -ErrorAction Ignore
 
-        Write-Host "Creating complete file"
-        New-Item -ItemType File -Path $rubyVersionPath -Name "$Architecture.complete" | Out-Null
+        if (-not (Test-Path $rubyVersionPath))
+        {
+			Write-Host "Creating complete file"
+			New-Item -ItemType File -Path $rubyVersionPath -Name "$Architecture.complete" | Out-Null
+		}
     }
     else
     {
