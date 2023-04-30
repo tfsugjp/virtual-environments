@@ -226,7 +226,7 @@ build {
 
   provisioner "file" {
     destination = "${var.image_folder}"
-    source      = "${path.root}/scripts/tests"
+    source      = "${path.root}/scripts/test_arm64"
   }
 
   provisioner "file" {
@@ -241,7 +241,7 @@ build {
 
   provisioner "file" {
     destination = "${var.installer_script_folder}/toolset.json"
-    source      = "${path.root}/toolsets/toolset-2204.json"
+    source      = "${path.root}/toolsets/toolset-2204-arm.json"
   }
 
   provisioner "shell" {
