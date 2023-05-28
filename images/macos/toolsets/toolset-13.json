@@ -1,11 +1,22 @@
 {
     "xcode": {
         "default": "14.2",
-        "versions": [
-            { "link": "14.3", "version": "14.3.0" },
-            { "link": "14.2", "version": "14.2.0" },
-            { "link": "14.1", "version": "14.1.0" }
-        ]
+        "x64": {
+            "versions": [
+                { "link": "14.3.1", "version": "14.3.1" },
+                { "link": "14.3", "version": "14.3.0" },
+                { "link": "14.2", "version": "14.2.0" },
+                { "link": "14.1", "version": "14.1.0" }
+                ]
+        },
+        "arm64":{
+            "versions": [
+                { "link": "14.3.1", "version": "14.3.1" },
+                { "link": "14.3", "version": "14.3.0" },
+                { "link": "14.2", "version": "14.2.0" },
+                { "link": "14.1", "version": "14.1.0" }
+            ]
+        }
     },
     "xamarin": {
         "vsmac": {
@@ -80,9 +91,18 @@
         ]
     },
     "dotnet": {
-        "versions": [
-            "7.0"
-        ]
+        "arch":{
+            "x64": {
+               "versions": [
+                   "7.0"
+                ]
+            },
+            "arm64": {
+                "versions": [
+                    "7.0"
+                ]
+            }
+        }
     },
     "ruby": {
         "default": "3.0",
@@ -94,6 +114,60 @@
             "fastlane"
         ]
     },
+    "toolcache": [
+        {
+            "name": "Python",
+            "url" : "https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json",
+            "arch": "x64",
+            "platform" : "darwin",
+            "versions": [
+                "3.8.*",
+                "3.9.*",
+                "3.10.*",
+                "3.11.*"
+            ]
+        },
+        {
+            "name": "PyPy",
+            "arch": "x64",
+            "platform" : "darwin",
+            "versions": [
+                "2.7",
+                "3.7",
+                "3.8",
+                "3.9"
+            ]
+        },
+        {
+            "name": "Node",
+            "url" : "https://raw.githubusercontent.com/actions/node-versions/main/versions-manifest.json",
+            "platform" : "darwin",
+            "arch": "x64",
+            "versions": [
+                "16.*",
+                "18.*"
+            ]
+        },
+        {
+            "name": "Go",
+            "url" : "https://raw.githubusercontent.com/actions/go-versions/main/versions-manifest.json",
+            "arch": "x64",
+            "platform" : "darwin",
+            "variable_template" : "GOROOT_{0}_{1}_X64",
+            "versions": [
+                "1.19.*",
+                "1.20.*"
+            ]
+        },
+        {
+            "name": "Ruby",
+            "arch": "x64",
+            "versions": [
+                "3.0.*",
+                "3.1.*"
+            ]
+        }
+    ],
     "go": {
         "default": "1.20"
     },
