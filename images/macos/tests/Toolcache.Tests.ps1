@@ -13,7 +13,7 @@ Describe "Toolcache" {
         }
     }
 
-    Context "Python" {
+    Context "Python" -Skip:($os.IsVenturaArm64) {
         $pythonDirectory = Join-Path $toolcacheDirectory "Python"
         $pythonPackage = $packages | Where-Object { $_.ToolName -eq "python" } | Select-Object -First 1
         $testCase = @{ PythonDirectory = $pythonDirectory }
@@ -56,7 +56,7 @@ Describe "Toolcache" {
         }
     }
 
-    Context "Ruby" {
+    Context "Ruby" -Skip:($os.IsVenturaArm64) {
         $rubyDirectory = Join-Path $toolcacheDirectory "Ruby"
         $rubyPackage = $packages | Where-Object { $_.ToolName -eq "Ruby" } | Select-Object -First 1
         $testCase = @{ RubyDirectory = $rubyDirectory }
@@ -98,7 +98,7 @@ Describe "Toolcache" {
             }
         }
     }
-    Context "PyPy" {
+    Context "PyPy" -Skip:($os.IsVenturaArm64) {
         $pypyDirectory = Join-Path $toolcacheDirectory "PyPy"
         $pypyPackage = $packages | Where-Object { $_.ToolName -eq "pypy" } | Select-Object -First 1
         $testCase = @{ PypyDirectory = $pypyDirectory }
@@ -142,7 +142,7 @@ Describe "Toolcache" {
         }
     }
 
-    Context "Node" {
+    Context "Node" -Skip:($os.IsVenturaArm64) {
         $nodeDirectory = Join-Path $toolcacheDirectory "node"
         $nodePackage = $packages | Where-Object { $_.ToolName -eq "node" } | Select-Object -First 1
         $testCase = @{ NodeDirectory = $nodeDirectory }
@@ -192,7 +192,7 @@ Describe "Toolcache" {
         }
     }
 
-    Context "Go" {
+    Context "Go" -Skip:($os.IsVenturaArm64) {
         $goDirectory = Join-Path $toolcacheDirectory "go"
         $goPackage = $packages | Where-Object { $_.ToolName -eq "go" } | Select-Object -First 1
         $testCase = @{ GoDirectory = $goDirectory }

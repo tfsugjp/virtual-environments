@@ -51,7 +51,7 @@ variable "vcpu_count" {
 
 variable "ram_size" {
   type = string
-  default = "24G"
+  default = "8G"
 }
 
 variable "image_os" {
@@ -66,6 +66,7 @@ source "veertu-anka-vm-clone" "template" {
   vcpu_count = "${var.vcpu_count}"
   ram_size = "${var.ram_size}"
   stop_vm = "true"
+  log_level = "debug"
 }
 
 build {
@@ -122,7 +123,8 @@ build {
   provisioner "shell" {
     scripts = [
       "./provision/core/xcode-clt.sh",
-      "./provision/core/homebrew.sh"
+      "./provision/core/homebrew.sh",
+      "./provision/core/rosetta.sh"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }
@@ -160,10 +162,8 @@ build {
   provisioner "shell" {
     pause_before = "30s"
     scripts = [
-      "./provision/core/open_windows_check.sh",
       "./provision/core/powershell.sh",
       "./provision/core/dotnet.sh",
-      "./provision/core/python.sh",
       "./provision/core/azcopy.sh",
       "./provision/core/ruby.sh",
       "./provision/core/rubygem.sh",
@@ -193,24 +193,11 @@ build {
   provisioner "shell" {
     scripts = [
       "./provision/core/llvm.sh",
-      "./provision/core/swiftlint.sh",
-      "./provision/core/openjdk.sh",
-      "./provision/core/php.sh",
-      "./provision/core/aws.sh",
       "./provision/core/rust.sh",
       "./provision/core/gcc.sh",
-      "./provision/core/haskell.sh",
-      "./provision/core/stack.sh",
       "./provision/core/cocoapods.sh",
-      "./provision/core/android-toolsets.sh",
       "./provision/core/vsmac.sh",
-      "./provision/core/apache.sh",
-      "./provision/core/vcpkg.sh",
       "./provision/core/safari.sh",
-      "./provision/core/chrome.sh",
-      "./provision/core/edge.sh",
-      "./provision/core/firefox.sh",
-      "./provision/core/pypy.sh",
       "./provision/core/bicep.sh",
       "./provision/core/codeql-bundle.sh"
     ]
@@ -218,13 +205,6 @@ build {
       "API_PAT=${var.github_api_pat}"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
-  }
-  provisioner "shell" {
-    scripts = [
-      "./provision/core/toolset.ps1",
-      "./provision/core/configure-toolset.ps1"
-    ]
-    execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} pwsh -f {{ .Path }}"
   }
   provisioner "shell" {
     script = "./provision/core/delete-duplicate-sims.rb"
@@ -244,8 +224,7 @@ build {
   }
   provisioner "shell" {
     scripts = [
-      "./provision/configuration/configure-hostname.sh",
-      "./provision/configuration/finalize-vm.sh"
+      "./provision/configuration/configure-hostname.sh"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }

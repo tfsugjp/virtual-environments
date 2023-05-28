@@ -6,6 +6,7 @@ enum ImageType {
     Windows2022 = 2
     Ubuntu2004 = 3
     Ubuntu2204 = 4
+    UbuntuMinimal = 5
 }
 
 Function Get-PackerTemplatePath {
@@ -28,6 +29,9 @@ Function Get-PackerTemplatePath {
         }
         ([ImageType]::Ubuntu2204) {
             $relativeTemplatePath = Join-Path "linux" "ubuntu2204.pkr.hcl"
+        }
+        ([ImageType]::UbuntuMinimal) {
+            $relativeTemplatePath = Join-Path "linux" "ubuntuminimal.pkr.hcl"
         }
         default { throw "Unknown type of image" }
     }
@@ -64,7 +68,7 @@ Function GenerateResourcesAndImage {
         .PARAMETER ImageGenerationRepositoryRoot
             The root path of the image generation repository source.
         .PARAMETER ImageType
-            The type of the image being generated. Valid options are: {"Windows2019", "Windows2022", "Ubuntu2004", "Ubuntu2204"}.
+            The type of the image being generated. Valid options are: {"Windows2019", "Windows2022", "Ubuntu2004", "Ubuntu2204", "UbuntuMinimal"}.
         .PARAMETER AzureLocation
             The location of the resources being created in Azure. For example "East US".
         .PARAMETER Force
@@ -78,8 +82,9 @@ Function GenerateResourcesAndImage {
         .PARAMETER RestrictToAgentIpAddress
             If set, access to the VM used by packer to generate the image is restricted to the public IP address this script is run from. 
             This parameter cannot be used in combination with the virtual_network_name packer parameter.
-        
         .PARAMETER AllowBlobPublicAccess
+            The Azure storage account will be created with this option.
+        .PARAMETER EnableHttpsTrafficOnly
             The Azure storage account will be created with this option.
         .PARAMETER OnError
             Specify how packer handles an error during image creation.
@@ -186,8 +191,8 @@ Function GenerateResourcesAndImage {
         # Resource group names may contain special characters, that are not allowed in the storage account name
         $storageAccountName = $storageAccountName.Replace("-", "").Replace("_", "").Replace("(", "").Replace(")", "").ToLower()
         $storageAccountName += "001"
-        
-        
+
+
         # Storage Account Name can only be 24 characters long
         if ($storageAccountName.Length -gt 24){
             $storageAccountName = $storageAccountName.Substring(0, 24)
@@ -262,10 +267,10 @@ Function GenerateResourcesAndImage {
             $AgentIp = (Invoke-RestMethod http://ipinfo.io/json).ip
             Write-Host "Restricting access to packer generated VM to agent IP Address: $AgentIp"
         }
-        
+
         if ($builderScriptPath.Contains("pkr.hcl")) {
             if ($AgentIp) {
-                $AgentIp = '[ "{0}" ]' -f $AgentIp
+                $AgentIp = '[ \"{0}\" ]' -f $AgentIp
             } else {
                 $AgentIp = "[]"
             }
@@ -279,7 +284,7 @@ Function GenerateResourcesAndImage {
                 $builderScriptPath_temp = $builderScriptPath.Replace(".json", "-temp.json")
                 $packer_script = Get-Content -Path $builderScriptPath | ConvertFrom-Json
                 $packer_script.builders | Add-Member -Name "azure_tags" -Value $Tags -MemberType NoteProperty
-                $packer_script | ConvertTo-Json -Depth 3 | Out-File $builderScriptPath_temp
+                $packer_script | ConvertTo-Json -Depth 3 | Out-File -Encoding Ascii $builderScriptPath_temp
                 $builderScriptPath = $builderScriptPath_temp
             }
         }
