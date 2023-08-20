@@ -4,7 +4,7 @@ source ~/utils/utils.sh
 echo Installing PowerShell...
 arch=$(get_arch)
 
-psmetadata=$(curl "https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json" -s)
+psmetadata=$(curl -fsSL "https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/metadata.json")
 psver=$(echo $psmetadata | jq -r '.LTSReleaseTag[0]')
 psDownloadUrl=$(get_github_package_download_url "PowerShell/PowerShell" "contains(\"osx-$arch.pkg\")" "$psver" "$API_PAT")
 download_with_retries $psDownloadUrl "/tmp" "powershell.pkg"
@@ -41,8 +41,9 @@ for module in ${psModules[@]}; do
     fi
 done
 
+# Fix permission root => runner after installing powershell for arm64 arch
 if [[ $arch == "arm64" ]]; then
-    sudo chown -R $USER ~/.local
+    sudo chown -R $USER ~/.local ~/.cache ~/.config
 fi
 
 # A dummy call to initialize .IdentityService directory

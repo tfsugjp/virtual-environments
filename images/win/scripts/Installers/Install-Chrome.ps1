@@ -3,70 +3,43 @@
 ##  Desc:  Install Google Chrome
 ################################################################################
 
-# Download and install latest Chrome browser
-$ChromeInstallerFile = "googlechromestandaloneenterprise64.msi"
-$ChromeInstallerUrl = "https://dl.google.com/tag/s/dl/chrome/install/${ChromeInstallerFile}"
-Install-Binary -Url $ChromeInstallerUrl -Name $ChromeInstallerFile -ArgumentList @()
+# Get versions info
+$ChromeVersionsUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
+$ChromeVersions = Invoke-RestMethod -Uri $ChromeVersionsUrl
+$ChromeVersionInfo = $ChromeVersions.channels.Stable
 
-# Prepare firewall rules
-Write-Host "Adding the firewall rule for Google update blocking..."
-New-NetFirewallRule -DisplayName "BlockGoogleUpdate" -Direction Outbound -Action Block -Program "C:\Program Files (x86)\Google\Update\GoogleUpdate.exe"
+# Install Google Chrome for Testing
+$ChromeVersion = $ChromeVersionInfo.version
+$ChromeUrl = ($ChromeVersionInfo.downloads.chrome | Where-Object platform -eq "win64").url
 
-$GoogleSvcs = ('gupdate','gupdatem')
-$GoogleSvcs | Stop-SvcWithErrHandling -StopOnError
-$GoogleSvcs | Set-SvcWithErrHandling -Arguments @{StartupType = "Disabled"}
-
-$regGoogleUpdatePath = "HKLM:\SOFTWARE\Policies\Google\Update"
-$regGoogleUpdateChrome = "HKLM:\SOFTWARE\Policies\Google\Chrome"
-($regGoogleUpdatePath, $regGoogleUpdateChrome) | ForEach-Object {
-    New-Item -Path $_ -Force
+Write-Host "Installing Google Chrome for Testing version $ChromeVersion"
+$ChromePath = "$($env:SystemDrive)\Program Files\Google\Chrome"
+if (-not (Test-Path -Path $ChromePath)) {
+    New-Item -Path $ChromePath -ItemType Directory -Force
 }
 
-$regGoogleParameters = @(
-    @{ Name = "AutoUpdateCheckPeriodMinutes"; Value = 00000000},
-    @{ Name = "UpdateDefault"; Value = 00000000 },
-    @{ Name = "DisableAutoUpdateChecksCheckboxValue"; Value = 00000001 },
-    @{ Name = "Update{8A69D345-D564-463C-AFF1-A69D9E530F96}"; Value = 00000000 },
-    @{ Path = $regGoogleUpdateChrome; Name = "DefaultBrowserSettingEnabled"; Value = 00000000 }
-)
+$ChromeArchivePath = Start-DownloadWithRetry -Url $ChromeUrl
+Extract-7Zip -Path $ChromeArchivePath -DestinationPath $ChromePath
+Rename-Item "$ChromePath\chrome-win64" "$ChromePath\Application"
 
-$regGoogleParameters | ForEach-Object {
-    $Arguments = $_
-    if (-not ($Arguments.Path))
-    {
-        $Arguments.Add("Path", $regGoogleUpdatePath)
-    }
-    $Arguments.Add("Force", $true)
-    New-ItemProperty @Arguments
-}
+$chromeRegPath = "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"
+New-Item $chromeRegPath
+Set-ItemProperty $chromeRegPath "(default)" "$ChromePath\Application\chrome.exe"
 
-# Install Chrome WebDriver
-Write-Host "Install Chrome WebDriver..."
+# Install Chrome Driver
+$ChromeDriverVersion = $ChromeVersionInfo.version
+$ChromeDriverUrl = ($ChromeVersionInfo.downloads.chromedriver | Where-Object platform -eq "win64").url
+
+Write-Host "Installing ChromeDriver version $ChromeDriverVersion"
 $ChromeDriverPath = "$($env:SystemDrive)\SeleniumWebDrivers\ChromeDriver"
-if (-not (Test-Path -Path $ChromeDriverPath))
-{
+if (-not (Test-Path -Path $ChromeDriverPath)) {
     New-Item -Path $ChromeDriverPath -ItemType Directory -Force
 }
 
-Write-Host "Get the Chrome WebDriver version..."
-$RegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths"
-$ChromePath = (Get-ItemProperty "$RegistryPath\chrome.exe").'(default)'
-[version]$ChromeVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ChromePath).ProductVersion
-$ChromeDriverVersionUrl = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$($ChromeVersion.Major).$($ChromeVersion.Minor).$($ChromeVersion.Build)"
+$ChromeDriverVersion | Out-File -FilePath "$ChromeDriverPath\versioninfo.txt" -Force;
+$ChromeDriverArchivePath = Start-DownloadWithRetry -Url $ChromeDriverUrl
+Extract-7Zip -Path $ChromeDriverArchivePath -DestinationPath $ChromeDriverPath -ExtractMethod "e"
 
-$ChromeDriverVersionFile = Start-DownloadWithRetry -Url $ChromeDriverVersionUrl -Name "versioninfo.txt" -DownloadPath $ChromeDriverPath
-
-Write-Host "Download Chrome WebDriver..."
-$ChromeDriverVersion = Get-Content -Path $ChromeDriverVersionFile
-$ChromeDriverArchName = "chromedriver_win32.zip"
-$ChromeDriverZipDownloadUrl = "https://chromedriver.storage.googleapis.com/${ChromeDriverVersion}/${ChromeDriverArchName}"
-
-$ChromeDriverArchPath = Start-DownloadWithRetry -Url $ChromeDriverZipDownloadUrl -Name $ChromeDriverArchName
-
-Write-Host "Expand Chrome WebDriver archive..."
-Extract-7Zip -Path $ChromeDriverArchPath -DestinationPath $ChromeDriverPath
-
-Write-Host "Setting the environment variables..."
 setx ChromeWebDriver "$ChromeDriverPath" /M
 
 $regEnvKey = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\'

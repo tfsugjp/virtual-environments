@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     veertu-anka = {
-      version = "= v3.1.0"
+      version = ">= v3.2.0"
       source = "github.com/veertuinc/veertu-anka"
     }
   }
@@ -34,19 +34,14 @@ variable "github_api_pat" {
   default = ""
 }
 
-variable "xcode_install_user" {
+variable "xcode_install_storage_url" {
   type = string
   sensitive = true
 }
 
-variable "xcode_install_password" {
+variable "xcode_install_sas" {
   type = string
   sensitive = true
-}
-
-variable "xcversion_auth_cookie" {
-  type = string
-  default = ""
 }
 
 variable "vcpu_count" {
@@ -170,6 +165,7 @@ build {
       "./provision/core/dotnet.sh",
       "./provision/core/python.sh",
       "./provision/core/azcopy.sh",
+      "./provision/core/openssl.sh",
       "./provision/core/ruby.sh",
       "./provision/core/rubygem.sh",
       "./provision/core/git.sh",
@@ -183,16 +179,10 @@ build {
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }
   provisioner "shell" {
-    inline = [
-      "mkdir -p ~/.fastlane/spaceship/${var.xcode_install_user}",
-      "echo ${var.xcversion_auth_cookie} | base64 --decode > ~/.fastlane/spaceship/${var.xcode_install_user}/cookie"
-    ]
-  }
-  provisioner "shell" {
     script = "./provision/core/xcode.ps1"
     environment_vars = [
-      "XCODE_INSTALL_USER=${var.xcode_install_user}",
-      "XCODE_INSTALL_PASSWORD=${var.xcode_install_password}"
+      "XCODE_INSTALL_STORAGE_URL=${var.xcode_install_storage_url}",
+      "XCODE_INSTALL_SAS=${var.xcode_install_sas}"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} pwsh -f {{ .Path }}"
   }

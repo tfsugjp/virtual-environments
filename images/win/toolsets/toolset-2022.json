@@ -39,7 +39,8 @@
             "platform" : "win64",
             "versions": [
                 "3.8",
-                "3.9"
+                "3.9",
+                "3.10"
             ]
         },
         {
@@ -61,7 +62,8 @@
             "versions": [
                 "1.18.*",
                 "1.19.*",
-                "1.20.*"
+                "1.20.*",
+                "1.21.*"
             ],
             "default": "1.20.*"
         }
@@ -92,17 +94,7 @@
     ],
     "java": {
         "default": "8",
-        "default_vendor": "Temurin-Hotspot",
-        "vendors": [
-            {
-                "name": "Temurin-Hotspot",
-                "versions": [ "8", "11", "17" ]
-            },
-            {
-                "name": "Adopt",
-                "versions": [ "8", "11"]
-            }
-        ]
+        "versions": [ "8", "11", "17" ]
     },
     "android": {
         "platform_min_version": "27",
@@ -140,7 +132,8 @@
         { "name": "Client-ProjFS", "optionalFeature": true },
         { "name": "NET-Framework-Features", "includeAllSubFeatures": true },
         { "name": "Hyper-V", "includeAllSubFeatures": true },
-        { "name": "HypervisorPlatform", "optionalFeature": true }
+        { "name": "HypervisorPlatform", "optionalFeature": true },
+        { "name": "Hyper-V-PowerShell" }
     ],
     "visualStudio": {
         "version" : "2022",
@@ -218,6 +211,24 @@
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM.Spectre",
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM64",
             "Microsoft.VisualStudio.Component.VC.14.29.16.11.MFC.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ATL.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ATL.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ATL.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ATL.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ATL.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.ATL",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.MFC.ARM.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.MFC.ARM",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.MFC.ARM64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.MFC.ARM64",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.MFC.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.MFC",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.x86.x64.Spectre",
+            "Microsoft.VisualStudio.Component.VC.14.35.17.5.x86.x64",
             "Microsoft.VisualStudio.Component.VC.14.36.17.6.ARM.Spectre",
             "Microsoft.VisualStudio.Component.VC.14.36.17.6.ARM",
             "Microsoft.VisualStudio.Component.VC.14.36.17.6.ARM64.Spectre",
@@ -268,6 +279,7 @@
             "wasm.tools"
         ],
         "vsix": [
+            "SSIS.MicrosoftDataToolsIntegrationServices",
             "VisualStudioClient.MicrosoftVisualStudio2022InstallerProjects",
             "WixToolset.WixToolsetVisualStudio2022Extension",
             "ProBITools.MicrosoftReportProjectsforVisualStudio2022",
@@ -312,7 +324,6 @@
     },
     "dotnet": {
         "versions": [
-            "3.1",
             "6.0"
         ],
         "tools": [
@@ -356,7 +367,7 @@
         "version": "8.0"
     },
     "mongodb": {
-        "version": "5.0.15"
+        "version": "5.0"
     },
     "nsis": {
         "version": "3.08"

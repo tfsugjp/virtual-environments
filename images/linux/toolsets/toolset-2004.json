@@ -24,7 +24,8 @@
                 "3.6",
                 "3.7",
                 "3.8",
-                "3.9"
+                "3.9",
+                "3.10"
             ]
         },
         {
@@ -46,7 +47,8 @@
             "versions": [
                 "1.18.*",
                 "1.19.*",
-                "1.20.*"
+                "1.20.*",
+                "1.21.*"
             ],
             "default": "1.20.*"
         },
@@ -73,21 +75,11 @@
     ],
     "java": {
         "default": "11",
-        "default_vendor": "Temurin-Hotspot",
-        "vendors": [
-            {
-                "name": "Temurin-Hotspot",
-                "versions": [ "8", "11", "17" ]
-            },
-            {
-                "name": "Adopt",
-                "versions": [ "8", "11" ]
-            }
-        ],
+        "versions": [ "8", "11", "17" ],
         "maven": "3.8.8"
     },
     "android": {
-        "cmdline-tools": "latest",
+        "cmdline-tools": "commandlinetools-linux-9477386_latest.zip",
         "platform_min_version": "27",
         "build_tools_min_version": "27.0.0",
         "extra_list": [
@@ -229,10 +221,9 @@
     ],
     "docker": {
         "images": [
-            "alpine:3.14",
-            "alpine:3.15",
             "alpine:3.16",
             "alpine:3.17",
+            "alpine:3.18",
             "buildpack-deps:stretch",
             "buildpack-deps:buster",
             "buildpack-deps:bullseye",
@@ -263,12 +254,10 @@
     ],
     "dotnet": {
         "aptPackages": [
-            "dotnet-sdk-3.1",
             "dotnet-sdk-6.0",
             "dotnet-sdk-7.0"
         ],
         "versions": [
-            "3.1",
             "6.0",
             "7.0"
         ],
@@ -372,5 +361,8 @@
     },
     "pwsh": {
         "version": "7.2"
+    },
+    "aliyunCli": {
+        "version": "3.0.174"
     }
 }
