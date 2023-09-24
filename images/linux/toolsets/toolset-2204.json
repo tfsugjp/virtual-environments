@@ -42,7 +42,6 @@
             "arch": "x64",
             "platform" : "linux",
             "versions": [
-                "1.18.*",
                 "1.19.*",
                 "1.20.*",
                 "1.21.*"
@@ -192,6 +191,7 @@
             "parallel",
             "pass",
             "patchelf",
+            "pigz",
             "pollinate",
             "rsync",
             "shellcheck",
@@ -257,7 +257,8 @@
         "versions": [
             "12",
             "13",
-            "14"
+            "14",
+            "15"
         ],
         "default_version": "14"
     },

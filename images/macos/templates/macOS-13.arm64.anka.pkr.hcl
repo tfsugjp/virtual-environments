@@ -165,6 +165,7 @@ build {
       "./provision/core/powershell.sh",
       "./provision/core/dotnet.sh",
       "./provision/core/azcopy.sh",
+      "./provision/core/openssl.sh",
       "./provision/core/ruby.sh",
       "./provision/core/rubygem.sh",
       "./provision/core/git.sh",
@@ -196,7 +197,6 @@ build {
       "./provision/core/rust.sh",
       "./provision/core/gcc.sh",
       "./provision/core/cocoapods.sh",
-      "./provision/core/vsmac.sh",
       "./provision/core/safari.sh",
       "./provision/core/bicep.sh",
       "./provision/core/codeql-bundle.sh"
