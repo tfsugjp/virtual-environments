@@ -84,8 +84,6 @@ $toolsetVersions = Get-ToolsetContent | Select-Object -ExpandProperty toolcache 
 $pypyVersions = Invoke-RestMethod https://downloads.python.org/pypy/versions.json
 
 # required for html parsing
-Install-Module PowerHTML -Scope CurrentUser 
-Import-Module PowerHTML
 $checksums = (Invoke-RestMethod -Uri 'https://www.pypy.org/checksums.html' | ConvertFrom-HTML).SelectNodes('//*[@id="content"]/article/div/pre')
 
 Write-Host "Starting installation PyPy..."
@@ -111,6 +109,11 @@ foreach($toolsetVersion in $toolsetVersions.versions)
             if($node.InnerText -ilike "*${filename}*") {
                 $distributorFileHash = $node.InnerText.ToString().Split("`n").Where({ $_ -ilike "*${filename}*" }).Split(' ')[0]
             }
+        }
+        
+        #Temp patch for pypy3.9-v7.3.13-win64.zip checksum, delete me when pypy.org will be fixed
+        if ($filename -ilike "*pypy3.9-v7.3.13-win64*") {
+            $distributorFileHash = "09EA41154AD1DCD3E8378609A73196A6C108B17AA05EF3CBB240610744102803"
         }
 
         Use-ChecksumComparison -LocalFileHash $localFileHash -DistributorFileHash $distributorFileHash

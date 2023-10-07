@@ -3,15 +3,35 @@
 ##  Desc:  Install Azure CLI
 ################################################################################
 
-Write-Host "Install the latest Azure CLI release"
-$azCliUrl = "https://aka.ms/installazurecliwindowsx64"
-Install-Binary -Url $azCliUrl -Name "azure-cli.msi"
+Write-Host 'Install the latest Azure CLI release'
+
+$azureCliConfigPath = 'C:\azureCli'
+# Store azure-cli cache outside of the provisioning user's profile
+[Environment]::SetEnvironmentVariable('AZURE_CONFIG_DIR', $azureCliConfigPath, [System.EnvironmentVariableTarget]::Machine)
+# make variable to be available in the current session
+${env:AZURE_CONFIG_DIR} = $azureCliConfigPath
+
+#temporary pin 2.52.0 version
+$azCliUrl = 'https://azcliprod.blob.core.windows.net/msi/azure-cli-2.52.0-x64.msi'
+Install-Binary -Url $azCliUrl -Name 'azure-cli.msi'
 
 $AzureCliExtensionPath = Join-Path $Env:CommonProgramFiles 'AzureCliExtensionDirectory'
 if (-not(Test-Path -Path $AzureCliExtensionPath)) {
 	New-Item -ItemType "directory" -Path $AzureCliExtensionPath -Force
 }
 
-[Environment]::SetEnvironmentVariable("AZURE_EXTENSION_DIR", $azureCliExtensionPath, [System.EnvironmentVariableTarget]::Machine)
+[Environment]::SetEnvironmentVariable('AZURE_EXTENSION_DIR', $azureCliExtensionPath, [System.EnvironmentVariableTarget]::Machine)
+# make variable to be available in the current session
+${env:AZURE_EXTENSION_DIR} = $azureCliExtensionPath
 
-Invoke-PesterTests -TestFile "CLI.Tools" -TestName "Azure CLI"
+# Warm-up Azure CLI
+
+Write-Host "Warmup 'az'"
+
+$env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'Machine')
+az --help | Out-Null
+if ($LASTEXITCODE -ne 0) {
+   throw "Command 'az --help' failed"
+}
+
+Invoke-PesterTests -TestFile 'CLI.Tools' -TestName 'Azure CLI'
