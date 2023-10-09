@@ -176,12 +176,6 @@ Describe "VCRedist" -Skip:(Test-IsWin22) {
     }
 }
 
-Describe "WebPlatformInstaller" {
-    It "WebPlatformInstaller" {
-        "WebPICMD" | Should -ReturnZeroExitCode
-    }
-}
-
 Describe "Zstd" {
     It "zstd" {
         "zstd -V" | Should -ReturnZeroExitCode
