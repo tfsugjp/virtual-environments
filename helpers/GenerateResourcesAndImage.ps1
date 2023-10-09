@@ -7,6 +7,7 @@ enum ImageType {
     Ubuntu2004    = 3
     Ubuntu2204    = 4
     UbuntuMinimal = 5
+    Ubuntu2204Arm = 6
 }
 
 Function Get-PackerTemplatePath {
@@ -32,6 +33,9 @@ Function Get-PackerTemplatePath {
         }
         ([ImageType]::UbuntuMinimal) {
             $relativeTemplatePath = Join-Path "linux" "ubuntuminimal.pkr.hcl"
+        }
+        ([ImageType]::Ubuntu2204Arm) {
+            $relativeTemplatePath = Join-Path "linux" "ubuntu2204.pkr-arm64.hcl"
         }
         default { throw "Unknown type of image" }
     }

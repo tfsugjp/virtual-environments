@@ -22,7 +22,7 @@ cat <<EOF >> /etc/gitconfig
 EOF
 
 # Install git-lfs
-curl -s $GIT_LFS_REPO/script.deb.sh | bash
+curl -fsSL $GIT_LFS_REPO/script.deb.sh | bash
 apt-get install -y git-lfs
 
 # Install git-ftp
@@ -35,14 +35,6 @@ rm /etc/apt/sources.list.d/github_git-lfs.list
 # Document apt source repo's
 echo "git-core $GIT_REPO" >> $HELPER_SCRIPTS/apt-sources.txt
 echo "git-lfs $GIT_LFS_REPO" >> $HELPER_SCRIPTS/apt-sources.txt
-
-#Install hub
-tmp_hub="/tmp/hub"
-mkdir -p "$tmp_hub"
-downloadUrl=$(get_github_package_download_url "github/hub" "contains(\"hub-linux-amd64\")")
-download_with_retries "$downloadUrl" "$tmp_hub"
-tar xzf "$tmp_hub"/hub-linux-amd64-*.tgz --strip-components 1 -C "$tmp_hub"
-mv "$tmp_hub"/bin/hub /usr/local/bin
 
 # Add well-known SSH host keys to known_hosts
 ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /etc/ssh/ssh_known_hosts
