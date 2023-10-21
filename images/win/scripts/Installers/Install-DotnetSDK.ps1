@@ -95,14 +95,9 @@ function InstallAllValidSdks()
 
     ForEach ($dotnetVersion in $dotnetVersions)
     {
-        $releaseJson = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/${dotnetVersion}/releases.json"
-        $releasesJsonPath = Start-DownloadWithRetry -Url $releaseJson -Name "releases-${dotnetVersion}.json"
-        $currentReleases = Get-Content -Path $releasesJsonPath | ConvertFrom-Json
-        # filtering out the preview/rc releases
-        $currentReleases = $currentReleases.'releases' | Where-Object { !$_.'release-version'.Contains('-') } | Sort-Object { [Version] $_.'release-version' } -Descending
-
-		# use latest release only
-        if($currentReleases.Count -gt 0)
+        $sdkVersionsToInstall = Get-SDKVersionsToInstall -DotnetVersion $dotnetVersion
+        
+        ForEach ($sdkVersion in $sdkVersionsToInstall)
         {
             InstallSDKVersion -SdkVersion $sdkVersion -DotnetVersion $dotnetVersion -Warmup $warmup
         }
