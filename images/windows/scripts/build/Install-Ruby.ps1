@@ -58,17 +58,8 @@ function Install-Ruby {
         $rubyVersionPath = Join-Path -Path $rubyToolcachePath -ChildPath $rubyVersion
         $rubyArchPath = Join-Path -Path $rubyVersionPath -ChildPath $Architecture
 
-        if (-not (Test-Path $rubyToolcachePath))
-        {
-            Write-Host "Creating Ruby toolcache folder"
-            New-Item -ItemType Directory -Path $rubyToolcachePath | Out-Null
-        }
-
-        if (-not (Test-Path $rubyVersionPath))
-        {
-			Write-Host "Creating Ruby '${rubyVersion}' folder in '${rubyVersionPath}'"
-			New-Item -ItemType Directory -Path $rubyVersionPath -Force | Out-Null
-		}
+        Write-Host "Creating Ruby '${rubyVersion}' folder in '${rubyVersionPath}'"
+        New-Item -ItemType Directory -Path $rubyVersionPath -Force | Out-Null
 
         Write-Host "Moving Ruby '${rubyVersion}' files to '${rubyArchPath}'"
         Invoke-SBWithRetry -Command {
