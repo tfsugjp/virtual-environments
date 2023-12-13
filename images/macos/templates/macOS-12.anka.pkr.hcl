@@ -80,31 +80,27 @@ build {
   provisioner "file" {
     destination = "image-generation/"
     sources = [
-      "./provision/assets",
-      "./tests",
-      "./software-report",
-      "./helpers"
+      "./assets/xamarin-selector",
+      "./scripts/tests",
+      "./scripts/docs-gen",
+      "./scripts/helpers"
     ]
   }
   provisioner "file" {
-    destination = "image-generation/software-report/"
+    destination = "image-generation/docs-gen/"
     source = "../../helpers/software-report-base"
   }
   provisioner "file" {
     destination = "image-generation/add-certificate.swift"
-    source = "./provision/configuration/add-certificate.swift"
+    source = "./assets/add-certificate.swift"
   }
   provisioner "file" {
     destination = ".bashrc"
-    source = "./provision/configuration/environment/bashrc"
+    source = "./assets/bashrc"
   }
   provisioner "file" {
     destination = ".bash_profile"
-    source = "./provision/configuration/environment/bashprofile"
-  }
-  provisioner "file" {
-    destination = "./"
-    source = "./provision/utils"
+    source = "./assets/bashprofile"
   }
   provisioner "shell" {
     inline = [
@@ -113,29 +109,41 @@ build {
   }
   provisioner "file" {
     destination = "bootstrap"
-    source = "./provision/bootstrap-provisioner/"
+    source = "./assets/bootstrap-provisioner/"
   }
   provisioner "file" {
     destination = "image-generation/toolset.json"
     source = "./toolsets/toolset-12.json"
   }
   provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = [
+      "mv ~/image-generation/docs-gen ~/image-generation/software-report",
+      "mv ~/image-generation/xamarin-selector ~/image-generation/assets",
+      "mkdir ~/utils",
+      "mv ~/image-generation/helpers/confirm-identified-developers.scpt ~/utils",
+      "mv ~/image-generation/helpers/invoke-tests.sh ~/utils",
+      "mv ~/image-generation/helpers/utils.sh ~/utils",
+      "mv ~/image-generation/helpers/xamarin-utils.sh ~/utils"
+    ]
+  }
+  provisioner "shell" {
     scripts = [
-      "./provision/core/xcode-clt.sh",
-      "./provision/core/homebrew.sh"
+      "./scripts/build/install-xcode-clt.sh",
+      "./scripts/build/install-homebrew.sh"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }
   provisioner "shell" {
     scripts = [
-      "./provision/configuration/configure-tccdb-macos.sh",
-      "./provision/configuration/add-network-interface-detection.sh",
-      "./provision/configuration/autologin.sh",
-      "./provision/configuration/disable-auto-updates.sh",
-      "./provision/configuration/screensaver-off.sh",
-      "./provision/configuration/ntpconf.sh",
-      "./provision/configuration/max-files.sh",
-      "./provision/configuration/shell-change.sh"
+      "./scripts/build/configure-tccdb-macos.sh",
+      "./scripts/build/configure-network-interface-detection.sh",
+      "./scripts/build/configure-autologin.sh",
+      "./scripts/build/configure-auto-updates.sh",
+      "./scripts/build/configure-screensaver.sh",
+      "./scripts/build/configure-ntpconf.sh",
+      "./scripts/build/configure-max-files-limitation.sh",
+      "./scripts/build/configure-shell.sh"
     ]
     environment_vars = [
       "PASSWORD=${var.vm_password}",
@@ -145,9 +153,9 @@ build {
   }
   provisioner "shell" {
     scripts = [
-      "./provision/configuration/preimagedata.sh",
-      "./provision/configuration/configure-ssh.sh",
-      "./provision/configuration/configure-machine.sh"
+      "./scripts/build/configure-preimagedata.sh",
+      "./scripts/build/configure-ssh.sh",
+      "./scripts/build/configure-machine.sh"
     ]
     environment_vars = [
       "IMAGE_VERSION=${var.build_id}",
@@ -157,25 +165,25 @@ build {
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }
   provisioner "shell" {
-    script  = "./provision/core/reboot.sh"
-    execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; sudo {{ .Vars }} {{ .Path }}"
+    execute_command   = "source $HOME/.bash_profile; sudo {{ .Vars }} {{ .Path }}"
     expect_disconnect = true
+    inline            = ["echo 'Reboot VM'", "shutdown -r now"]
   }
   provisioner "shell" {
     pause_before = "30s"
     scripts = [
-      "./provision/core/open_windows_check.sh",
-      "./provision/core/powershell.sh",
-      "./provision/core/dotnet.sh",
-      "./provision/core/python.sh",
-      "./provision/core/azcopy.sh",
-      "./provision/core/openssl.sh",
-      "./provision/core/ruby.sh",
-      "./provision/core/rubygem.sh",
-      "./provision/core/git.sh",
-      "./provision/core/mongodb.sh",
-      "./provision/core/node.sh",
-      "./provision/core/commonutils.sh"
+      "./scripts/build/configure-windows.sh",
+      "./scripts/build/install-powershell.sh",
+      "./scripts/build/install-dotnet.sh",
+      "./scripts/build/install-python.sh",
+      "./scripts/build/install-azcopy.sh",
+      "./scripts/build/install-openssl.sh",
+      "./scripts/build/install-ruby.sh",
+      "./scripts/build/install-rubygems.sh",
+      "./scripts/build/install-git.sh",
+      "./scripts/build/install-mongodb.sh",
+      "./scripts/build/install-node.sh",
+      "./scripts/build/install-common-utils.sh"
     ]
     environment_vars = [
       "API_PAT=${var.github_api_pat}",
@@ -184,7 +192,7 @@ build {
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }
   provisioner "shell" {
-    script = "./provision/core/xcode.ps1"
+    script = "./scripts/build/Install-Xcode.ps1"
     environment_vars = [
       "XCODE_INSTALL_STORAGE_URL=${var.xcode_install_storage_url}",
       "XCODE_INSTALL_SAS=${var.xcode_install_sas}"
@@ -192,41 +200,41 @@ build {
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} pwsh -f {{ .Path }}"
   }
   provisioner "shell" {
-    script = "./provision/core/reboot.sh"
-    execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; sudo {{ .Vars }} {{ .Path }}"
+    execute_command   = "source $HOME/.bash_profile; sudo {{ .Vars }} {{ .Path }}"
     expect_disconnect = true
+    inline            = ["echo 'Reboot VM'", "shutdown -r now"]
   }
   provisioner "shell" {
     scripts = [
-      "./provision/core/llvm.sh",
-      "./provision/core/golang.sh",
-      "./provision/core/swiftlint.sh",
-      "./provision/core/openjdk.sh",
-      "./provision/core/php.sh",
-      "./provision/core/aws.sh",
-      "./provision/core/rust.sh",
-      "./provision/core/gcc.sh",
-      "./provision/core/haskell.sh",
-      "./provision/core/stack.sh",
-      "./provision/core/cocoapods.sh",
-      "./provision/core/android-toolsets.sh",
-      "./provision/core/xamarin.sh",
-      "./provision/core/vsmac.sh",
-      "./provision/core/nvm.sh",
-      "./provision/core/apache.sh",
-      "./provision/core/nginx.sh",
-      "./provision/core/postgresql.sh",
-      "./provision/core/audiodevice.sh",
-      "./provision/core/vcpkg.sh",
-      "./provision/core/miniconda.sh",
-      "./provision/core/safari.sh",
-      "./provision/core/chrome.sh",
-      "./provision/core/edge.sh",
-      "./provision/core/firefox.sh",
-      "./provision/core/pypy.sh",
-      "./provision/core/pipx-packages.sh",
-      "./provision/core/bicep.sh",
-      "./provision/core/codeql-bundle.sh"
+      "./scripts/build/install-actions-cache.sh",
+      "./scripts/build/install-llvm.sh",
+      "./scripts/build/install-golang.sh",
+      "./scripts/build/install-swiftlint.sh",
+      "./scripts/build/install-openjdk.sh",
+      "./scripts/build/install-php.sh",
+      "./scripts/build/install-aws-tools.sh",
+      "./scripts/build/install-rust.sh",
+      "./scripts/build/install-gcc.sh",
+      "./scripts/build/install-haskell.sh",
+      "./scripts/build/install-cocoapods.sh",
+      "./scripts/build/install-android-sdk.sh",
+      "./scripts/build/install-xamarin.sh",
+      "./scripts/build/install-visualstudio.sh",
+      "./scripts/build/install-nvm.sh",
+      "./scripts/build/install-apache.sh",
+      "./scripts/build/install-nginx.sh",
+      "./scripts/build/install-postgresql.sh",
+      "./scripts/build/install-audiodevice.sh",
+      "./scripts/build/install-vcpkg.sh",
+      "./scripts/build/install-miniconda.sh",
+      "./scripts/build/install-safari.sh",
+      "./scripts/build/install-chrome.sh",
+      "./scripts/build/install-edge.sh",
+      "./scripts/build/install-firefox.sh",
+      "./scripts/build/install-pypy.sh",
+      "./scripts/build/install-pipx-packages.sh",
+      "./scripts/build/install-bicep.sh",
+      "./scripts/build/install-codeql-bundle.sh"
     ]
     environment_vars = [
       "API_PAT=${var.github_api_pat}"
@@ -235,22 +243,22 @@ build {
   }
   provisioner "shell" {
     scripts = [
-      "./provision/core/toolset.ps1",
-      "./provision/core/configure-toolset.ps1"
+      "./scripts/build/Install-Toolset.ps1",
+      "./scripts/build/Configure-Toolset.ps1"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} pwsh -f {{ .Path }}"
   }
   provisioner "shell" {
-    script = "./provision/core/delete-duplicate-sims.rb"
+    script = "./scripts/build/configure-xcode-simulators.rb"
     execute_command = "source $HOME/.bash_profile; ruby {{ .Path }}"
   }
   provisioner "shell" {
-      script = "./provision/core/fix-xcode-simulators.ps1"
+      script = "./scripts/build/Update-XcodeSimulators.ps1"
       execute_command = "chmod +x {{ .Path }}; {{ .Vars }} pwsh -f {{ .Path }}"
   }
   provisioner "shell" {
     inline = [
-      "pwsh -File \"$HOME/image-generation/software-report/SoftwareReport.Generator.ps1\" -OutputDirectory \"$HOME/image-generation/output/software-report\" -ImageName ${var.build_id}",
+      "pwsh -File \"$HOME/image-generation/software-report/Generate-SoftwareReport.ps1\" -OutputDirectory \"$HOME/image-generation/output/software-report\" -ImageName ${var.build_id}",
       "pwsh -File \"$HOME/image-generation/tests/RunAll-Tests.ps1\""
     ]
     execute_command = "source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
@@ -262,8 +270,8 @@ build {
   }
   provisioner "shell" {
     scripts = [
-      "./provision/configuration/configure-hostname.sh",
-      "./provision/configuration/finalize-vm.sh"
+      "./scripts/build/configure-hostname.sh",
+      "./scripts/build/configure-system.sh"
     ]
     execute_command = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
   }

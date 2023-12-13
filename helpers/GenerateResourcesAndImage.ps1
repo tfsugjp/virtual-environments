@@ -19,20 +19,21 @@ Function Get-PackerTemplatePath {
     )
 
     switch ($ImageType) {
+        # Note: Double Join-Path is required to support PowerShell 5.1
         ([ImageType]::Windows2019) {
-            $relativeTemplatePath = Join-Path "win" "windows2019.json"
+            $relativeTemplatePath = Join-Path (Join-Path "windows" "templates") "windows-2019.json"
         }
         ([ImageType]::Windows2022) {
-            $relativeTemplatePath = Join-Path "win" "windows2022.json"
+            $relativeTemplatePath = Join-Path (Join-Path "windows" "templates") "windows-2022.json"
         }
         ([ImageType]::Ubuntu2004) {
-            $relativeTemplatePath = Join-Path "linux" "ubuntu2004.json"
+            $relativeTemplatePath = Join-Path (Join-Path "ubuntu" "templates") "ubuntu-20.04.json"
         }
         ([ImageType]::Ubuntu2204) {
-            $relativeTemplatePath = Join-Path "linux" "ubuntu2204.pkr.hcl"
+            $relativeTemplatePath = Join-Path (Join-Path "ubuntu" "templates") "ubuntu-22.04.pkr.hcl"
         }
         ([ImageType]::UbuntuMinimal) {
-            $relativeTemplatePath = Join-Path "linux" "ubuntuminimal.pkr.hcl"
+            $relativeTemplatePath = Join-Path (Join-Path "ubuntu" "templates") "ubuntu-minimal.pkr.hcl"
         }
         ([ImageType]::Ubuntu2204Arm) {
             $relativeTemplatePath = Join-Path "linux" "ubuntu2204.pkr-arm64.hcl"
@@ -101,8 +102,10 @@ Function GenerateResourcesAndImage {
             This parameter cannot be used in combination with the virtual_network_name packer parameter.
         .PARAMETER Force
             Delete the resource group if it exists without user confirmation.
+            This parameter is deprecated and will be removed in a future release.
         .PARAMETER ReuseResourceGroup
             Reuse the resource group if it exists without user confirmation.
+            This parameter is deprecated and will be removed in a future release.
         .PARAMETER OnError
             Specify how packer handles an error during image creation.
             Options:
@@ -150,6 +153,10 @@ Function GenerateResourcesAndImage {
         [hashtable] $Tags = @{}
     )
 
+    if ($Force -or $ReuseResourceGroup) {
+        Write-Warning "The `ReuseResourceGroup` and `Force` parameters are deprecated and will be removed in a future release. The resource group will be reused when it already exists and an error will be thrown when it doesn't. If you want to delete the resource group, please delete it manually."
+    }
+
     if ($Force -and $ReuseResourceGroup) {
         throw "Force and ReuseResourceGroup cannot be used together."
     }
@@ -179,6 +186,10 @@ Function GenerateResourcesAndImage {
                 Write-Verbose "PowerShell 5 detected. Replacing double quotes with escaped double quotes in allowed inbound IP addresses."
                 $AllowedInboundIpAddresses = '[\"{0}\"]' -f $AgentIp
             }
+            elseif ($PSVersionTable.PSVersion.Major -eq 7 -and $PSVersionTable.PSVersion.Minor -le 2) {
+                Write-Verbose "PowerShell 7.0-7.2 detected. Replacing double quotes with escaped double quotes in allowed inbound IP addresses."
+                $AllowedInboundIpAddresses = '[\"{0}\"]' -f $AgentIp
+            }
             else {
                 $AllowedInboundIpAddresses = '["{0}"]' -f $AgentIp
             }
@@ -203,6 +214,10 @@ Function GenerateResourcesAndImage {
     $TagsJson = $Tags | ConvertTo-Json -Compress
     if ($PSVersionTable.PSVersion.Major -eq 5) {
         Write-Verbose "PowerShell 5 detected. Replacing double quotes with escaped double quotes in tags JSON."
+        $TagsJson = $TagsJson -replace '"', '\"'
+    }
+    elseif ($PSVersionTable.PSVersion.Major -eq 7 -and $PSVersionTable.PSVersion.Minor -le 2) {
+        Write-Verbose "PowerShell 7.0-7.2 detected. Replacing double quotes with escaped double quotes in tags JSON."
         $TagsJson = $TagsJson -replace '"', '\"'
     }
     Write-Debug "Tags JSON: $TagsJson."
@@ -245,7 +260,7 @@ Function GenerateResourcesAndImage {
         }
         else {
             Write-Verbose "AzureClientId was provided, will use service principal login."
-            az login --service-principal --username $AzureClientId --password $AzureClientSecret --tenant $AzureTenantId --output none
+            az login --service-principal --username $AzureClientId --password=$AzureClientSecret --tenant $AzureTenantId --output none
         }
         az account set --subscription $SubscriptionId
         if ($LastExitCode -ne 0) {

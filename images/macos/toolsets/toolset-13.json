@@ -3,46 +3,47 @@
         "default": "14.3.1",
         "x64": {
             "versions": [
-                { "link": "15.0", "version": "15.0.0+15A240d"},
-                { "link": "14.3.1", "version": "14.3.1+14E300c","symlinks": ["14.3"] },
-                { "link": "14.2", "version": "14.2.0+14C18" },
-                { "link": "14.1", "version": "14.1.0+14B47b" }
+                { "link": "15.0.1", "version": "15.0.1+15A507", "symlinks": ["15.0"], "install_runtimes": "true"},
+                { "link": "14.3.1", "version": "14.3.1+14E300c","symlinks": ["14.3"], "install_runtimes": "true"},
+                { "link": "14.2", "version": "14.2.0+14C18", "install_runtimes": "true"},
+                { "link": "14.1", "version": "14.1.0+14B47b", "install_runtimes": "true"}
                 ]
         },
         "arm64":{
             "versions": [
-                { "link": "15.0", "version": "15.0.0+15A240d"},
-                { "link": "14.3.1", "version": "14.3.1+14E300c","symlinks": ["14.3"] },
-                { "link": "14.2", "version": "14.2.0+14C18" },
-                { "link": "14.1", "version": "14.1.0+14B47b" }
+                { "link": "15.0.1", "version": "15.0.1+15A507", "symlinks": ["15.0"], "install_runtimes": "true"},
+                { "link": "14.3.1", "version": "14.3.1+14E300c","symlinks": ["14.3"], "install_runtimes": "true" },
+                { "link": "14.2", "version": "14.2.0+14C18", "install_runtimes": "true" },
+                { "link": "14.1", "version": "14.1.0+14B47b", "install_runtimes": "true" }
             ]
         }
     },
     "java": {
         "x64": {
             "default": "17",
-            "versions": [ "8", "11", "17" ]
+            "versions": [ "8", "11", "17", "21"]
         },
         "arm64": {
             "default": "17",
-            "versions": [ "11", "17" ]
+            "versions": [ "11", "17", "21"]
         }
     },
     "android": {
-        "platform_min_version": "27",
-        "build_tools_min_version": "27.0.0",
-        "extra-list": [
+        "cmdline-tools": "commandlinetools-mac-10406996_latest.zip",
+        "sdk-tools": "sdk-tools-darwin-4333796.zip",
+        "platform_min_version": "33",
+        "build_tools_min_version": "33.0.2",
+        "extras": [
             "android;m2repository", "google;m2repository", "google;google_play_services"
         ],
-        "addon-list": [],
-        "additional-tools": [
-            "cmake;3.18.1",
+        "addons": [],
+        "additional_tools": [
             "cmake;3.22.1"
         ],
         "ndk": {
-            "default": "25",
+            "default": "26",
             "versions": [
-                "23", "24", "25", "26"
+                "24", "25", "26"
             ]
         }
     },
@@ -73,7 +74,9 @@
             "gmp",
             "r",
             "yq",
-            "unxip"
+            "unxip",
+            "xcbeautify",
+            "xcodes"
         ],
         "cask_packages": [
             "julia"
@@ -82,19 +85,22 @@
     "gcc": {
         "versions": [
             "11",
-            "12"
+            "12",
+            "13"
         ]
     },
     "dotnet": {
         "arch":{
             "x64": {
                "versions": [
-                   "7.0"
+                   "7.0",
+                   "8.0"
                 ]
             },
             "arm64": {
                 "versions": [
-                    "7.0"
+                    "7.0",
+                    "8.0"
                 ]
             }
         }
@@ -161,7 +167,8 @@
                 "arm64": {
                     "versions": [
                         "16.*",
-                        "18.*"
+                        "18.*",
+                        "20.*"
                     ]
                 }
             }
@@ -183,7 +190,8 @@
                     "variable_template" : "GOROOT_{0}_{1}_ARM64",
                     "versions": [
                         "1.19.*",
-                        "1.20.*"
+                        "1.20.*",
+                        "1.21.*"
                     ]
                 }
             }
@@ -210,7 +218,7 @@
         "version": "15"
     },
     "php": {
-        "version": "8.2"
+        "version": "8.3"
     },
     "mono": {
         "framework":{
