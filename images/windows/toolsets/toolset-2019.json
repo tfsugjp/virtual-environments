@@ -64,7 +64,8 @@
             "versions": [
                 "1.19.*",
                 "1.20.*",
-                "1.21.*"
+                "1.21.*",
+                "1.22.*"
             ],
             "default": "1.20.*"
         }
@@ -100,8 +101,8 @@
     "android": {
         "commandline_tools_url": "https://dl.google.com/android/repository/commandlinetools-win-9123335_latest.zip",
         "hash": "8A90E6A3DEB2FA13229B2E335EFD07687DCC8A55A3C544DA9F40B41404993E7D",
-        "platform_min_version": "19",
-        "build_tools_min_version": "19.1.0",
+        "platform_min_version": "31",
+        "build_tools_min_version": "31.0.0",
         "extras": [
             "android;m2repository",
             "google;m2repository",
@@ -217,7 +218,7 @@
         "subversion" : "16",
         "edition" : "Enterprise",
         "channel": "release",
-        "signature": "72105B6D5F370B62FD5C82F1512F7AD7DEE5F2C0",
+        "signature": "C2048FB509F1C37A8C3E9EC6648118458AA01780",
         "workloads": [
             "Component.Dotfuscator",
             "Component.Linux.CMake",
@@ -334,7 +335,11 @@
             "mcr.microsoft.com/dotnet/framework/aspnet:4.8-windowsservercore-ltsc2019",
             "mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019",
             "mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019"
-        ]
+        ],
+        "components": {
+            "docker": "24.0.7",
+            "compose": "2.23.3"
+        }   
     },
     "pipx": [
         {
@@ -363,11 +368,11 @@
     "serviceFabric": {
         "runtime": {
             "version": "9.1.1436.9590",
-            "signature": "AFBF0B8B6A18F7E23CCA1DDCD0AC1A55B4035173"
+            "checksum": "089F9BE6A63AF66C337E507B52082575C8ED330DF765259C6F2F13F900DA96D5"
         },
         "sdk": {
             "version": "6.1.1436",
-            "signature": "AFBF0B8B6A18F7E23CCA1DDCD0AC1A55B4035173"
+            "checksum": "D2A6B58315D08B6E46C2D25E91DFA1163136F70A5FA8CEF9DB147F07EE001AD1"
         }
     },
     "dotnet": {
@@ -441,5 +446,8 @@
     },
     "openssl": {
         "version": "1.1.1"
+    },
+    "pwsh": {
+        "version": "7.4"
     }
 }

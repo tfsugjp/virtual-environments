@@ -63,17 +63,33 @@ Describe "Rust" {
         }
     }
 }
+
 Describe "Docker" {
-    It "docker" {
-        "docker --version" | Should -ReturnZeroExitCode
+    It "docker client" {
+        $version=(Get-ToolsetContent).docker.components | Where-Object { $_.package -eq 'docker-ce-cli' } | Select-Object -ExpandProperty version
+        If ($version -ne "latest") {
+            $(docker version --format '{{.Client.Version}}') | Should -BeLike "*$version*"
+        }else{
+            "docker version --format '{{.Client.Version}}'" | Should -ReturnZeroExitCode
+        }
     }
 
     It "docker buildx" {
-        "docker buildx" | Should -ReturnZeroExitCode
+        $version=(Get-ToolsetContent).docker.plugins | Where-Object { $_.plugin -eq 'buildx' } | Select-Object -ExpandProperty version
+        If ($version -ne "latest") {
+            $(docker buildx version) | Should -BeLike "*$version*"
+        }else{
+            "docker buildx" | Should -ReturnZeroExitCode
+        }
     }
 
     It "docker compose v2" {
-        "docker compose" | Should -ReturnZeroExitCode
+        $version=(Get-ToolsetContent).docker.plugins | Where-Object { $_.plugin -eq 'compose' } | Select-Object -ExpandProperty version
+        If ($version -ne "latest") {
+            $(docker compose version --short) | Should -BeLike "*$version*"
+        }else{
+            "docker compose version --short" | Should -ReturnZeroExitCode
+        }
     }
 
     It "docker-credential-ecr-login" {
@@ -111,13 +127,9 @@ Describe "Bazel" {
 }
 
 Describe "clang" {
-    [array]$testCases = (Get-ToolsetContent).clang.Versions | ForEach-Object { @{ClangVersion = $_} }
+    $testCases = (Get-ToolsetContent).clang.Versions | ForEach-Object { @{ClangVersion = $_} }
 
     It "clang <ClangVersion>" -TestCases $testCases {
-        param (
-            [string] $ClangVersion
-        )
-
         "clang-$ClangVersion --version" | Should -ReturnZeroExitCode
         "clang++-$ClangVersion --version" | Should -ReturnZeroExitCode
         "clang-format-$ClangVersion --version" | Should -ReturnZeroExitCode
@@ -136,34 +148,22 @@ Describe "erlang" -Skip:(Test-IsUbuntu22) {
     $testCases = @("erl -version", "erlc -v", "rebar3 -v") | ForEach-Object { @{ErlangCommand = $_} }
 
     It "erlang <ErlangCommand>" -TestCases $testCases {
-        param (
-            [string] $ErlangCommand
-        )
-
         "$ErlangCommand" | Should -ReturnZeroExitCode
     }
 }
 
 Describe "gcc" {
-    [array]$testCases = (Get-ToolsetContent).gcc.Versions | ForEach-Object { @{GccVersion = $_} }
+    $testCases = (Get-ToolsetContent).gcc.Versions | ForEach-Object { @{GccVersion = $_} }
 
     It "gcc <GccVersion>" -TestCases $testCases {
-        param (
-            [string] $GccVersion
-        )
-
         "$GccVersion --version" | Should -ReturnZeroExitCode
     }
 }
 
 Describe "gfortran" {
-    [array]$testCases = (Get-ToolsetContent).gfortran.Versions | ForEach-Object { @{GfortranVersion = $_} }
+    $testCases = (Get-ToolsetContent).gfortran.Versions | ForEach-Object { @{GfortranVersion = $_} }
 
     It "gfortran <GfortranVersion>" -TestCases $testCases {
-        param (
-            [string] $GfortranVersion
-        )
-
         "$GfortranVersion --version" | Should -ReturnZeroExitCode
     }
 }
@@ -323,7 +323,7 @@ Describe "Pulumi" {
 
 Describe "Phantomjs" -Skip:(Test-IsUbuntu22) {
     It "phantomjs" {
-        $env:OPENSSL_CONF="/etc/ssl"; phantomjs --version
+        $env:OPENSSL_CONF="/etc/ssl"
         "phantomjs --version" | Should -ReturnZeroExitCode
     }
 }
@@ -332,16 +332,14 @@ Describe "Containers" {
     $testCases = @("podman", "buildah", "skopeo") | ForEach-Object { @{ContainerCommand = $_} }
 
     It "<ContainerCommand>" -TestCases $testCases {
-        param (
-            [string] $ContainerCommand
-        )
-
         "$ContainerCommand -v" | Should -ReturnZeroExitCode
     }
 
     # https://github.com/actions/runner-images/issues/7753
     It "podman networking" -TestCases "podman CNI plugins" {
-        "podman network create -d bridge test-net && podman network ls" | Should -Not -OutputTextMatchingRegex "Error"
+        "podman network create -d bridge test-net" | Should -ReturnZeroExitCode
+        "podman network ls" | Should -Not -OutputTextMatchingRegex "Error"
+        "podman network rm test-net" | Should -ReturnZeroExitCode
     }
 
 }
@@ -356,31 +354,20 @@ Describe "Python" {
     $testCases = @("python", "pip", "python3", "pip3") | ForEach-Object { @{PythonCommand = $_} }
 
     It "<PythonCommand>" -TestCases $testCases {
-        param (
-            [string] $PythonCommand
-        )
-
         "$PythonCommand --version" | Should -ReturnZeroExitCode
-    }   
+    }
 }
 
 Describe "Ruby" {
     $testCases = @("ruby", "gem") | ForEach-Object { @{RubyCommand = $_} }
 
     It "<RubyCommand>" -TestCases $testCases {
-        param (
-            [string] $RubyCommand
-        )
-
         "$RubyCommand --version" | Should -ReturnZeroExitCode
     }
 
-    $gemTestCases = (Get-ToolsetContent).rubygems | ForEach-Object {
-        @{gemName = $_.name}
-    }
+    $gemTestCases = (Get-ToolsetContent).rubygems | ForEach-Object { @{gemName = $_.name} }
 
-    if ($gemTestCases)
-    {
+    if ($gemTestCases) {
         It "Gem <gemName> is installed" -TestCases $gemTestCases {
             "gem list -i '^$gemName$'" | Should -OutputTextMatchingRegex "true"
         }
@@ -395,22 +382,22 @@ Describe "yq" {
 
 Describe "Kotlin" {
     It "kapt" {
-        "kapt -version"| Should -ReturnZeroExitCode
+        "kapt -version" | Should -ReturnZeroExitCode
     }
 
     It "kotlin" {
-        "kotlin -version"| Should -ReturnZeroExitCode
+        "kotlin -version" | Should -ReturnZeroExitCode
     }
 
     It "kotlinc" {
-        "kotlinc -version"| Should -ReturnZeroExitCode
+        "kotlinc -version" | Should -ReturnZeroExitCode
     }
 
     It "kotlinc-jvm" {
-        "kotlinc-jvm -version"| Should -ReturnZeroExitCode
+        "kotlinc-jvm -version" | Should -ReturnZeroExitCode
     }
 
     It "kotlin-dce-js" {
-        "kotlin-dce-js -version"| Should -ReturnZeroExitCode
+        "kotlin-dce-js -version" | Should -ReturnZeroExitCode
     }
 }
