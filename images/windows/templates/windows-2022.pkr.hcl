@@ -298,7 +298,6 @@ build {
     pause_before     = "2m0s"
     environment_vars = ["IMAGE_FOLDER=${var.image_folder}"]
     scripts          = [
-      "${path.root}/../scripts/build/Install-Wix.ps1",
       "${path.root}/../scripts/build/Install-WDK.ps1",
       "${path.root}/../scripts/build/Install-VSExtensions.ps1",
       "${path.root}/../scripts/build/Install-AzureCli.ps1",

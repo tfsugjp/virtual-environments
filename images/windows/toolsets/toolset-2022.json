@@ -285,7 +285,6 @@
         "vsix": [
             "SSIS.MicrosoftDataToolsIntegrationServices",
             "VisualStudioClient.MicrosoftVisualStudio2022InstallerProjects",
-            "WixToolset.WixToolsetVisualStudio2022Extension",
             "ProBITools.MicrosoftReportProjectsforVisualStudio2022",
             "ProBITools.MicrosoftAnalysisServicesModelingProjects2022"
         ]
