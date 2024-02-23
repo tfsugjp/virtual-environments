@@ -14,7 +14,7 @@
 - Dash 0.5.11+git20210903+057cd650a4ed-3build1
 - GNU C++: 9.5.0, 10.5.0, 11.4.0, 12.3.0, 13.1.0
 - GNU Fortran: 9.5.0, 10.5.0, 11.4.0, 12.3.0, 13.1.0
-- Julia 1.9.3
+- Julia 1.9.4
 - Kotlin 1.9.255-SNAPSHOT
 - Mono 6.12.0.200
 - MSBuild 16.10.1.31701 (Mono 6.12.0.200)
@@ -27,16 +27,16 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.13.1
-- Homebrew 4.1.18
-- Miniconda 23.9.0
+- Homebrew 4.1.20
+- Miniconda 23.10.0
 - Npm 9.8.1
 - NuGet 6.6.1.2
 - Pip 22.0.2
 - Pip3 22.0.2
 - Pipx 1.2.1
 - RubyGems 3.3.5
-- Vcpkg (build from commit 9f03078bd)
-- Yarn 1.22.19
+- Vcpkg (build from commit 0c20b2a97)
+- Yarn 1.22.21
 
 #### Environment variables
 | Name                    | Value                  |
@@ -57,65 +57,65 @@ to accomplish this.
 - Maven 3.8.8
 
 ### Tools
-- Ansible 2.15.5
+- Ansible 2.15.6
 - apt-fast 1.9.12
-- AzCopy 10.21.1 - available by `azcopy` and `azcopy10` aliases
+- AzCopy 10.21.2 - available by `azcopy` and `azcopy10` aliases
 - Bazel 6.4.0
-- Bazelisk 1.18.0
+- Bazelisk 1.19.0
 - Bicep 0.23.1
 - Buildah 1.23.1
-- CMake 3.27.7
-- CodeQL Action Bundle 2.15.1
+- CMake 3.27.8
+- CodeQL Action Bundle 2.15.2
 - Docker Amazon ECR Credential Helper 0.7.1
 - Docker Compose v1 1.29.2
-- Docker Compose v2 2.23.0
+- Docker Compose v2 2.23.1
 - Docker-Buildx 0.11.2
 - Docker Client 24.0.7
 - Docker Server 24.0.7
-- Fastlane 2.216.0
+- Fastlane 2.217.0
 - Git 2.42.0
 - Git LFS 3.4.0
 - Git-ftp 1.6.0
 - Haveged 1.9.14
-- Heroku 8.7.0
+- Heroku 8.7.1
 - jq 1.6
 - Kind 0.20.0
-- Kubectl 1.28.3
+- Kubectl 1.28.4
 - Kustomize 5.2.1
 - Leiningen 2.10.0
 - MediaInfo 21.09
 - Mercurial 6.1.1
-- Minikube 1.31.2
+- Minikube 1.32.0
 - n 9.2.0
 - Newman 6.0.0
 - nvm 0.39.5
 - OpenSSL 3.0.2-0ubuntu1.12
 - Packer 1.9.4
-- Parcel 2.10.2
+- Parcel 2.10.3
 - Podman 3.4.4
-- Pulumi 3.92.0
+- Pulumi 3.94.2
 - R 4.3.2
 - Skopeo 1.4.1
 - Sphinx Open Source Search Server 2.2.11
 - SVN 1.14.1
-- Terraform 1.6.3
-- yamllint 1.32.0
+- Terraform 1.6.4
+- yamllint 1.33.0
 - yq 4.35.2
 - zstd 1.5.5
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.0.186
-- AWS CLI 2.13.32
+- Alibaba Cloud CLI 3.0.188
+- AWS CLI 2.13.37
 - AWS CLI Session Manager Plugin 1.2.497.0
-- AWS SAM CLI 1.100.0
-- Azure CLI 2.53.1
+- AWS SAM CLI 1.103.0
+- Azure CLI 2.54.0
 - Azure CLI (azure-devops) 0.26.0
-- GitHub CLI 2.38.0
-- Google Cloud CLI 453.0.0
-- Netlify CLI 17.0.1
-- OpenShift CLI 4.14.1
+- GitHub CLI 2.39.1
+- Google Cloud CLI 455.0.0
+- Netlify CLI 17.5.1
+- OpenShift CLI 4.14.2
 - ORAS CLI 1.1.0
-- Vercel CLI 32.5.0
+- Vercel CLI 32.5.5
 
 ### Java
 | Version             | Environment Variable |
@@ -134,33 +134,33 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 ```
 
 ### Haskell Tools
-- Cabal 3.10.1.0
+- Cabal 3.10.2.0
 - GHC 9.8.1
-- GHCup 0.1.19.4
+- GHCup 0.1.20.0
 - Stack 2.13.1
 
 ### Rust Tools
-- Cargo 1.73.0
-- Rust 1.73.0
-- Rustdoc 1.73.0
+- Cargo 1.74.0
+- Rust 1.74.0
+- Rustdoc 1.74.0
 - Rustup 1.26.0
 
 #### Packages
 - Bindgen 0.69.1
 - Cargo audit 0.18.3
-- Cargo clippy 0.1.73
+- Cargo clippy 0.1.74
 - Cargo outdated 0.14.0
 - Cbindgen 0.26.0
 - Rustfmt 1.6.0
 
 ### Browsers and Drivers
-- Google Chrome 119.0.6045.105
+- Google Chrome 119.0.6045.159
 - ChromeDriver 119.0.6045.105
 - Chromium 119.0.6045.0
-- Microsoft Edge 119.0.2151.44
-- Microsoft Edge WebDriver 119.0.2151.44
+- Microsoft Edge 119.0.2151.72
+- Microsoft Edge WebDriver 119.0.2151.72
 - Selenium server 4.15.0
-- Mozilla Firefox 119.0
+- Mozilla Firefox 120.0
 - Geckodriver 0.33.0
 
 #### Environment variables
@@ -172,14 +172,14 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 | SELENIUM_JAR_PATH | /usr/share/java/selenium-server.jar   |
 
 ### .NET Tools
-- .NET Core SDK: 6.0.416, 7.0.113, 7.0.203, 7.0.310, 7.0.403
+- .NET Core SDK: 6.0.417, 7.0.114, 7.0.203, 7.0.311, 7.0.404, 8.0.100
 - nbgv 3.6.133+2d32d93cb1
 
 ### Databases
 - sqlite3 3.37.2
 
 #### PostgreSQL
-- PostgreSQL 14.9
+- PostgreSQL 14.10
 ```
 User: postgres
 PostgreSQL service is disabled by default.
@@ -203,8 +203,8 @@ Use the following command as a part of your job to start the service: 'sudo syst
 
 #### Go
 - 1.19.13
-- 1.20.10
-- 1.21.3
+- 1.20.11
+- 1.21.4
 
 #### Node.js
 - 14.21.3
@@ -230,12 +230,12 @@ Use the following command as a part of your job to start the service: 'sudo syst
 - 3.1.4
 
 ### PowerShell Tools
-- PowerShell 7.2.16
+- PowerShell 7.2.17
 
 #### PowerShell Modules
 - Az: 9.3.0
 - MarkdownPS: 1.9
-- Microsoft.Graph: 2.8.0
+- Microsoft.Graph: 2.9.1
 - Pester: 5.5.0
 - PSScriptAnalyzer: 1.21.0
 
@@ -258,7 +258,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | CMake                      | 3.10.2<br>3.18.1<br>3.22.1                                                                                                                                                                                                                                    |
 | Google Play services       | 49                                                                                                                                                                                                                                                            |
 | Google Repository          | 58                                                                                                                                                                                                                                                            |
-| NDK                        | 23.2.8568313<br>24.0.8215888<br>25.2.9519653 (default)<br>26.1.10909125                                                                                                                                                                                       |
+| NDK                        | 24.0.8215888<br>25.2.9519653 (default)<br>26.1.10909125                                                                                                                                                                                                       |
 
 #### Environment variables
 | Name                    | Value                                        |
@@ -286,9 +286,9 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | node:16                 | sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b  | 2023-09-07 |
 | node:16-alpine          | sha256:a1f9d027912b58a7c75be7716c97cfbc6d3099f3a97ed84aa490be9dee20e787  | 2023-08-10 |
 | node:18                 | sha256:7ce8b205d15e30fd395e5fa4000bcdf595fcff3f434fe75822e54e82a5f5cf82  | 2023-11-01 |
-| node:18-alpine          | sha256:435dcad253bb5b7f347ebc69c8cc52de7c912eb7241098b920f2fc2d7843183d  | 2023-10-18 |
+| node:18-alpine          | sha256:3428c2de886bf4378657da6fe86e105573a609c94df1f7d6a70e57d2b51de21f  | 2023-11-16 |
 | node:20                 | sha256:5f21943fe97b24ae1740da6d7b9c56ac43fe3495acb47c1b232b0a352b02a25c  | 2023-11-01 |
-| node:20-alpine          | sha256:8e015de364a2eb2ed7c52a558e9f716dcb615560ffd132234087c10ccc1f2c63  | 2023-10-25 |
+| node:20-alpine          | sha256:cb2301e2c5fe3165ba2616591efe53b4b6223849ac0871c138f56d5f7ae8be4b  | 2023-11-16 |
 | ubuntu:18.04            | sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98  | 2023-05-30 |
 | ubuntu:20.04            | sha256:ed4a42283d9943135ed87d4ee34e542f7f5ad9ecf2f244870e23122f703f91c2  | 2023-10-03 |
 | ubuntu:22.04            | sha256:2b7412e6465c3c7fc5bb21d3e6f1917c167358449fecac8176c6e496e5c1f05f  | 2023-10-05 |
@@ -312,6 +312,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | dpkg-dev               | 1.21.1ubuntu2.2                     |
 | fakeroot               | 1.28-1ubuntu1                       |
 | file                   | 1:5.41-3ubuntu0.1                   |
+| findutils              | 4.8.0-1ubuntu3                      |
 | flex                   | 2.6.4-8build2                       |
 | fonts-noto-color-emoji | 2.038-0ubuntu1                      |
 | ftp                    | 20210827-4build1                    |
