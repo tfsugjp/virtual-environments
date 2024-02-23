@@ -1,7 +1,12 @@
+| Announcements |
+|-|
+| [[All OSes] Ruby versions <= 2.7.x will be removed on February, 26](https://github.com/actions/runner-images/issues/9327) |
+| [[All OSes] Go 1.19.x will be removed and 1.21.x set as default on February, 26](https://github.com/actions/runner-images/issues/9326) |
+***
 # Ubuntu 22.04
 - OS Version: 22.04.4 LTS
 - Kernel Version: 6.2.0-1019-azure
-- Image Version: dev
+- Image Version: 20240218.1.0
 - Systemd version: 249.11-0ubuntu3.12
 
 ## Installed Software
@@ -27,7 +32,7 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.14.1
-- Homebrew 4.2.9
+- Homebrew 4.2.8
 - Miniconda 23.11.0
 - Npm 10.2.4
 - NuGet 6.6.1.2
@@ -112,8 +117,8 @@ to accomplish this.
 - Azure CLI (azure-devops) 0.26.0
 - GitHub CLI 2.44.1
 - Google Cloud CLI 464.0.0
-- Netlify CLI 17.16.4
-- OpenShift CLI 4.14.13
+- Netlify CLI 17.16.2
+- OpenShift CLI 4.14.12
 - ORAS CLI 1.1.0
 - Vercel CLI 33.5.1
 
@@ -154,12 +159,12 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.7.0
 
 ### Browsers and Drivers
-- Google Chrome 122.0.6261.57
-- ChromeDriver 122.0.6261.57
-- Chromium 122.0.6261.0
+- Google Chrome 121.0.6167.184
+- ChromeDriver 121.0.6167.184
+- Chromium 121.0.6167.0
 - Microsoft Edge 121.0.2277.128
 - Microsoft Edge WebDriver 121.0.2277.128
-- Selenium server 4.18.1
+- Selenium server 4.17.0
 - Mozilla Firefox 123.0
 - Geckodriver 0.34.0
 
@@ -235,7 +240,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 #### PowerShell Modules
 - Az: 9.3.0
 - MarkdownPS: 1.9
-- Microsoft.Graph: 2.14.1
+- Microsoft.Graph: 2.14.0
 - Pester: 5.5.0
 - PSScriptAnalyzer: 1.21.0
 

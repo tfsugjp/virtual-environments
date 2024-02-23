@@ -62,12 +62,11 @@
             "arch": "x64",
             "platform" : "win32",
             "versions": [
-                "1.19.*",
                 "1.20.*",
                 "1.21.*",
                 "1.22.*"
             ],
-            "default": "1.20.*"
+            "default": "1.21.*"
         }
     ],
     "powershellModules": [
@@ -211,7 +210,8 @@
         { "name": "FS-iSCSITarget-Server", "includeAllSubFeatures": true, "includeManagementTools": true },
         { "name": "Containers" },
         { "name": "Microsoft-Windows-Subsystem-Linux", "optionalFeature": true },
-        { "name": "VirtualMachinePlatform", "optionalFeature": true }
+        { "name": "VirtualMachinePlatform", "optionalFeature": true },
+        { "name": "Wireless-Networking" }
     ],
     "visualStudio": {
         "version" : "2019",
