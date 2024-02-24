@@ -104,7 +104,7 @@ $tools.AddToolVersion("Subversion (SVN)", $(Get-SVNVersion))
 $tools.AddToolVersion("Swig", $(Get-SwigVersion))
 $tools.AddToolVersion("VSWhere", $(Get-VSWhereVersion))
 $tools.AddToolVersion("WinAppDriver", $(Get-WinAppDriver))
-#$tools.AddToolVersion("WiX Toolset", $(Get-WixVersion))
+$tools.AddToolVersion("WiX Toolset", $(Get-WixVersion))
 $tools.AddToolVersion("yamllint", $(Get-YAMLLintVersion))
 $tools.AddToolVersion("zstd", $(Get-ZstdVersion))
 
@@ -198,18 +198,18 @@ $msVisualCpp.AddTable($(Get-VisualCPPComponents))
 $visualStudio.AddToolVersionsList("Installed Windows SDKs", $(Get-WindowsSDKs).Versions, '^.+')
 
 # .NET Core Tools
-$netCoreTools = $installedSoftware.AddHeader(".NET Core Tools")
-if (Test-IsWin19) {
+#$netCoreTools = $installedSoftware.AddHeader(".NET Core Tools")
+#if (Test-IsWin19) {
     # Visual Studio 2019 brings own version of .NET Core which is different from latest official version
-    $netCoreTools.AddToolVersionsListInline(".NET Core SDK", $(Get-DotnetSdks).Versions, '^\d+\.\d+\.\d{2}')
-} else {
-    $netCoreTools.AddToolVersionsListInline(".NET Core SDK", $(Get-DotnetSdks).Versions, '^\d+\.\d+\.\d')
-}
-$netCoreTools.AddToolVersionsListInline(".NET Framework", $(Get-DotnetFrameworkVersions), '^.+')
-Get-DotnetRuntimes | ForEach-Object {
-    $netCoreTools.AddToolVersionsListInline($_.Runtime, $_.Versions, '^.+')
-}
-$netCoreTools.AddNodes($(Get-DotnetTools))
+#    $netCoreTools.AddToolVersionsListInline(".NET Core SDK", $(Get-DotnetSdks).Versions, '^\d+\.\d+\.\d{2}')
+#} else {
+#    $netCoreTools.AddToolVersionsListInline(".NET Core SDK", $(Get-DotnetSdks).Versions, '^\d+\.\d+\.\d')
+#}
+#$netCoreTools.AddToolVersionsListInline(".NET Framework", $(Get-DotnetFrameworkVersions), '^.+')
+#Get-DotnetRuntimes | ForEach-Object {
+#    $netCoreTools.AddToolVersionsListInline($_.Runtime, $_.Versions, '^.+')
+#}
+#$netCoreTools.AddNodes($(Get-DotnetTools))
 
 # PowerShell Tools
 $psTools = $installedSoftware.AddHeader("PowerShell Tools")
