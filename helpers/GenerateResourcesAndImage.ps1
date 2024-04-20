@@ -150,7 +150,9 @@ Function GenerateResourcesAndImage {
         [ValidateSet("abort", "ask", "cleanup", "run-cleanup-provisioner")]
         [string] $OnError = "ask",
         [Parameter(Mandatory = $False)]
-        [hashtable] $Tags = @{}
+        [hashtable] $Tags = @{},
+        [Parameter(Mandatory = $False)]
+        [bool]$useDeviceCode = $false
     )
 
     if ($Force -or $ReuseResourceGroup) {
@@ -240,14 +242,18 @@ Function GenerateResourcesAndImage {
     }
 
     try {
-        # Login to Azure subscription
-        if ([string]::IsNullOrEmpty($AzureClientId)) {
-            Write-Verbose "No AzureClientId was provided, will use interactive login."
-            az login --output none
-        }
-        else {
-            Write-Verbose "AzureClientId was provided, will use service principal login."
-            az login --service-principal --username $AzureClientId --password=$AzureClientSecret --tenant $AzureTenantId --output none
+        if($useDeviceCode) {
+            az login --use-device-code 
+        }else{
+            # Login to Azure subscription
+            if ([string]::IsNullOrEmpty($AzureClientId)) {
+                Write-Verbose "No AzureClientId was provided, will use interactive login."
+                az login --output none
+            }
+            else {
+                Write-Verbose "AzureClientId was provided, will use service principal login."
+                az login --service-principal --username $AzureClientId --password=$AzureClientSecret --tenant $AzureTenantId --output none
+            }
         }
         az account set --subscription $SubscriptionId
         if ($LastExitCode -ne 0) {
