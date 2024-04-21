@@ -70,7 +70,6 @@
         }
     ],
     "powershellModules": [
-        {"name": "DockerMsftProvider"},
         {"name": "MarkdownPS"},
         {"name": "Pester"},
         {"name": "PowerShellGet"},
