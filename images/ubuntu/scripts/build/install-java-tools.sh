@@ -69,6 +69,7 @@ echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium
 # Get all the updates from enabled repositories.
 apt-get update
 
+# While Ubuntu 24.04 binaries are not released in the Adoptium repo, we will not install Java
 defaultVersion=$(get_toolset_value '.java.default')
 jdkVersionsToInstall=($(get_toolset_value ".java.versions[]"))
 
@@ -84,7 +85,7 @@ for jdkVersionToInstall in ${jdkVersionsToInstall[@]}; do
 done
 
 # Install Ant
-apt-get install -y --no-install-recommends ant ant-optional
+apt-get install --no-install-recommends ant ant-optional
 set_etc_environment_variable "ANT_HOME" "/usr/share/ant"
 
 # Install Maven

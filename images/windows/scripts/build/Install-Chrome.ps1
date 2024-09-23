@@ -6,13 +6,13 @@
 # Download and install latest Chrome browser
 Install-Binary `
     -Url 'https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi' `
-    -ExpectedSignature '2673EA6CC23BEFFDA49AC715B121544098A1284C'
+    -ExpectedSignature '607A3EDAA64933E94422FC8F0C80388E0590986C'
 
 # Prepare firewall rules
 Write-Host "Adding the firewall rule for Google update blocking..."
 New-NetFirewallRule -DisplayName "BlockGoogleUpdate" -Direction Outbound -Action Block -Program "C:\Program Files (x86)\Google\Update\GoogleUpdate.exe"
 
-$googleServices = @('gupdate', 'gupdatem') | Get-Service
+$googleServices = Get-Service -Name "GoogleUpdater*"
 Stop-Service $googleServices
 $googleServices.WaitForStatus('Stopped', "00:01:00")
 $googleServices | Set-Service -StartupType Disabled
