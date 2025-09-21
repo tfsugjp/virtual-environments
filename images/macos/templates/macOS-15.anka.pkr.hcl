@@ -156,6 +156,7 @@ build {
     inline          = [
       "mv ${local.image_folder}/docs-gen ${local.image_folder}/software-report",
       "mkdir ~/utils",
+      "mv ${local.image_folder}/helpers/confirm-identified-developers-macos15.scpt ~/utils",
       "mv ${local.image_folder}/helpers/invoke-tests.sh ~/utils",
       "mv ${local.image_folder}/helpers/utils.sh ~/utils"
     ]
@@ -174,6 +175,7 @@ build {
     execute_command  = "chmod +x {{ .Path }}; source $HOME/.bash_profile; sudo {{ .Vars }} {{ .Path }}"
     scripts          = [
       "${path.root}/../scripts/build/configure-tccdb-macos.sh",
+      "${path.root}/../scripts/build/configure-autologin.sh",
       "${path.root}/../scripts/build/configure-auto-updates.sh",
       "${path.root}/../scripts/build/configure-ntpconf.sh",
       "${path.root}/../scripts/build/configure-shell.sh"
@@ -201,6 +203,7 @@ build {
     execute_command  = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
     pause_before     = "30s"
     scripts          = [
+      "${path.root}/../scripts/build/configure-windows.sh",
       "${path.root}/../scripts/build/install-powershell.sh",
       "${path.root}/../scripts/build/install-dotnet.sh",
       "${path.root}/../scripts/build/install-python.sh",
@@ -231,6 +234,7 @@ build {
     execute_command  = "chmod +x {{ .Path }}; source $HOME/.bash_profile; {{ .Vars }} {{ .Path }}"
     scripts          = [
       "${path.root}/../scripts/build/install-actions-cache.sh",
+      "${path.root}/../scripts/build/install-runner-package.sh",
       "${path.root}/../scripts/build/install-llvm.sh",
       "${path.root}/../scripts/build/install-swiftlint.sh",
       "${path.root}/../scripts/build/install-openjdk.sh",
@@ -240,6 +244,7 @@ build {
       "${path.root}/../scripts/build/install-gcc.sh",
       "${path.root}/../scripts/build/install-cocoapods.sh",
       "${path.root}/../scripts/build/install-android-sdk.sh",
+      "${path.root}/../scripts/build/install-vcpkg.sh",
       "${path.root}/../scripts/build/install-safari.sh",
       "${path.root}/../scripts/build/install-chrome.sh",
       "${path.root}/../scripts/build/install-edge.sh",

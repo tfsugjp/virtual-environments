@@ -50,21 +50,18 @@ done
 rm -f ./add-certificate
 
 # enable-automationmode-without-authentication
-
+brew install expect
 retry=10
 while [[ $retry -gt 0 ]]; do
 {
-osascript <<EOF
-    tell application "Terminal"
-        activate
-        do script "automationmodetool enable-automationmode-without-authentication"
-        delay 2
-        tell application "System Events"
-            keystroke "${PASSWORD}"
-            keystroke return
-        end tell
-    end tell
-    delay 5
+    /usr/bin/expect <<EOF
+        spawn automationmodetool enable-automationmode-without-authentication
+        expect "password"
+        send "${PASSWORD}\r"
+        expect {
+            "succeeded." { puts "Automation mode enabled successfully"; exit 0 }
+            eof
+        }
 EOF
 } && break
 
@@ -77,15 +74,27 @@ EOF
 done
 
 echo "Getting terminal windows"
-term_service=$(launchctl list | grep -i terminal | cut -f3)
-echo "Close terminal windows: gui/501/${term_service}"
-launchctl bootout gui/501/${term_service} && sleep 5
+launchctl_output=$(launchctl list | grep -i terminal || true)
+
+if [ -n "$launchctl_output" ]; then
+    term_service=$(echo "$launchctl_output" | cut -f3)
+    echo "Close terminal windows: gui/501/${term_service}"
+    launchctl bootout gui/501/${term_service} && sleep 5
+else
+    echo "No open terminal windows found."
+fi
 
 # test enable-automationmode-without-authentication
 if [[ ! "$(automationmodetool)" =~ "DOES NOT REQUIRE" ]]; then
     echo "Failed to enable enable-automationmode-without-authentication option"
     exit 1
 fi
+
+# Fix sudoers file permissions
+sudo chmod 440 /etc/sudoers.d/*
+
+# Add NOPASSWD for the current user to sudoers
+sudo sed -i '' 's/%admin		ALL = (ALL) ALL/%admin		ALL = (ALL) NOPASSWD: ALL/g' /etc/sudoers
 
 # Create symlink for tests running
 if [[ ! -d "/usr/local/bin" ]];then
@@ -94,3 +103,7 @@ if [[ ! -d "/usr/local/bin" ]];then
 fi
 chmod +x $HOME/utils/invoke-tests.sh
 sudo ln -s $HOME/utils/invoke-tests.sh /usr/local/bin/invoke_tests
+
+# Fix share dir permissions
+sudo chown "$USER":admin /usr/local/share
+sudo chmod 775 /usr/local/share
