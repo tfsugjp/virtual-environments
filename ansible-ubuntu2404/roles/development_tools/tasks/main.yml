@@ -1,0 +1,153 @@
+---
+# development_tools role - Phase 4: Development tools installation
+# This is the largest role with 50+ tools
+
+- name: Install development tools (batch 1 - Cloud & Container)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-actions-cache.sh"
+    - "{{ installer_script_folder }}/install-runner-package.sh"
+    - "{{ installer_script_folder }}/install-azcopy.sh"
+    - "{{ installer_script_folder }}/install-azure-cli.sh"
+    - "{{ installer_script_folder }}/install-azure-devops-cli.sh"
+    - "{{ installer_script_folder }}/install-bicep.sh"
+    - "{{ installer_script_folder }}/install-aws-tools.sh"
+    - "{{ installer_script_folder }}/install-container-tools.sh"
+    - "{{ installer_script_folder }}/install-kubernetes-tools.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: cloud_tools_result
+  changed_when: cloud_tools_result.rc == 0
+  tags: ['cloud', 'containers']
+
+- name: Install development tools (batch 2 - Compilers)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-clang.sh"
+    - "{{ installer_script_folder }}/install-swift.sh"
+    - "{{ installer_script_folder }}/install-gcc-compilers.sh"
+    - "{{ installer_script_folder }}/install-gfortran.sh"
+    - "{{ installer_script_folder }}/install-cmake.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: compilers_result
+  changed_when: compilers_result.rc == 0
+  tags: ['compilers']
+
+- name: Install development tools (batch 3 - Languages - Part 1)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-java-tools.sh"
+    - "{{ installer_script_folder }}/install-ruby.sh"
+    - "{{ installer_script_folder }}/install-rust.sh"
+    - "{{ installer_script_folder }}/install-php.sh"
+    - "{{ installer_script_folder }}/install-kotlin.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: languages_1_result
+  changed_when: languages_1_result.rc == 0
+  tags: ['languages']
+
+- name: Install development tools (batch 4 - Languages - Part 2)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-haskell.sh"
+    - "{{ installer_script_folder }}/install-julia.sh"
+    - "{{ installer_script_folder }}/install-nvm.sh"
+    - "{{ installer_script_folder }}/install-nodejs.sh"
+    - "{{ installer_script_folder }}/install-python.sh"
+    - "{{ installer_script_folder }}/install-pypy.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: languages_2_result
+  changed_when: languages_2_result.rc == 0
+  tags: ['languages']
+
+- name: Install development tools (batch 5 - Databases)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-mysql.sh"
+    - "{{ installer_script_folder }}/install-postgresql.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: databases_result
+  changed_when: databases_result.rc == 0
+  tags: ['databases']
+
+- name: Install development tools (batch 6 - Web & Browsers)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-apache.sh"
+    - "{{ installer_script_folder }}/install-nginx.sh"
+    - "{{ installer_script_folder }}/install-google-chrome.sh"
+    - "{{ installer_script_folder }}/install-microsoft-edge.sh"
+    - "{{ installer_script_folder }}/install-firefox.sh"
+    - "{{ installer_script_folder }}/install-selenium.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: web_tools_result
+  changed_when: web_tools_result.rc == 0
+  tags: ['web', 'browsers']
+
+- name: Install development tools (batch 7 - Build Tools)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-bazel.sh"
+    - "{{ installer_script_folder }}/install-packer.sh"
+    - "{{ installer_script_folder }}/install-vcpkg.sh"
+    - "{{ installer_script_folder }}/install-ninja.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: build_tools_result
+  changed_when: build_tools_result.rc == 0
+  tags: ['build_tools']
+
+- name: Install development tools (batch 8 - Misc Tools)
+  ansible.builtin.shell: "{{ item }}"
+  loop:
+    - "{{ installer_script_folder }}/install-apt-common.sh"
+    - "{{ installer_script_folder }}/install-git.sh"
+    - "{{ installer_script_folder }}/install-git-lfs.sh"
+    - "{{ installer_script_folder }}/install-github-cli.sh"
+    - "{{ installer_script_folder }}/install-google-cloud-cli.sh"
+    - "{{ installer_script_folder }}/install-miniconda.sh"
+    - "{{ installer_script_folder }}/install-android-sdk.sh"
+    - "{{ installer_script_folder }}/install-pulumi.sh"
+    - "{{ installer_script_folder }}/install-codeql-bundle.sh"
+    - "{{ installer_script_folder }}/install-dotnetcore-sdk.sh"
+    - "{{ installer_script_folder }}/install-yq.sh"
+    - "{{ installer_script_folder }}/install-zstd.sh"
+    - "{{ installer_script_folder }}/configure-dpkg.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: misc_tools_result
+  changed_when: misc_tools_result.rc == 0
+  tags: ['misc']
+
+- name: Display development_tools completion
+  ansible.builtin.debug:
+    msg: "Development tools installation completed (50+ tools installed)"

@@ -1,0 +1,76 @@
+---
+# validation role - Phase 8: Validation and reporting
+
+- name: Generate software report
+  ansible.builtin.shell: |
+    pwsh -File {{ image_folder }}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory {{ image_folder }}
+  environment:
+    IMAGE_VERSION: "{{ image_version }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+  register: software_report_result
+  changed_when: software_report_result.rc == 0
+
+- name: Run all tests
+  ansible.builtin.shell: |
+    pwsh -File {{ image_folder }}/tests/RunAll-Tests.ps1 -OutputDirectory {{ image_folder }}
+  environment:
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+  register: test_results
+  failed_when: test_results.rc != 0
+
+- name: Verify software report exists
+  ansible.builtin.stat:
+    path: "{{ image_folder }}/software-report.md"
+  register: report_md_check
+  failed_when: not report_md_check.stat.exists
+
+- name: Verify JSON report exists
+  ansible.builtin.stat:
+    path: "{{ image_folder }}/software-report.json"
+  register: report_json_check
+  failed_when: not report_json_check.stat.exists
+
+- name: Download software reports
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    flat: true
+  loop:
+    - { src: "{{ image_folder }}/software-report.md", dest: "{{ outputs_dir }}/Ubuntu2404-Readme.md" }
+    - { src: "{{ image_folder }}/software-report.json", dest: "{{ outputs_dir }}/software-report.json" }
+
+- name: Configure system settings
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-system.sh"
+  environment:
+    HELPER_SCRIPT_FOLDER: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    IMAGE_FOLDER: "{{ image_folder }}"
+  become: true
+  register: system_config_result
+  changed_when: system_config_result.rc == 0
+
+- name: Post-build validation
+  ansible.builtin.shell: "{{ installer_script_folder }}/post-build-validation.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+  become: true
+  register: validation_result
+  failed_when: validation_result.rc != 0
+
+- name: Deprovision with waagent (Azure only)
+  ansible.builtin.shell: |
+    sleep 30
+    /usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync
+  when: cloud_provider == "azure"
+  become: true
+  async: 600
+  poll: 0
+  register: waagent_deprovision
+
+- name: Display validation completion
+  ansible.builtin.debug:
+    msg: |
+      Validation completed successfully!
+      - Software report: {{ outputs_dir }}/Ubuntu2404-Readme.md
+      - JSON report: {{ outputs_dir }}/software-report.json
+      - All tests passed

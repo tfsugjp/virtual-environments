@@ -1,0 +1,32 @@
+---
+# container_tools role - Phase 5: Docker installation
+
+- name: Install Docker
+  ansible.builtin.shell: "{{ installer_script_folder }}/install-docker.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DOCKERHUB_PULL_IMAGES: "NO"
+  become: true
+  register: docker_install_result
+  changed_when: "'Installing' in docker_install_result.stdout or 'installed' in docker_install_result.stdout.lower()"
+
+- name: Ensure Docker service is started and enabled
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Verify Docker installation
+  ansible.builtin.command: docker --version
+  register: docker_version_check
+  changed_when: false
+
+- name: Display Docker version
+  ansible.builtin.debug:
+    msg: "Docker installed: {{ docker_version_check.stdout }}"
+
+- name: Display container_tools completion
+  ansible.builtin.debug:
+    msg: "Container tools installation completed"

@@ -1,0 +1,93 @@
+---
+# system_base role - Phase 1: Base system setup
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+  loop:
+    - "{{ image_folder }}"
+    - "{{ helper_script_folder }}"
+    - "{{ installer_script_folder }}"
+  become: true
+
+- name: Copy helper scripts
+  ansible.builtin.copy:
+    src: "{{ scripts_source_base }}/scripts/helpers/"
+    dest: "{{ helper_script_folder }}/"
+    mode: preserve
+  become: true
+
+- name: Copy build scripts
+  ansible.builtin.copy:
+    src: "{{ scripts_source_base }}/scripts/build/"
+    dest: "{{ installer_script_folder }}/"
+    mode: preserve
+  become: true
+
+- name: Create directory for test scripts
+  ansible.builtin.file:
+    path: "{{ image_folder }}/tests"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Copy test scripts
+  ansible.builtin.copy:
+    src: "{{ scripts_source_base }}/scripts/tests/"
+    dest: "{{ image_folder }}/tests/"
+    mode: preserve
+  become: true
+
+- name: Create directory for SoftwareReport
+  ansible.builtin.file:
+    path: "{{ image_folder }}/SoftwareReport"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Copy docs-gen scripts
+  ansible.builtin.copy:
+    src: "{{ scripts_source_base }}/scripts/docs-gen/"
+    dest: "{{ image_folder }}/SoftwareReport/"
+    mode: preserve
+  become: true
+
+- name: Copy software-report-base from helpers
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../helpers/software-report-base/"
+    dest: "{{ image_folder }}/SoftwareReport/"
+    mode: preserve
+  become: true
+
+- name: Create directory for post-generation scripts
+  ansible.builtin.file:
+    path: "{{ image_folder }}/post-generation"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Copy post-gen assets
+  ansible.builtin.copy:
+    src: "{{ scripts_source_base }}/assets/post-gen/"
+    dest: "{{ image_folder }}/post-generation/"
+    mode: preserve
+  become: true
+
+- name: Copy toolset configuration
+  ansible.builtin.copy:
+    src: "{{ scripts_source_base }}/toolsets/toolset-2404.json"
+    dest: "{{ installer_script_folder }}/toolset.json"
+    mode: '0644'
+  become: true
+
+- name: Configure system limits
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-limits.sh"
+  become: true
+  register: configure_limits_result
+  changed_when: configure_limits_result.rc == 0
+
+- name: Display system_base completion
+  ansible.builtin.debug:
+    msg: "System base configuration completed successfully"

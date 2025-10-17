@@ -1,0 +1,98 @@
+---
+# Directory structure
+image_folder: "/imagegeneration"
+helper_script_folder: "/imagegeneration/helpers"
+installer_script_folder: "/imagegeneration/installers"
+imagedata_file: "/imagegeneration/imagedata.json"
+
+# Image metadata
+image_version: "20251017.1"
+image_os: "ubuntu24"
+cloud_provider: "azure"  # azure, aws, gcp, bare-metal
+
+# Scripts source (relative to repository root)
+scripts_source_base: "../images/ubuntu"
+
+# Toolset versions (from toolset-2404.json)
+python_versions:
+  - "3.9.*"
+  - "3.10.*"
+  - "3.11.*"
+  - "3.12.*"
+  - "3.13.*"
+
+pypy_versions:
+  - "3.9"
+  - "3.10"
+  - "3.11"
+
+nodejs_versions:
+  - "18.*"
+  - "20.*"
+  - "22.*"
+
+nodejs_default: "20"
+
+go_versions:
+  - "1.22.*"
+  - "1.23.*"
+  - "1.24.*"
+
+go_default: "1.24.*"
+
+ruby_versions:
+  - "3.2.*"
+  - "3.3.*"
+  - "3.4.*"
+
+java_versions:
+  - "8"
+  - "11"
+  - "17"
+  - "21"
+
+java_default: "17"
+maven_version: "3.9.11"
+
+dotnet_versions:
+  - "8.0"
+  - "9.0"
+
+clang_versions:
+  - "16"
+  - "17"
+  - "18"
+
+clang_default: "18"
+
+gcc_versions:
+  - "g++-12"
+  - "g++-13"
+  - "g++-14"
+
+gfortran_versions:
+  - "gfortran-12"
+  - "gfortran-13"
+  - "gfortran-14"
+
+# Docker configuration
+docker_version: "28.0.4"
+docker_compose_version: "2.38.2"
+
+# Database versions
+postgresql_version: "16"
+
+# PowerShell version
+pwsh_version: "7.4"
+
+# PHP version
+php_versions:
+  - "8.3"
+
+# Android SDK
+android_cmdline_tools: "commandlinetools-linux-11076708_latest.zip"
+android_platform_min_version: "34"
+android_build_tools_min_version: "34.0.0"
+
+# Selenium version
+selenium_version: "4"

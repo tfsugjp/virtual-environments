@@ -1,0 +1,59 @@
+---
+# microsoft_repos role - Phase 2: Microsoft repositories and APT configuration
+
+- name: Configure APT mock (if needed)
+  ansible.builtin.script: "{{ installer_script_folder }}/configure-apt-mock.sh"
+  become: true
+  register: apt_mock_result
+  changed_when: apt_mock_result.rc == 0
+  failed_when: apt_mock_result.rc != 0
+
+- name: Install Microsoft repositories
+  ansible.builtin.shell: "{{ installer_script_folder }}/install-ms-repos.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: ms_repos_result
+  changed_when: "'Installing' in ms_repos_result.stdout or 'Added' in ms_repos_result.stdout"
+
+- name: Configure APT sources
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-apt-sources.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: apt_sources_result
+  changed_when: apt_sources_result.rc == 0
+
+- name: Configure APT settings
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-apt.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: apt_config_result
+  changed_when: apt_config_result.rc == 0
+
+- name: Configure image data
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-image-data.sh"
+  environment:
+    IMAGE_VERSION: "{{ image_version }}"
+    IMAGEDATA_FILE: "{{ imagedata_file }}"
+  become: true
+  register: image_data_result
+  changed_when: image_data_result.rc == 0
+
+- name: Configure environment
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-environment.sh"
+  environment:
+    IMAGE_VERSION: "{{ image_version }}"
+    IMAGE_OS: "{{ image_os }}"
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+  become: true
+  register: env_config_result
+  changed_when: env_config_result.rc == 0
+
+- name: Display microsoft_repos completion
+  ansible.builtin.debug:
+    msg: "Microsoft repositories and APT configuration completed"

@@ -1,0 +1,77 @@
+---
+- name: Build Ubuntu 24.04 Runner Image
+  hosts: ubuntu2404_builders
+  gather_facts: true
+  become: false  # Role内で適切に制御
+  
+  vars_files:
+    - ../group_vars/all.yml
+    - ../group_vars/ubuntu.yml
+  
+  pre_tasks:
+    - name: Verify SSH connectivity
+      ansible.builtin.ping:
+    
+    - name: Check Ubuntu version
+      ansible.builtin.command: lsb_release -rs
+      register: ubuntu_version
+      changed_when: false
+      failed_when: ubuntu_version.stdout != "24.04"
+    
+    - name: Display Ubuntu version
+      ansible.builtin.debug:
+        msg: "Building on Ubuntu {{ ubuntu_version.stdout }}"
+    
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      become: true
+    
+    - name: Create outputs directory locally
+      ansible.builtin.file:
+        path: "{{ outputs_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+  
+  roles:
+    - role: system_base
+      tags: ['always', 'base', 'system_base']
+    
+    - role: microsoft_repos
+      tags: ['base', 'repos', 'microsoft_repos']
+    
+    - role: powershell
+      tags: ['base', 'powershell']
+    
+    - role: development_tools
+      tags: ['tools', 'dev', 'development_tools']
+    
+    - role: container_tools
+      tags: ['tools', 'docker', 'container_tools']
+    
+    - role: toolset_configuration
+      tags: ['config', 'toolset', 'toolset_configuration']
+    
+    - role: post_install
+      tags: ['finalize', 'cleanup', 'post_install']
+    
+    - role: validation
+      tags: ['test', 'validate', 'validation']
+
+  post_tasks:
+    - name: Display build summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================
+          Ubuntu 24.04 image build completed successfully!
+          ============================================
+          Image Version: {{ image_version }}
+          Image OS: {{ image_os }}
+          Cloud Provider: {{ cloud_provider }}
+          Software Report: {{ outputs_dir }}/Ubuntu2404-Readme.md
+          JSON Report: {{ outputs_dir }}/software-report.json
+          Test Results: Available in {{ image_folder }}/tests/
+          ============================================
