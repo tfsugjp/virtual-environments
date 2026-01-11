@@ -71,7 +71,6 @@
           ============================================
           Image Version: {{ image_version }}
           Image OS: {{ image_os }}
-          Cloud Provider: {{ cloud_provider }}
           Software Report: {{ outputs_dir }}/Ubuntu2404-Readme.md
           JSON Report: {{ outputs_dir }}/software-report.json
           Test Results: Available in {{ image_folder }}/tests/

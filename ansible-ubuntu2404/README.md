@@ -4,7 +4,7 @@
 
 ## 📁 ディレクトリ構造
 
-```
+```text
 ansible-ubuntu2404/
 ├── ansible.cfg                     # Ansible設定ファイル
 ├── requirements.yml                # 必要なAnsibleコレクション
@@ -87,23 +87,28 @@ ansible-playbook playbooks/ubuntu2404.yml --skip-tags "development_tools"
 ## 🏗️ ロール詳細
 
 ### Phase 1: system_base
+
 - ディレクトリ構造の作成
 - ヘルパースクリプトの配置
 - ビルドスクリプトの配置
 - toolset.jsonの配置
 
 ### Phase 2: microsoft_repos
+
 - Microsoft APTリポジトリの追加
 - APTソースの最適化
 - イメージメタデータの設定
 
 ### Phase 3: powershell
+
 - PowerShell Coreのインストール
 - PowerShellモジュールのインストール
 - Azure PowerShellモジュールのインストール
 
 ### Phase 4: development_tools
+
 **最大のロール - 50以上のツールをインストール:**
+
 - Cloud & Container: Azure CLI, AWS Tools, Kubernetes
 - Compilers: Clang, GCC, Swift, CMake
 - Languages: Java, Ruby, Rust, PHP, Python, Node.js, Go
@@ -113,29 +118,33 @@ ansible-playbook playbooks/ubuntu2404.yml --skip-tags "development_tools"
 - Misc: Git, GitHub CLI, Android SDK, .NET SDK
 
 ### Phase 5: container_tools
+
 - Dockerのインストールと設定
 - Docker Composeのインストール
 
 ### Phase 6: toolset_configuration
+
 - Python/Node.js/Ruby/Goのバージョン管理
 - pipxパッケージのインストール
 
 ### Phase 7: post_install
+
 - Homebrewのインストール
 - Snap設定
 - システム再起動
 - クリーンアップ
 
 ### Phase 8: validation
+
 - ソフトウェアレポート生成
 - テスト実行
 - システム最終設定
-- waagent deprovision (Azure環境)
+- （Hyper-V向け）クラウド固有の deprovision 処理は実施しません
 
 ## 📊 推定実行時間
 
 | Phase | 推定時間 |
-|-------|---------|
+| ----- | ------- |
 | Phase 1-3 | 15分 |
 | Phase 4 | 60-90分 |
 | Phase 5-6 | 20分 |
@@ -180,16 +189,19 @@ forks = 10  # デフォルトは5
 ## 🧪 テスト
 
 ### 構文チェック
+
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml --syntax-check
 ```
 
 ### Dry-run
+
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml --check --diff
 ```
 
 ### デバッグモード
+
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml -vvv
 ```
@@ -220,6 +232,7 @@ ansible-playbook playbooks/ubuntu2404.yml --ask-vault-pass
 ## 🐛 トラブルシューティング
 
 ### APTロック競合
+
 ```bash
 # タスクにリトライ設定を追加済み
 # エラーが続く場合は手動でロックを解除:
@@ -229,6 +242,7 @@ sudo rm /var/lib/dpkg/lock*
 ```
 
 ### SSH接続失敗
+
 ```bash
 # 接続テスト
 ansible ubuntu2404_builders -m ping
@@ -238,6 +252,7 @@ ansible ubuntu2404_builders -m ping -vvv
 ```
 
 ### 再起動後の接続失敗
+
 `post_reboot_delay`を増やす (デフォルト: 300秒):
 
 ```yaml

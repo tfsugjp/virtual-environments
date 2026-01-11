@@ -8,7 +8,8 @@ imagedata_file: "/imagegeneration/imagedata.json"
 # Image metadata
 image_version: "20260111.1"
 image_os: "ubuntu24"
-cloud_provider: "bare-metal"  # azure, aws, gcp, bare-metal
+
+# Hyper-V build (no cloud-provider specific steps)
 
 # Scripts source (controller path)
 # Resolved dynamically in playbook pre_tasks to support different repo layouts.

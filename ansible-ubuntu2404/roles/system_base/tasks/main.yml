@@ -5,6 +5,9 @@
   ansible.builtin.set_fact:
     runner_images_repo: "{{ runner_images_repo | default('actions/runner-images') }}"
     runner_images_ref: "{{ runner_images_ref | default('main') }}"
+
+- name: Compute runner-images download variables
+  ansible.builtin.set_fact:
     runner_images_cache_dir: "{{ image_folder }}/.cache/runner-images"
     runner_images_tarball: "/tmp/runner-images-{{ runner_images_ref }}.tar.gz"
     runner_images_download_url: "https://github.com/{{ runner_images_repo }}/archive/{{ runner_images_ref }}.tar.gz"
@@ -42,7 +45,6 @@
     url: "{{ runner_images_download_url }}"
     dest: "{{ runner_images_tarball }}"
     mode: '0644'
-    follow_redirects: all
     force: true
   register: _runner_images_download
   retries: 5
@@ -84,6 +86,47 @@
 - name: Populate build scripts (from runner-images)
   ansible.builtin.command:
     cmd: "cp -a {{ runner_images_ubuntu }}/scripts/build/. {{ installer_script_folder }}/"
+  become: true
+
+- name: Make waagent.conf edits safe in configure-environment.sh (Hyper-V)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/configure-environment.sh"
+    regexp: '^(\s*)(sed\s+-i\s+.*?/etc/waagent\.conf)(\s*\|\|\s*true)?\s*$'
+    replace: '\\1test -f /etc/waagent.conf && \\2 || true'
+  become: true
+
+- name: Verify configure-environment.sh has no unguarded waagent.conf sed lines (Hyper-V)
+  ansible.builtin.command:
+    cmd: "grep -nE '^\\s*sed\\s+-i\\s+.*?/etc/waagent\\.conf\\s*$' {{ installer_script_folder }}/configure-environment.sh"
+  register: _waagent_unguarded_sed_grep
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Fail if configure-environment.sh still contains unguarded waagent.conf edits (Hyper-V)
+  ansible.builtin.fail:
+    msg: |
+      configure-environment.sh still contains unguarded waagent.conf edits which fail on Hyper-V.
+      Matches:
+      {{ _waagent_unguarded_sed_grep.stdout | default('') }}
+  when: _waagent_unguarded_sed_grep.rc == 0
+
+- name: Find installer shell scripts
+  ansible.builtin.find:
+    paths: "{{ installer_script_folder }}"
+    patterns: "*.sh"
+    file_type: file
+    recurse: true
+  register: _installer_sh_scripts
+  changed_when: false
+
+- name: Ensure installer shell scripts are executable
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: '0755'
+  loop: "{{ _installer_sh_scripts.files }}"
+  loop_control:
+    label: "{{ item.path }}"
   become: true
 
 - name: Create directory for test scripts
@@ -135,7 +178,8 @@
   become: true
 
 - name: Configure system limits
-  ansible.builtin.shell: "{{ installer_script_folder }}/configure-limits.sh"
+  ansible.builtin.command:
+    cmd: "/bin/bash {{ installer_script_folder }}/configure-limits.sh"
   become: true
   register: configure_limits_result
   changed_when: configure_limits_result.rc == 0

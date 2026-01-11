@@ -47,11 +47,17 @@
   changed_when: false
   when: ghcup_version_spec == 'latest'
 
+- name: Parse ghcup latest release JSON (compat)
+  ansible.builtin.set_fact:
+    _ghcup_latest_json: "{{ _ghcup_latest.json | default(_ghcup_latest.content | default('{}') | from_json) }}"
+  changed_when: false
+  when: ghcup_version_spec == 'latest'
+
 - name: Set ghcup version
   ansible.builtin.set_fact:
     ghcup_version: >-
       {{
-        (_ghcup_latest.json.tag_name | default('') | regex_replace('^v', ''))
+        (_ghcup_latest_json.tag_name | default('') | regex_replace('^v', ''))
         if ghcup_version_spec == 'latest'
         else ghcup_version_spec
       }}
@@ -99,7 +105,6 @@
     url: "{{ ghcup_asset_url }}"
     dest: /usr/local/.ghcup/bin/ghcup
     mode: '0755'
-    follow_redirects: all
     checksum: "sha256:{{ ghcup_asset_sha256 }}"
     force: false
   register: _ghcup_download
@@ -180,12 +185,17 @@
   register: _stack_release
   changed_when: false
 
+- name: Parse Stack release JSON (compat)
+  ansible.builtin.set_fact:
+    _stack_release_json: "{{ _stack_release.json | default(_stack_release.content | default('{}') | from_json) }}"
+  changed_when: false
+
 - name: Select Stack asset URL for this architecture
   ansible.builtin.set_fact:
-    stack_version: "{{ _stack_release.json.tag_name | default('') | regex_replace('^v', '') }}"
+    stack_version: "{{ _stack_release_json.tag_name | default('') | regex_replace('^v', '') }}"
     stack_asset: >-
       {{
-        (_stack_release.json.assets
+        (_stack_release_json.assets
           | selectattr('name', 'search', stack_arch_pattern)
           | selectattr('name', 'search', '\\.(tar\\.gz|tgz)$')
           | list
@@ -194,7 +204,7 @@
 
 - name: Fail if Stack asset could not be selected
   ansible.builtin.fail:
-    msg: "Could not select Stack asset for arch pattern '{{ stack_arch_pattern }}' from {{ stack_repo }} release {{ _stack_release.json.tag_name }}"
+    msg: "Could not select Stack asset for arch pattern '{{ stack_arch_pattern }}' from {{ stack_repo }} release {{ _stack_release_json.tag_name | default('') }}"
   when: stack_asset is not mapping
 
 - name: Download Stack archive (public GitHub Releases URL)
@@ -202,7 +212,6 @@
     url: "{{ stack_asset.browser_download_url }}"
     dest: "/tmp/{{ stack_asset.name }}"
     mode: '0644'
-    follow_redirects: all
     force: false
   register: _stack_download
   retries: 5

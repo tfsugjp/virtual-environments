@@ -2,6 +2,23 @@
 # development_tools role - Phase 4: Development tools installation
 # This is the largest role with 50+ tools
 
+- name: Cleanup temp/keyring files to make installers rerunnable
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    # AWS tools installers can prompt if these exist from a previous failed run.
+    - /tmp/aws
+    - /tmp/install
+    - /tmp/aws-sam-cli
+    - /tmp/installers/aws
+    - /tmp/installers/aws-sam-cli
+    # kubectl installer can prompt (no /dev/tty) when overwriting keyring.
+    - /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - /etc/apt/sources.list.d/kubernetes.list
+  become: true
+  tags: ['cloud', 'containers']
+
 - name: Install development tools (batch 1 - Cloud & Container)
   ansible.builtin.shell: "{{ item }}"
   loop:
@@ -23,6 +40,7 @@
 
 - name: Install Ruby (native)
   ansible.builtin.include_tasks: ruby.yml
+  when: not ansible_check_mode
   tags: ['languages', 'ruby']
 
 - name: Install development tools (batch 2 - Compilers)
@@ -60,6 +78,7 @@
 
 - name: Install Haskell (native)
   ansible.builtin.include_tasks: haskell.yml
+  when: not ansible_check_mode
   tags: ['languages', 'haskell']
 
 - name: Install development tools (batch 4 - Languages - Part 2)

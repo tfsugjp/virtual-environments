@@ -11,21 +11,70 @@
   register: docker_install_result
   changed_when: "'Installing' in docker_install_result.stdout or 'installed' in docker_install_result.stdout.lower()"
 
+- name: Gather service facts
+  ansible.builtin.service_facts:
+  become: true
+  when: not ansible_check_mode
+
+- name: Detect Docker systemd unit name
+  ansible.builtin.set_fact:
+    docker_service_name: >-
+      {{
+        'docker'
+        if (ansible_facts.services is defined and (
+          'docker.service' in ansible_facts.services
+          or 'docker' in ansible_facts.services
+        ))
+        else ''
+      }}
+  changed_when: false
+  when: not ansible_check_mode
+
+- name: Collect systemctl docker unit diagnostics
+  ansible.builtin.command:
+    cmd: "systemctl list-unit-files --type=service --no-pager --no-legend"
+  register: _docker_units
+  changed_when: false
+  failed_when: false
+  when: not ansible_check_mode
+
 - name: Ensure Docker service is started and enabled
   ansible.builtin.systemd:
-    name: docker
+    name: "{{ docker_service_name }}"
     state: started
     enabled: true
   become: true
+  when:
+    - not ansible_check_mode
+    - docker_service_name | length > 0
+
+- name: Fail if Docker service is missing after installation
+  ansible.builtin.fail:
+    msg: |
+      Docker systemd service was not found after running install-docker.sh.
+
+      install-docker.sh stdout:
+      {{ docker_install_result.stdout | default('') }}
+
+      install-docker.sh stderr:
+      {{ docker_install_result.stderr | default('') }}
+
+      systemctl list-unit-files (filtered for docker):
+      {{ (_docker_units.stdout_lines | default([])) | select('search', 'docker') | list | join('\n') }}
+  when:
+    - not ansible_check_mode
+    - docker_service_name | length == 0
 
 - name: Verify Docker installation
   ansible.builtin.command: docker --version
   register: docker_version_check
   changed_when: false
+  when: not ansible_check_mode
 
 - name: Display Docker version
   ansible.builtin.debug:
     msg: "Docker installed: {{ docker_version_check.stdout }}"
+  when: not ansible_check_mode
 
 - name: Display container_tools completion
   ansible.builtin.debug:

@@ -2,7 +2,11 @@
 # microsoft_repos role - Phase 2: Microsoft repositories and APT configuration
 
 - name: Configure APT mock (if needed)
-  ansible.builtin.script: "{{ installer_script_folder }}/configure-apt-mock.sh"
+  ansible.builtin.command:
+    cmd: "/bin/bash {{ installer_script_folder }}/configure-apt-mock.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
   become: true
   register: apt_mock_result
   changed_when: apt_mock_result.rc == 0
@@ -44,6 +48,29 @@
   register: image_data_result
   changed_when: image_data_result.rc == 0
 
+- name: Make waagent.conf edits safe in configure-environment.sh (Hyper-V)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/configure-environment.sh"
+    regexp: '^(\s*)(sed\s+-i\s+.*?/etc/waagent\.conf)(\s*\|\|\s*true)?\s*$'
+    replace: '\\1test -f /etc/waagent.conf && \\2 || true'
+  become: true
+
+- name: Verify configure-environment.sh has no unguarded waagent.conf sed lines (Hyper-V)
+  ansible.builtin.command:
+    cmd: "grep -nE '^\\s*sed\\s+-i\\s+.*?/etc/waagent\\.conf\\s*$' {{ installer_script_folder }}/configure-environment.sh"
+  register: _waagent_unguarded_sed_grep
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Fail if configure-environment.sh still contains unguarded waagent.conf edits (Hyper-V)
+  ansible.builtin.fail:
+    msg: |
+      configure-environment.sh still contains unguarded waagent.conf edits which fail on Hyper-V.
+      Matches:
+      {{ _waagent_unguarded_sed_grep.stdout | default('') }}
+  when: _waagent_unguarded_sed_grep.rc == 0
+
 - name: Configure environment
   ansible.builtin.shell: "{{ installer_script_folder }}/configure-environment.sh"
   environment:
@@ -53,6 +80,35 @@
   become: true
   register: env_config_result
   changed_when: env_config_result.rc == 0
+
+- name: Remove invoke_tests symlink (avoid noexec helper path)
+  ansible.builtin.file:
+    path: /usr/local/bin/invoke_tests
+    state: absent
+  become: true
+
+- name: Install invoke_tests wrapper (executes helper via bash)
+  ansible.builtin.copy:
+    dest: /usr/local/bin/invoke_tests
+    mode: '0755'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      # The runner-images scripts expect invoke_tests to exist.
+      # On some builds, HELPER_SCRIPTS points to a noexec mount (e.g., /imagegeneration),
+      # so executing a symlink into that tree fails with: Permission denied.
+      # Running the helper via bash reads the file (allowed) instead of executing it.
+      helper_dir="${HELPER_SCRIPTS:-/imagegeneration/helpers}"
+      target="${helper_dir%/}/invoke-tests.sh"
+
+      if [[ ! -f "${target}" ]]; then
+        echo "invoke_tests: helper script not found: ${target}" >&2
+        exit 1
+      fi
+
+      exec /bin/bash "${target}" "$@"
+  become: true
 
 - name: Display microsoft_repos completion
   ansible.builtin.debug:
