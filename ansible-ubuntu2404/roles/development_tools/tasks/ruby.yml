@@ -42,9 +42,9 @@
     name: "{{ item.name }}"
     state: present
     user_install: false
-    gem_executable: /usr/bin/gem
+    executable: /usr/bin/gem
     norc: true
-    no_document: true
+    include_doc: false
   loop: "{{ toolset.rubygems | default([]) }}"
   become: true
 

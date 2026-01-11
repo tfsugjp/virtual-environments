@@ -52,7 +52,14 @@
   ansible.builtin.replace:
     path: "{{ installer_script_folder }}/configure-environment.sh"
     regexp: '^(\s*)(sed\s+-i\s+.*?/etc/waagent\.conf)(\s*\|\|\s*true)?\s*$'
-    replace: '\\1test -f /etc/waagent.conf && \\2 || true'
+    replace: '\g<1>test -f /etc/waagent.conf && \g<2> || true'
+  become: true
+
+- name: Make invoke_tests symlink creation safe in configure-environment.sh
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/configure-environment.sh"
+    regexp: '^(\s*)ln\s+-s\s+(.*/invoke-tests\.sh)\s+/usr/local/bin/invoke_tests\s*$'
+    replace: '\g<1>ln -sf \g<2> /usr/local/bin/invoke_tests'
   become: true
 
 - name: Verify configure-environment.sh has no unguarded waagent.conf sed lines (Hyper-V)

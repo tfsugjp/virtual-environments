@@ -11,11 +11,38 @@
     - /tmp/aws
     - /tmp/install
     - /tmp/aws-sam-cli
+    - /tmp/aws-sam-cli-src
+    # AWS SAM CLI unzip can prompt if /tmp/dist exists from a previous run.
+    - /tmp/dist
     - /tmp/installers/aws
     - /tmp/installers/aws-sam-cli
     # kubectl installer can prompt (no /dev/tty) when overwriting keyring.
     - /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     - /etc/apt/sources.list.d/kubernetes.list
+  become: true
+  tags: ['cloud', 'containers']
+
+- name: Make AWS CLI installer rerunnable (add --update)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-aws-tools.sh"
+    regexp: '^(\s*/tmp/aws/install\b(?!.*--update).*)$'
+    replace: '\g<1> --update'
+  become: true
+  tags: ['cloud', 'containers']
+
+- name: Make AWS SAM CLI unzip non-interactive (avoid prompts on reruns)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-aws-tools.sh"
+    regexp: '^(\s*)unzip\s+"\$aws_sam_cli_archive_path"\s+-d\s+/tmp\s*$'
+    replace: '\g<1>unzip -o "$aws_sam_cli_archive_path" -d /tmp'
+  become: true
+  tags: ['cloud', 'containers']
+
+- name: Make AWS SAM CLI installer rerunnable (add --update)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-aws-tools.sh"
+    regexp: '^(\s*/tmp/install\b(?!.*--update).*)$'
+    replace: '\g<1> --update'
   become: true
   tags: ['cloud', 'containers']
 
@@ -43,6 +70,24 @@
   when: not ansible_check_mode
   tags: ['languages', 'ruby']
 
+- name: Make Swift installer symlink creation safe on reruns
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-swift.sh"
+    regexp: '^(\s*)ln\s+-s\s+(".*?")\s+(/usr/local/(bin|lib)/\S+)\s*$'
+    replace: '\g<1>ln -sf \g<2> \g<3>'
+  become: true
+  tags: ['compilers']
+
+- name: Make Swift install directory replacement safe on reruns
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-swift.sh"
+    regexp: '^(\s*)mv\s+"/tmp/\$\{swift_release_name\}"\s+\$SWIFT_INSTALL_ROOT\s*$'
+    replace: |
+      \g<1>rm -rf "$SWIFT_INSTALL_ROOT/${swift_release_name}"
+      \g<1>mv "/tmp/${swift_release_name}" $SWIFT_INSTALL_ROOT
+  become: true
+  tags: ['compilers']
+
 - name: Install development tools (batch 2 - Compilers)
   ansible.builtin.shell: "{{ item }}"
   loop:
@@ -59,6 +104,33 @@
   register: compilers_result
   changed_when: compilers_result.rc == 0
   tags: ['compilers']
+
+- name: Make Java tools installer rerunnable (no interactive unzip / idempotent symlinks)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-java-tools.sh"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  loop:
+    - regexp: '^(\s*)unzip\s+-qq\s+-d\s+/usr/share\s+"\$maven_archive_path"\s*$'
+      replace: '\g<1>unzip -o -qq -d /usr/share "$maven_archive_path"'
+    - regexp: '^(\s*)unzip\s+-qq\s+-d\s+/usr/share\s+"\$gradle_archive_path"\s*$'
+      replace: '\g<1>unzip -o -qq -d /usr/share "$gradle_archive_path"'
+    - regexp: '^(\s*)ln\s+-s\s+(/usr/share/apache-maven-\$\{?mavenVersion\}?/bin/mvn)\s+/usr/bin/mvn\s*$'
+      replace: '\g<1>ln -sf \g<2> /usr/bin/mvn'
+    - regexp: '^(\s*)ln\s+-s\s+(/usr/share/gradle-"\$\{?gradleLatestVersion\}?"/bin/gradle)\s+/usr/bin/gradle\s*$'
+      replace: '\g<1>ln -sf \g<2> /usr/bin/gradle'
+  loop_control:
+    label: "{{ item.regexp }}"
+  become: true
+  tags: ['languages']
+
+- name: Make Kotlin installer unzip non-interactive (avoid prompts on reruns)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-kotlin.sh"
+    regexp: '^(\s*)unzip\s+-qq\s+"\$archive_path"\s+-d\s+\$KOTLIN_ROOT\s*$'
+    replace: '\g<1>unzip -o -qq "$archive_path" -d $KOTLIN_ROOT'
+  become: true
+  tags: ['languages']
 
 - name: Install development tools (batch 3 - Languages - Part 1)
   ansible.builtin.shell: "{{ item }}"

@@ -80,17 +80,35 @@
 
 - name: Compute ghcup asset name and checksum
   ansible.builtin.set_fact:
-    ghcup_asset_name: "{{ ghcup_arch }}-linux-ghcup-{{ ghcup_version }}"
-    ghcup_asset_url: "https://github.com/haskell/ghcup-hs/releases/download/v{{ ghcup_version }}/{{ ghcup_arch }}-linux-ghcup-{{ ghcup_version }}"
-    ghcup_asset_sha256: >-
+    _ghcup_asset_name_v: "{{ ghcup_arch }}-linux-ghcup-{{ ghcup_version }}"
+    _ghcup_asset_name_nover: "{{ ghcup_arch }}-linux-ghcup"
+    _ghcup_asset_sha256_v: >-
       {{
-        (_ghcup_sha256sums.content | regex_search('^([0-9a-fA-F]{64})\\s+\\*?' + (ghcup_arch + '-linux-ghcup-' + ghcup_version) + '$', '\\1', multiline=True))
+        (_ghcup_sha256sums.content
+          | regex_findall('(?m)^([0-9a-fA-F]{64})\\s+\\*?' ~ (ghcup_arch ~ '-linux-ghcup-' ~ ghcup_version) ~ '$'))
+        | first
+        | default('')
+      }}
+    _ghcup_asset_sha256_nover: >-
+      {{
+        (_ghcup_sha256sums.content
+          | regex_findall('(?m)^([0-9a-fA-F]{64})\\s+\\*?' ~ (ghcup_arch ~ '-linux-ghcup') ~ '$'))
+        | first
         | default('')
       }}
 
+- name: Select ghcup asset name and checksum
+  ansible.builtin.set_fact:
+    ghcup_asset_name: "{{ _ghcup_asset_name_v if (_ghcup_asset_sha256_v | length > 0) else _ghcup_asset_name_nover }}"
+    ghcup_asset_sha256: "{{ _ghcup_asset_sha256_v if (_ghcup_asset_sha256_v | length > 0) else _ghcup_asset_sha256_nover }}"
+
+- name: Set ghcup asset URL
+  ansible.builtin.set_fact:
+    ghcup_asset_url: "https://github.com/haskell/ghcup-hs/releases/download/v{{ ghcup_version }}/{{ ghcup_asset_name }}"
+
 - name: Fail if ghcup checksum could not be extracted
   ansible.builtin.fail:
-    msg: "Could not extract SHA256 for {{ ghcup_asset_name }} from SHA256SUMS"
+    msg: "Could not extract SHA256 for {{ ghcup_asset_name }} from SHA256SUMS (ghcup_version={{ ghcup_version }}, arch={{ ghcup_arch }})"
   when: ghcup_asset_sha256 | length == 0
 
 - name: Ensure ghcup bin directory exists
