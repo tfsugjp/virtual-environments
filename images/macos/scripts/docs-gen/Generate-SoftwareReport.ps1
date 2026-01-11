@@ -174,11 +174,8 @@ $android.AddTable($androidTable)
 $androidEnv = $android.AddHeader("Environment variables")
 $androidEnv.AddTable($(Build-AndroidEnvironmentTable))
 
-if ($os.IsSonoma -or $os.IsVentura -or (-not $os.IsArm64)) {
+if ($os.IsSonoma -or $os.IsVentura -or $os.IsSequoia) {
     $miscellaneous = $installedSoftware.AddHeader("Miscellaneous")
-}
-
-if ($os.IsSonoma -or $os.IsVentura) {
     $miscellaneous.AddToolVersion("Tcl/Tk", $(Get-TclTkVersion))
 }
 
@@ -203,5 +200,5 @@ if (-not (Test-Path $OutputDirectory)) { New-Item -Path $OutputDirectory -ItemTy
 # Write final reports
 #
 Write-Host $markdownExtended
-$softwareReport.ToJson() | Out-File -FilePath "${OutputDirectory}/systeminfo.json" -Encoding UTF8NoBOM
-$softwareReport.ToMarkdown() | Out-File -FilePath "${OutputDirectory}/systeminfo.md" -Encoding UTF8NoBOM
+$softwareReport.ToJson() | Out-File -FilePath "${OutputDirectory}/software-report.json" -Encoding UTF8NoBOM
+$softwareReport.ToMarkdown() | Out-File -FilePath "${OutputDirectory}/software-report.md" -Encoding UTF8NoBOM
