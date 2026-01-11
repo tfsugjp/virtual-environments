@@ -39,6 +39,24 @@
     - { src: "{{ image_folder }}/software-report.md", dest: "{{ outputs_dir }}/Ubuntu2404-Readme.md" }
     - { src: "{{ image_folder }}/software-report.json", dest: "{{ outputs_dir }}/software-report.json" }
 
+- name: List installed dpkg packages
+  ansible.builtin.command: dpkg-query -W -f=${Package}\ ${Version}\n
+  register: dpkg_packages
+  changed_when: false
+
+- name: Write dpkg package list artifact
+  ansible.builtin.copy:
+    dest: "{{ image_folder }}/dpkg-packages.txt"
+    content: "{{ dpkg_packages.stdout }}\n"
+    mode: '0644'
+  become: true
+
+- name: Download dpkg package list
+  ansible.builtin.fetch:
+    src: "{{ image_folder }}/dpkg-packages.txt"
+    dest: "{{ outputs_dir }}/dpkg-packages.txt"
+    flat: true
+
 - name: Configure system settings
   ansible.builtin.shell: "{{ installer_script_folder }}/configure-system.sh"
   environment:
@@ -56,6 +74,18 @@
   become: true
   register: validation_result
   failed_when: validation_result.rc != 0
+
+- name: Clear SSH authorized_keys (may drop SSH)
+  ansible.builtin.shell: |
+    set -euo pipefail
+    rm -f /root/.ssh/authorized_keys || true
+    find /home -maxdepth 3 -type f -path '*/.ssh/authorized_keys' -print -delete || true
+  args:
+    executable: /bin/bash
+  become: true
+  async: 120
+  poll: 0
+  changed_when: true
 
 - name: Deprovision with waagent (Azure only)
   ansible.builtin.shell: |

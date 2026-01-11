@@ -1,0 +1,240 @@
+---
+# Native Haskell installation using public GitHub Releases URLs (no token required).
+# Source of truth: toolset.haskell (added to images/ubuntu/toolsets/toolset-2404.json).
+
+- name: Install Haskell prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - xz-utils
+      - tar
+      - gzip
+      - bzip2
+      - jq
+      - build-essential
+      - libffi-dev
+      - libgmp-dev
+      - pkg-config
+    state: present
+    update_cache: false
+  become: true
+
+- name: Extract Haskell settings from toolset
+  ansible.builtin.set_fact:
+    ghcup_version_spec: "{{ toolset.haskell.ghcup.version | default('latest') }}"
+    ghc_install_mode: "{{ toolset.haskell.ghc.install_mode | default('latest_major_minor') }}"
+    cabal_version_spec: "{{ toolset.haskell.cabal.version | default('latest') }}"
+    stack_repo: "{{ toolset.haskell.stack.repo | default('commercialhaskell/stack') }}"
+    stack_version_spec: "{{ toolset.haskell.stack.version | default('latest') }}"
+
+- name: Map architecture for ghcup/stack assets
+  ansible.builtin.set_fact:
+    ghcup_arch: "{{ 'x86_64' if ansible_facts.architecture in ['x86_64', 'amd64'] else 'aarch64' }}"
+    stack_arch_pattern: "{{ 'linux-x86_64' if ansible_facts.architecture in ['x86_64', 'amd64'] else 'linux-aarch64' }}"
+
+- name: Resolve latest ghcup version from GitHub (public)
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/haskell/ghcup-hs/releases/latest"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers:
+      Accept: application/vnd.github+json
+      X-GitHub-Api-Version: "2022-11-28"
+      User-Agent: "tfsug-virtual-environments"
+  register: _ghcup_latest
+  changed_when: false
+  when: ghcup_version_spec == 'latest'
+
+- name: Set ghcup version
+  ansible.builtin.set_fact:
+    ghcup_version: >-
+      {{
+        (_ghcup_latest.json.tag_name | default('') | regex_replace('^v', ''))
+        if ghcup_version_spec == 'latest'
+        else ghcup_version_spec
+      }}
+
+- name: Fail if ghcup version could not be resolved
+  ansible.builtin.fail:
+    msg: "Failed to resolve ghcup version (spec={{ ghcup_version_spec }})"
+  when: ghcup_version is not string or ghcup_version | length == 0
+
+- name: Download SHA256SUMS for ghcup release
+  ansible.builtin.uri:
+    url: "https://github.com/haskell/ghcup-hs/releases/download/v{{ ghcup_version }}/SHA256SUMS"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers:
+      User-Agent: "tfsug-virtual-environments"
+  register: _ghcup_sha256sums
+  changed_when: false
+
+- name: Compute ghcup asset name and checksum
+  ansible.builtin.set_fact:
+    ghcup_asset_name: "{{ ghcup_arch }}-linux-ghcup-{{ ghcup_version }}"
+    ghcup_asset_url: "https://github.com/haskell/ghcup-hs/releases/download/v{{ ghcup_version }}/{{ ghcup_arch }}-linux-ghcup-{{ ghcup_version }}"
+    ghcup_asset_sha256: >-
+      {{
+        (_ghcup_sha256sums.content | regex_search('^([0-9a-fA-F]{64})\\s+\\*?' + (ghcup_arch + '-linux-ghcup-' + ghcup_version) + '$', '\\1', multiline=True))
+        | default('')
+      }}
+
+- name: Fail if ghcup checksum could not be extracted
+  ansible.builtin.fail:
+    msg: "Could not extract SHA256 for {{ ghcup_asset_name }} from SHA256SUMS"
+  when: ghcup_asset_sha256 | length == 0
+
+- name: Ensure ghcup bin directory exists
+  ansible.builtin.file:
+    path: /usr/local/.ghcup/bin
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download ghcup binary (public GitHub Releases URL)
+  ansible.builtin.get_url:
+    url: "{{ ghcup_asset_url }}"
+    dest: /usr/local/.ghcup/bin/ghcup
+    mode: '0755'
+    follow_redirects: all
+    checksum: "sha256:{{ ghcup_asset_sha256 }}"
+    force: false
+  register: _ghcup_download
+  retries: 5
+  delay: 2
+  until: _ghcup_download is succeeded
+  become: true
+
+- name: Configure environment for ghcup
+  ansible.builtin.copy:
+    dest: /etc/profile.d/ghcup.sh
+    mode: '0644'
+    content: |
+      # Managed by ansible-ubuntu2404
+      export GHCUP_INSTALL_BASE_PREFIX=/usr/local
+      export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+      export BOOTSTRAP_HASKELL_INSTALL_NO_STACK_HOOK=1
+      export PATH="/usr/local/.ghcup/bin:$PATH"
+  become: true
+
+- name: Install and select GHC (latest major.minor)
+  ansible.builtin.shell: |
+    set -euo pipefail
+    export GHCUP_INSTALL_BASE_PREFIX=/usr/local
+    export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+    export BOOTSTRAP_HASKELL_INSTALL_NO_STACK_HOOK=1
+    export PATH="/usr/local/.ghcup/bin:$PATH"
+
+    available_versions=$(ghcup list -t ghc -r | grep -v "prerelease" | awk '{print $2}')
+    major_minor=$(echo "$available_versions" | cut -d"." -f 1,2 | uniq | tail -n1)
+    full_version=$(echo "$available_versions" | grep "^${major_minor}\." | tail -n1)
+
+    echo "Selected GHC version: $full_version"
+    ghcup install ghc "$full_version"
+    ghcup set ghc "$full_version"
+  args:
+    executable: /bin/bash
+  when: ghc_install_mode == 'latest_major_minor'
+  become: true
+
+- name: Install cabal
+  ansible.builtin.shell: |
+    set -euo pipefail
+    export GHCUP_INSTALL_BASE_PREFIX=/usr/local
+    export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+    export BOOTSTRAP_HASKELL_INSTALL_NO_STACK_HOOK=1
+    export PATH="/usr/local/.ghcup/bin:$PATH"
+
+    ghcup install cabal {{ cabal_version_spec }}
+  args:
+    executable: /bin/bash
+  become: true
+
+- name: Fix ghcup permissions and make available for new users
+  ansible.builtin.shell: |
+    set -euo pipefail
+    chmod -R 777 /usr/local/.ghcup
+    ln -sf /usr/local/.ghcup /etc/skel/.ghcup
+  args:
+    executable: /bin/bash
+  become: true
+
+- name: Resolve Stack release (public GitHub API)
+  ansible.builtin.uri:
+    url: >-
+      {{
+        'https://api.github.com/repos/' + stack_repo + '/releases/latest'
+        if stack_version_spec == 'latest'
+        else 'https://api.github.com/repos/' + stack_repo + '/releases/tags/v' + stack_version_spec
+      }}
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers:
+      Accept: application/vnd.github+json
+      X-GitHub-Api-Version: "2022-11-28"
+      User-Agent: "tfsug-virtual-environments"
+  register: _stack_release
+  changed_when: false
+
+- name: Select Stack asset URL for this architecture
+  ansible.builtin.set_fact:
+    stack_version: "{{ _stack_release.json.tag_name | default('') | regex_replace('^v', '') }}"
+    stack_asset: >-
+      {{
+        (_stack_release.json.assets
+          | selectattr('name', 'search', stack_arch_pattern)
+          | selectattr('name', 'search', '\\.(tar\\.gz|tgz)$')
+          | list
+          | first)
+      }}
+
+- name: Fail if Stack asset could not be selected
+  ansible.builtin.fail:
+    msg: "Could not select Stack asset for arch pattern '{{ stack_arch_pattern }}' from {{ stack_repo }} release {{ _stack_release.json.tag_name }}"
+  when: stack_asset is not mapping
+
+- name: Download Stack archive (public GitHub Releases URL)
+  ansible.builtin.get_url:
+    url: "{{ stack_asset.browser_download_url }}"
+    dest: "/tmp/{{ stack_asset.name }}"
+    mode: '0644'
+    follow_redirects: all
+    force: false
+  register: _stack_download
+  retries: 5
+  delay: 2
+  until: _stack_download is succeeded
+  become: true
+
+- name: Extract Stack archive
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ stack_asset.name }}"
+    dest: /tmp/stack-extract
+    remote_src: true
+  become: true
+
+- name: Find stack binary
+  ansible.builtin.find:
+    paths: /tmp/stack-extract
+    patterns: stack
+    file_type: file
+    recurse: true
+  register: _stack_find
+  changed_when: false
+
+- name: Fail if stack binary not found after extraction
+  ansible.builtin.fail:
+    msg: "Could not find 'stack' binary inside extracted archive {{ stack_asset.name }}"
+  when: _stack_find.files | length == 0
+
+- name: Install stack to /usr/local/bin
+  ansible.builtin.copy:
+    src: "{{ (_stack_find.files | sort(attribute='path') | last).path }}"
+    dest: /usr/local/bin/stack
+    mode: '0755'
+    remote_src: true
+  become: true

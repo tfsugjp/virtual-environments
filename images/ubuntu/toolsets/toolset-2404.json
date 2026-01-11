@@ -321,5 +321,20 @@
     },
     "pwsh": {
         "version": "7.4"
+    },
+    "haskell": {
+        "ghcup": {
+            "version": "latest"
+        },
+        "ghc": {
+            "install_mode": "latest_major_minor"
+        },
+        "cabal": {
+            "version": "latest"
+        },
+        "stack": {
+            "repo": "commercialhaskell/stack",
+            "version": "latest"
+        }
     }
 }

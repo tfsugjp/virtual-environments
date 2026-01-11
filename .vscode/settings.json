@@ -29,6 +29,9 @@
         ],
         "url": "./schemas/toolset-schema.json"
     }
-]
+],
+"chat.tools.terminal.autoApprove": {
+  "ansible-playbook": true
+}
 
 }

@@ -1,0 +1,141 @@
+---
+# Native Ruby installation using public GitHub Releases download URLs (no token required).
+# Source of truth: toolset.toolcache entry for name == "Ruby".
+
+- name: Install Ruby OS packages
+  ansible.builtin.apt:
+    name:
+      - ruby-full
+      - libz-dev
+      - openssl
+      - libssl-dev
+    state: present
+    update_cache: false
+  become: true
+
+- name: Extract Ruby toolcache settings from toolset
+  ansible.builtin.set_fact:
+    _ruby_toolcache: "{{ (toolset.toolcache | selectattr('name', 'equalto', 'Ruby') | list | first) | default({}) }}"
+    ruby_version_specs: "{{ _ruby_toolcache.versions | default([]) }}"
+    ruby_platform_version: "{{ _ruby_toolcache.platform_version | default('24.04') }}"
+    ruby_arch: "{{ _ruby_toolcache.arch | default('x64') }}"
+
+- name: Fail if Ruby toolcache is missing from toolset
+  ansible.builtin.fail:
+    msg: "toolset-2404.json is missing toolcache entry for Ruby"
+  when: _ruby_toolcache is not mapping
+
+- name: Set toolcache directories
+  ansible.builtin.set_fact:
+    agent_tools_directory: "/opt/hostedtoolcache"
+    ruby_toolcache_dir: "/opt/hostedtoolcache/Ruby"
+
+- name: Ensure Ruby toolcache directory exists
+  ansible.builtin.file:
+    path: "{{ ruby_toolcache_dir }}"
+    state: directory
+    mode: '0777'
+  become: true
+
+- name: Fetch ruby-builder releases (public GitHub API, paged)
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/ruby/ruby-builder/releases?per_page=100&page={{ item }}"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers:
+      Accept: application/vnd.github+json
+      X-GitHub-Api-Version: "2022-11-28"
+      User-Agent: "tfsug-virtual-environments"
+  loop: "{{ range(1, 6) | list }}"
+  register: _ruby_builder_releases_pages
+  changed_when: false
+
+- name: Build list of stable ruby-builder releases with semver tags
+  ansible.builtin.set_fact:
+    ruby_builder_releases: >-
+      {{
+        (_ruby_builder_releases_pages.results | map(attribute='json') | list | flatten)
+        | selectattr('prerelease', 'equalto', false)
+        | selectattr('tag_name', 'match', '^ruby-\\d+\\.\\d+\\.\\d+$')
+        | list
+      }}
+
+- name: Fail if no ruby-builder releases were found
+  ansible.builtin.fail:
+    msg: "Could not fetch ruby-builder releases from GitHub API (public)."
+  when: ruby_builder_releases | length == 0
+
+- name: Install rubygems from toolset
+  community.general.gem:
+    name: "{{ item.name }}"
+    state: present
+    user_install: false
+    gem_executable: /usr/bin/gem
+    norc: true
+    no_document: true
+  loop: "{{ toolset.rubygems | default([]) }}"
+  become: true
+
+- name: Resolve Ruby patch versions from ruby-builder releases and install into toolcache
+  vars:
+    _spec_prefix: "{{ item | regex_replace('\\.\\*$', '') }}"
+    _available_versions: "{{ ruby_builder_releases | map(attribute='tag_name') | map('regex_replace', '^ruby-', '') | list }}"
+    _matching_versions: "{{ _available_versions | select('match', '^' + (_spec_prefix | regex_escape) + '\\..+$') | list }}"
+    _selected_version: "{{ (_matching_versions | community.general.version_sort) | last }}"
+    _selected_tag: "ruby-{{ _selected_version }}"
+    _selected_release: "{{ (ruby_builder_releases | selectattr('tag_name', 'equalto', _selected_tag) | list | first) }}"
+    _asset_name: "ruby-{{ _selected_version }}-ubuntu-{{ ruby_platform_version }}-{{ ruby_arch }}.tar.gz"
+    _asset: "{{ (_selected_release.assets | selectattr('name', 'equalto', _asset_name) | list | first) }}"
+    _download_url: "{{ _asset.browser_download_url }}"
+    _version_dir: "{{ ruby_toolcache_dir }}/{{ _selected_version }}"
+    _archive_path: "/tmp/{{ _asset_name }}"
+    _complete_path: "{{ _version_dir }}/{{ ruby_arch }}.complete"
+  ansible.builtin.block:
+    - name: Fail if Ruby version spec matched no release tags
+      ansible.builtin.fail:
+        msg: "No ruby-builder release tags matched Ruby version spec '{{ item }}' (prefix '{{ _spec_prefix }}')"
+      when: _matching_versions | length == 0
+
+    - name: Fail if expected ruby-builder asset is missing
+      ansible.builtin.fail:
+        msg: "ruby-builder release '{{ _selected_tag }}' is missing asset '{{ _asset_name }}'"
+      when: _asset is not mapping
+
+    - name: Create Ruby version directory
+      ansible.builtin.file:
+        path: "{{ _version_dir }}"
+        state: directory
+        mode: '0755'
+      become: true
+
+    - name: Download Ruby toolcache archive (public GitHub Releases URL)
+      ansible.builtin.get_url:
+        url: "{{ _download_url }}"
+        dest: "{{ _archive_path }}"
+        mode: '0644'
+        force: false
+        follow_redirects: all
+      register: _ruby_download
+      retries: 5
+      delay: 2
+      until: _ruby_download is succeeded
+      become: true
+
+    - name: Extract Ruby archive into toolcache
+      ansible.builtin.unarchive:
+        src: "{{ _archive_path }}"
+        dest: "{{ _version_dir }}"
+        remote_src: true
+      become: true
+
+    - name: Create toolcache complete marker
+      ansible.builtin.file:
+        path: "{{ _complete_path }}"
+        state: touch
+        mode: '0644'
+      become: true
+
+  loop: "{{ ruby_version_specs }}"
+  loop_control:
+    label: "{{ item }}"

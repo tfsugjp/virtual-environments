@@ -7,6 +7,7 @@
   vars_files:
     - ../group_vars/all.yml
     - ../group_vars/ubuntu.yml
+    - ../group_vars/toolset_2404.yml
   
   pre_tasks:
     - name: Verify SSH connectivity
