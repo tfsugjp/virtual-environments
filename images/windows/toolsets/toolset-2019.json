@@ -21,7 +21,8 @@
                 "3.10.*",
                 "3.11.*",
                 "3.12.*",
-                "3.13.*"
+                "3.13.*",
+                "3.14.*"
             ],
             "default": "3.9.*"
         },
@@ -89,8 +90,6 @@
             "name": "az",
             "versions": [
                 "12.5.0"
-            ],
-            "zip_versions": [
             ]
         }
     ],
@@ -309,11 +308,12 @@
             "Component.MDD.Linux.GCC.arm"
         ],
         "vsix": [
-            "ProBITools.MicrosoftAnalysisServicesModelingProjects",
-            "SSIS.SqlServerIntegrationServicesProjects",
             "ProBITools.MicrosoftReportProjectsforVisualStudio",
             "VisualStudioClient.MicrosoftVisualStudio2017InstallerProjects",
-            "ms-biztalk.BizTalk"
+            "ms-biztalk.BizTalk",
+            "WixToolset.WixToolsetVisualStudio2019Extension",
+            "ProBITools.MicrosoftAnalysisServicesModelingProjects",
+            "SSIS.SqlServerIntegrationServicesProjects"
         ]
     },
     "docker": {
@@ -432,17 +432,17 @@
     "kotlin": {
         "version": "2.1.10",
         "pinnedDetails": {
-            "link": "https://youtrack.jetbrains.com/issues/KT?preview=KT-76169",
-            "reason": "this was pinned due to a new version 2.1.20 released has an issue with kotlinc-js -version` and kapt -version",
-            "review-at": "2025-03-31"
+            "link": "https://github.com/actions/runner-images/issues/12045",
+            "reason": "Image is deprecated and will be removed soon",
+            "review-at": "2027-01-01"
         }
     },
     "openssl": {
         "version": "1.1.1",
         "pinnedDetails": {
-            "link": "https://github.com/somelink",
-            "reason": "this was pinned due to a downstream issue with the installer",
-            "review-at": "2025-01-30"
+            "link": "https://github.com/actions/runner-images/issues/12045",
+            "reason": "Image is deprecated and will be removed soon",
+            "review-at": "2027-01-01"
         }
     },
     "pwsh": {
