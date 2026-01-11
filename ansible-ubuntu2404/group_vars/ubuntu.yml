@@ -6,12 +6,13 @@ installer_script_folder: "/imagegeneration/installers"
 imagedata_file: "/imagegeneration/imagedata.json"
 
 # Image metadata
-image_version: "20251017.1"
+image_version: "20260111.1"
 image_os: "ubuntu24"
-cloud_provider: "azure"  # azure, aws, gcp, bare-metal
+cloud_provider: "bare-metal"  # azure, aws, gcp, bare-metal
 
-# Scripts source (relative to repository root)
-scripts_source_base: "../images/ubuntu"
+# Scripts source (controller path)
+# Resolved dynamically in playbook pre_tasks to support different repo layouts.
+scripts_source_base: ""
 
 # Tool/version pins are single-sourced from:
 #   images/ubuntu/toolsets/toolset-2404.json

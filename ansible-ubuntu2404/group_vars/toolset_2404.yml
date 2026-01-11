@@ -1,11 +1,11 @@
 ---
-# Single source of truth: images/ubuntu/toolsets/toolset-2404.json
+# Single source of truth: ansible-ubuntu2404/toolsets/toolset-2404.json
 #
 # NOTE: This file is controller-read (lookup('file', ...)) and then parsed.
 #       Downloads/installations on the target VM remain public and curl-friendly.
 
-# Path to upstream toolset JSON in this repository
-_toolset_source_path: "{{ playbook_dir }}/../../images/ubuntu/toolsets/toolset-2404.json"
+# Path to toolset JSON (kept within ansible-ubuntu2404 so the playbook can run standalone)
+_toolset_source_path: "{{ playbook_dir }}/../toolsets/toolset-2404.json"
 
 # Parsed toolset object
 # (Use json_query or direct dict access throughout roles.)
