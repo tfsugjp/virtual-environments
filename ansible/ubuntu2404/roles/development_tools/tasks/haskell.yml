@@ -237,6 +237,12 @@
   until: _stack_download is succeeded
   become: true
 
+- name: Make Stack extraction rerunnable (remove previous extract dir)
+  ansible.builtin.file:
+    path: /tmp/stack-extract
+    state: absent
+  become: true
+
 - name: Extract Stack archive
   ansible.builtin.unarchive:
     src: "/tmp/{{ stack_asset.name }}"

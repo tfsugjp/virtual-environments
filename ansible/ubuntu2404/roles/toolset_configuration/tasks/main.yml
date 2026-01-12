@@ -1,20 +1,24 @@
 ---
 # toolset_configuration role - Phase 6: Toolset configuration
 
-- name: Find leftover python extraction temp dirs
+- name: Find leftover extraction temp dirs
   ansible.builtin.find:
     paths: /tmp
     patterns:
-      - 'python-*-linux-*-x64.tar.gz-temp-dir'
+      # Toolset installer extracts downloaded tarballs into deterministic temp dirs.
+      # On reruns, `New-Item` fails if the dir already exists.
+      # Keep this broad enough to cover x64/arm64 and future tools, but still scoped
+      # to clearly-temporary folders created from tar.gz downloads.
+      - '*-linux-*.tar.gz-temp-dir'
     file_type: directory
   become: true
-  register: python_extraction_temp_dirs
+  register: extraction_temp_dirs
 
-- name: Remove leftover python extraction temp dirs
+- name: Remove leftover extraction temp dirs
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
-  loop: "{{ python_extraction_temp_dirs.files }}"
+  loop: "{{ extraction_temp_dirs.files }}"
   loop_control:
     label: "{{ item.path }}"
   become: true
