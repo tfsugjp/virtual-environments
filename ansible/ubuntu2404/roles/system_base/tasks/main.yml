@@ -97,12 +97,22 @@
   register: _installer_sh_scripts_patch
   changed_when: false
 
+- name: Filter installer shell scripts to patch (exclude Ruby/Haskell originals)
+  ansible.builtin.set_fact:
+    _installer_sh_scripts_patch_filtered: >-
+      {{
+        _installer_sh_scripts_patch.files
+        | rejectattr('path', 'search', '/install-(?:ruby|haskell)\\.sh$')
+        | list
+      }}
+  changed_when: false
+
 - name: Make unzip non-interactive in installer scripts (avoid prompts on reruns)
   ansible.builtin.replace:
     path: "{{ item.path }}"
     regexp: '^(\s*)unzip\b(?!.*\s-(?:o|n)\b)\s+(.*)$'
     replace: '\g<1>unzip -o \g<2>'
-  loop: "{{ _installer_sh_scripts_patch.files }}"
+  loop: "{{ _installer_sh_scripts_patch_filtered }}"
   loop_control:
     label: "{{ item.path }}"
   become: true
@@ -112,7 +122,7 @@
     path: "{{ item.path }}"
     regexp: '^(\s*)ln\s+-s(\s+)'
     replace: '\g<1>ln -sf\g<2>'
-  loop: "{{ _installer_sh_scripts_patch.files }}"
+  loop: "{{ _installer_sh_scripts_patch_filtered }}"
   loop_control:
     label: "{{ item.path }}"
   become: true

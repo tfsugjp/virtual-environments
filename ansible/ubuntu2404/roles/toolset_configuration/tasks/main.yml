@@ -1,6 +1,24 @@
 ---
 # toolset_configuration role - Phase 6: Toolset configuration
 
+- name: Find leftover python extraction temp dirs
+  ansible.builtin.find:
+    paths: /tmp
+    patterns:
+      - 'python-*-linux-*-x64.tar.gz-temp-dir'
+    file_type: directory
+  become: true
+  register: python_extraction_temp_dirs
+
+- name: Remove leftover python extraction temp dirs
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ python_extraction_temp_dirs.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  become: true
+
 - name: Install toolset
   ansible.builtin.shell: "pwsh -f {{ installer_script_folder }}/Install-Toolset.ps1"
   environment:

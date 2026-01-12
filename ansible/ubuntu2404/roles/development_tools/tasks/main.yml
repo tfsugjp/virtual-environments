@@ -65,8 +65,15 @@
   changed_when: cloud_tools_result.rc == 0
   tags: ['cloud', 'containers']
 
-- name: Install Ruby (native)
-  ansible.builtin.include_tasks: ruby.yml
+- name: Install Ruby (runner-images script)
+  ansible.builtin.shell: "{{ installer_script_folder }}/install-ruby.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: ruby_install_result
+  changed_when: ruby_install_result.rc == 0
   when: not ansible_check_mode
   tags: ['languages', 'ruby']
 
@@ -85,6 +92,24 @@
     replace: |
       \g<1>rm -rf "$SWIFT_INSTALL_ROOT/${swift_release_name}"
       \g<1>mv "/tmp/${swift_release_name}" $SWIFT_INSTALL_ROOT
+  become: true
+  tags: ['compilers']
+
+- name: Make Swift version resolution resilient to GitHub API rate limits
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-swift.sh"
+    regexp: '^(\s*)swift_version=\$\(curl\s+-fsSL\s+"https://api\.github\.com/repos/apple/swift/releases/latest"\s*\|\s*jq\s+-r\s+.*\)\s*$'
+    replace: |
+      \g<1>github_token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+      \g<1>auth_args=()
+      \g<1>if [[ -n "${github_token}" ]]; then
+      \g<1>  auth_args=(-H "Authorization: Bearer ${github_token}")
+      \g<1>fi
+      \g<1>swift_version=$(curl -fsSL "${auth_args[@]}" "https://api.github.com/repos/apple/swift/releases/latest" | jq -r '.tag_name | match("[0-9.]+").string')
+      \g<1>if [[ -z "${swift_version}" || "${swift_version}" == "null" ]]; then
+      \g<1>  echo "Failed to resolve Swift version from GitHub API. Set GITHUB_TOKEN/GH_TOKEN to avoid API rate limits." >&2
+      \g<1>  exit 1
+      \g<1>fi
   become: true
   tags: ['compilers']
 
@@ -148,10 +173,59 @@
   changed_when: languages_1_result.rc == 0
   tags: ['languages']
 
-- name: Install Haskell (native)
-  ansible.builtin.include_tasks: haskell.yml
+- name: Make Haskell installer rerunnable (remove existing Stack binary)
+  ansible.builtin.file:
+    path: /usr/local/bin/stack
+    state: absent
+  become: true
   when: not ansible_check_mode
   tags: ['languages', 'haskell']
+
+- name: Make Haskell installer rerunnable (remove /etc/skel/.ghcup link)
+  ansible.builtin.file:
+    path: /etc/skel/.ghcup
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['languages', 'haskell']
+
+- name: Install Haskell (runner-images script)
+  ansible.builtin.shell: "{{ installer_script_folder }}/install-haskell.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+  become: true
+  register: haskell_install_result
+  changed_when: haskell_install_result.rc == 0
+  when: not ansible_check_mode
+  tags: ['languages', 'haskell']
+
+- name: Ensure `python` command is available (python -> python3)
+  ansible.builtin.apt:
+    name:
+      - python-is-python3
+    state: present
+    update_cache: false
+  become: true
+  when: not ansible_check_mode
+  tags: ['languages', 'python']
+
+- name: Make NVM installer rerunnable (remove /etc/skel/.nvm)
+  ansible.builtin.file:
+    path: /etc/skel/.nvm
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['languages', 'nodejs']
+
+- name: Make PyPy installer rerunnable (remove existing PyPy toolcache)
+  ansible.builtin.file:
+    path: /opt/hostedtoolcache/PyPy
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['languages', 'python']
 
 - name: Install development tools (batch 4 - Languages - Part 2)
   ansible.builtin.shell: "{{ item }}"
@@ -184,6 +258,52 @@
   changed_when: databases_result.rc == 0
   tags: ['databases']
 
+- name: Make Chrome install possible (remove liboss4-salsa-asound2 conflict)
+  ansible.builtin.apt:
+    name:
+      - liboss4-salsa-asound2
+    state: absent
+    purge: true
+    autoremove: true
+    update_cache: false
+  become: true
+  when: not ansible_check_mode
+  tags: ['web', 'browsers']
+
+- name: Make Chrome installer rerunnable (remove existing Chromium directory)
+  ansible.builtin.file:
+    path: /usr/local/share/chromium
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['web', 'browsers']
+
+- name: Make Firefox installer rerunnable (remove Mozillateam PPA keyring)
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/mozillateam_ubuntu_ppa.gpg
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['web', 'browsers']
+
+- name: Ensure Firefox preference file path exists (for install-firefox.sh)
+  ansible.builtin.file:
+    path: /usr/lib/firefox/browser/defaults/preferences
+    state: directory
+    mode: '0755'
+  become: true
+  when: not ansible_check_mode
+  tags: ['web', 'browsers']
+
+- name: Ensure Firefox syspref.js exists (for install-firefox.sh)
+  ansible.builtin.file:
+    path: /usr/lib/firefox/browser/defaults/preferences/syspref.js
+    state: touch
+    mode: '0644'
+  become: true
+  when: not ansible_check_mode
+  tags: ['web', 'browsers']
+
 - name: Install development tools (batch 6 - Web & Browsers)
   ansible.builtin.shell: "{{ item }}"
   loop:
@@ -202,6 +322,14 @@
   changed_when: web_tools_result.rc == 0
   tags: ['web', 'browsers']
 
+- name: Make vcpkg installer rerunnable (remove existing vcpkg directory)
+  ansible.builtin.file:
+    path: /usr/local/share/vcpkg
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['build_tools']
+
 - name: Install development tools (batch 7 - Build Tools)
   ansible.builtin.shell: "{{ item }}"
   loop:
@@ -217,6 +345,14 @@
   register: build_tools_result
   changed_when: build_tools_result.rc == 0
   tags: ['build_tools']
+
+- name: Make Android SDK installer rerunnable (remove existing cmdline-tools)
+  ansible.builtin.file:
+    path: /usr/local/lib/android/sdk/cmdline-tools
+    state: absent
+  become: true
+  when: not ansible_check_mode
+  tags: ['misc', 'android']
 
 - name: Install development tools (batch 8 - Misc Tools)
   ansible.builtin.shell: "{{ item }}"
