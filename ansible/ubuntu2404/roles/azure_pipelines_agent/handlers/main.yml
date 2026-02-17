@@ -1,0 +1,27 @@
+---
+# =============================================================================
+# Azure Pipelines Agent – Handlers
+# =============================================================================
+
+- name: Restart Azure Pipelines Agent instances
+  ansible.builtin.shell: |
+    cd {{ azp_agent_base_dir }}/{{ item.name }}
+    ./svc.sh stop  || true
+    ./svc.sh start
+  loop: "{{ azp_agent_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  changed_when: true
+  listen: "restart azure pipelines agent"
+
+- name: Stop Azure Pipelines Agent instances
+  ansible.builtin.shell: |
+    cd {{ azp_agent_base_dir }}/{{ item.name }}
+    ./svc.sh stop || true
+  loop: "{{ azp_agent_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+  changed_when: true
+  listen: "stop azure pipelines agent"

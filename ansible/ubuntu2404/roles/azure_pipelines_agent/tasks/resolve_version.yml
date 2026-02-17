@@ -1,0 +1,115 @@
+---
+# =============================================================================
+# Resolve Azure Pipelines Agent version from GitHub Releases
+# =============================================================================
+# Outputs:
+#   _azp_resolved_version   – e.g. "4.269.0"
+#   _azp_release_json       – full release JSON object
+
+- name: Map host architecture to agent platform string
+  ansible.builtin.set_fact:
+    _azp_platform: "{{ _azp_arch_map[ansible_facts.architecture] | default('x64') }}"
+
+# ---- Build API headers (with optional GitHub token) ----
+
+- name: Resolve GitHub API token from variable or environment
+  ansible.builtin.set_fact:
+    _azp_github_api_token: >-
+      {{
+        (azp_github_token | default('', true))
+        | default((lookup('env', 'GITHUB_TOKEN') | default('', true)), true)
+        | default((lookup('env', 'GH_TOKEN') | default('', true)), true)
+      }}
+
+- name: Build GitHub API headers
+  ansible.builtin.set_fact:
+    _azp_github_api_headers: >-
+      {{
+        {
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'User-Agent': 'tfsug-virtual-environments'
+        }
+        | combine(
+            (_azp_github_api_token | length > 0)
+            | ternary({'Authorization': 'Bearer ' ~ _azp_github_api_token}, {})
+          )
+      }}
+
+# ---- Resolve 'latest' ---------------------------------------------------
+
+- name: Fetch recent releases from GitHub (latest mode)
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/microsoft/azure-pipelines-agent/releases?per_page=30"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers: "{{ _azp_github_api_headers }}"
+  register: _azp_releases_resp
+  retries: 5
+  delay: 2
+  until: _azp_releases_resp is succeeded
+  changed_when: false
+  when: azp_agent_version == 'latest'
+
+- name: Select latest release (including pre-release)
+  ansible.builtin.set_fact:
+    _azp_release_json: "{{ (_azp_releases_resp.json | default(_azp_releases_resp.content | from_json)) | first }}"
+  when:
+    - azp_agent_version == 'latest'
+    - azp_include_prerelease | bool
+
+- name: Select latest stable release (excluding pre-release)
+  ansible.builtin.set_fact:
+    _azp_release_json: >-
+      {{
+        (_azp_releases_resp.json | default(_azp_releases_resp.content | from_json))
+        | selectattr('prerelease', 'equalto', false)
+        | list
+        | first
+      }}
+  when:
+    - azp_agent_version == 'latest'
+    - not (azp_include_prerelease | bool)
+
+# ---- Resolve pinned version ---------------------------------------------
+
+- name: Fetch specific release by tag (pinned version)
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/tags/v{{ azp_agent_version }}"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers: "{{ _azp_github_api_headers }}"
+  register: _azp_pinned_resp
+  retries: 5
+  delay: 2
+  until: _azp_pinned_resp is succeeded
+  changed_when: false
+  when: azp_agent_version != 'latest'
+
+- name: Set release JSON for pinned version
+  ansible.builtin.set_fact:
+    _azp_release_json: "{{ _azp_pinned_resp.json | default(_azp_pinned_resp.content | from_json) }}"
+  when: azp_agent_version != 'latest'
+
+# ---- Extract version number ---------------------------------------------
+
+- name: Extract resolved version from release tag
+  ansible.builtin.set_fact:
+    _azp_resolved_version: "{{ _azp_release_json.tag_name | regex_replace('^v', '') }}"
+    _azp_is_prerelease: "{{ _azp_release_json.prerelease | default(false) }}"
+
+- name: Fail if version could not be resolved
+  ansible.builtin.fail:
+    msg: >-
+      Failed to resolve Azure Pipelines Agent version.
+      azp_agent_version={{ azp_agent_version }},
+      azp_include_prerelease={{ azp_include_prerelease }}
+  when: _azp_resolved_version is not defined or _azp_resolved_version | length == 0
+
+- name: Display resolved version
+  ansible.builtin.debug:
+    msg: >-
+      Azure Pipelines Agent version resolved: {{ _azp_resolved_version }}
+      {{ '(pre-release)' if (_azp_is_prerelease | bool) else '(stable)' }}

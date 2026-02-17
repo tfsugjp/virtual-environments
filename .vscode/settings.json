@@ -31,7 +31,12 @@
     }
 ],
 "chat.tools.terminal.autoApprove": {
-  "ansible-playbook": true
+  "ansible-playbook": true,
+  "ForEach-Object": true,
+  "/^cd d:\\\\GitHub\\\\tfsug\\\\virtual-environments\\\\ansible\\\\ubuntu2404; python _validate\\.py$/": {
+    "approve": true,
+    "matchCommandLine": true
+  }
 }
 
 }

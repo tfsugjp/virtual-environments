@@ -1,0 +1,25 @@
+---
+# =============================================================================
+# Azure Pipelines Agent – Group Variables for ubuntu2404_agents
+# =============================================================================
+# Encrypt this file with: ansible-vault encrypt vault.yml
+#
+# Then reference it in playbooks or ansible.cfg:
+#   ansible-playbook ... --ask-vault-pass
+#   or
+#   ansible-playbook ... --vault-password-file ~/.vault_pass
+# =============================================================================
+
+# Azure DevOps organisation URL
+azp_url: "https://dev.azure.com/YOUR_ORG"
+
+# Service Principal credentials (Azure AD App Registration)
+azp_client_id: "00000000-0000-0000-0000-000000000000"
+azp_tenant_id: "00000000-0000-0000-0000-000000000000"
+azp_client_secret: "YOUR_CLIENT_SECRET_HERE"
+
+# Agent pool (override per-instance in host_vars if needed)
+azp_pool: "Default"
+
+# Include pre-release agent versions
+azp_include_prerelease: true
