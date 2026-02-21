@@ -33,6 +33,12 @@
     delay: 10
     timeout: 600
 
+- name: Wait for cloud-init to finish
+  ansible.builtin.command: cloud-init status --wait
+  become: true
+  changed_when: false
+  failed_when: false
+
 - name: Run cleanup
   ansible.builtin.shell: "{{ installer_script_folder }}/cleanup.sh"
   become: true
