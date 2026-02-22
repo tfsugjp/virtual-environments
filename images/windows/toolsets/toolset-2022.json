@@ -7,7 +7,8 @@
             "versions": [
                 "3.2",
                 "3.3",
-                "3.4"
+                "3.4",
+                "4.0"
             ],
             "default": "3.3"
         },
@@ -78,7 +79,7 @@
         { "name": "PowerShellGet" },
         { "name": "PSScriptAnalyzer" },
         { "name": "PSWindowsUpdate" },
-        { "name": "SqlServer" },
+        { "name": "SqlServer", "versions": [ "22.3.0" ] },
         { "name": "VSSetup" },
         { "name": "Microsoft.Graph" },
         {"name": "AWSPowershell"}
@@ -87,7 +88,7 @@
         {
             "name": "az",
             "versions": [
-                "12.5.0"
+                "14.6.0"
             ]
         }
     ],
@@ -143,7 +144,7 @@
         "subversion" : "17",
         "edition" : "Enterprise",
         "channel": "release",
-        "installChannel": "",
+        "installChannelUri": "",
         "workloads": [
             "Component.Dotfuscator",
             "Component.Linux.CMake",
@@ -225,7 +226,6 @@
             "Microsoft.VisualStudio.Workload.Universal",
             "Microsoft.VisualStudio.Workload.VisualStudioExtension",
             "Component.MDD.Linux",
-            "Component.MDD.Linux.GCC.arm",
             "Component.Microsoft.Windows.DriverKit",
             "wasm.tools",
             "Microsoft.Component.MSBuild"
@@ -248,8 +248,8 @@
             "mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022"
         ],
         "components": {
-            "docker": "27.5.1",
-            "compose": "2.32.2"
+            "docker": "29.1.5",
+            "compose": "2.40.3"
         }
     },
     "pipx": [
@@ -340,7 +340,7 @@
         "version": "20"
     },
     "php": {
-        "version": "8.4"
+        "version": "8.5"
     },
     "postgresql": {
         "version": "14"

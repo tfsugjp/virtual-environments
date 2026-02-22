@@ -1,0 +1,11 @@
+---
+# validation role - Phase 8: Validation and reporting
+
+- name: Skip validation in check mode
+  ansible.builtin.debug:
+    msg: "Validation tasks are skipped in --check mode (no software report/tests/artifacts will be generated)."
+  when: ansible_check_mode
+
+- name: Run validation tasks
+  ansible.builtin.include_tasks: validation_run.yml
+  when: not ansible_check_mode

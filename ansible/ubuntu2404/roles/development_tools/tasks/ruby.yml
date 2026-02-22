@@ -1,0 +1,57 @@
+---
+# Native Ruby installation using public GitHub Releases download URLs (no token required).
+# Source of truth: toolset.toolcache entry for name == "Ruby".
+
+- name: Install Ruby OS packages
+  ansible.builtin.apt:
+    name:
+      - ruby-full
+      - libz-dev
+      - openssl
+      - libssl-dev
+    state: present
+    update_cache: false
+  become: true
+
+- name: Extract Ruby toolcache settings from toolset
+  ansible.builtin.set_fact:
+    _ruby_toolcache: "{{ (toolset.toolcache | selectattr('name', 'equalto', 'Ruby') | list | first) | default({}) }}"
+    ruby_version_specs: "{{ _ruby_toolcache.versions | default([]) }}"
+    ruby_platform_version: "{{ _ruby_toolcache.platform_version | default('24.04') }}"
+    ruby_arch: "{{ _ruby_toolcache.arch | default('x64') }}"
+
+- name: Fail if Ruby toolcache is missing from toolset
+  ansible.builtin.fail:
+    msg: "toolset-2404.json is missing toolcache entry for Ruby"
+  when: _ruby_toolcache is not mapping
+
+- name: Set toolcache directories
+  ansible.builtin.set_fact:
+    agent_tools_directory: "/opt/hostedtoolcache"
+    ruby_toolcache_dir: "/opt/hostedtoolcache/Ruby"
+
+- name: Ensure Ruby toolcache directory exists
+  ansible.builtin.file:
+    path: "{{ ruby_toolcache_dir }}"
+    state: directory
+    mode: '0777'
+  become: true
+
+- name: Install rubygems from toolset
+  community.general.gem:
+    name: "{{ item.name }}"
+    state: present
+    user_install: false
+    executable: /usr/bin/gem
+    norc: true
+    include_doc: false
+  loop: "{{ toolset.rubygems | default([]) }}"
+  become: true
+
+- name: Resolve Ruby patch versions from ruby-builder releases and install into toolcache
+  ansible.builtin.include_tasks: ruby_install_one.yml
+  vars:
+    ruby_version_spec: "{{ item }}"
+  loop: "{{ ruby_version_specs }}"
+  loop_control:
+    label: "{{ item }}"

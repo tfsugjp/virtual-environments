@@ -1,0 +1,8 @@
+---
+# Default variables for system_base role
+# These can be overridden in group_vars or host_vars
+
+# Default directories (already defined in group_vars/ubuntu.yml)
+# image_folder: "/imagegeneration"
+# helper_script_folder: "/imagegeneration/helpers"
+# installer_script_folder: "/imagegeneration/installers"

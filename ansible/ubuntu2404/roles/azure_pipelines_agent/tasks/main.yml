@@ -1,0 +1,62 @@
+---
+# =============================================================================
+# Azure Pipelines Agent – Role Entry Point
+# =============================================================================
+# Downloads the latest (or pinned) Azure Pipelines Agent from GitHub Releases,
+# deploys one or more agent instances, configures them with Service Principal
+# authentication, and runs each as a systemd service.
+#
+# Required variables (typically set via inventory or Vault):
+#   azp_url, azp_client_id, azp_tenant_id, azp_client_secret
+#
+# See defaults/main.yml for the full variable reference.
+# =============================================================================
+
+- name: Validate required Azure Pipelines Agent variables
+  ansible.builtin.assert:
+    that:
+      - azp_url is defined and azp_url | length > 0
+      - azp_client_id is defined and azp_client_id | length > 0
+      - azp_tenant_id is defined and azp_tenant_id | length > 0
+      - azp_client_secret is defined and azp_client_secret | length > 0
+      - azp_agent_instances is defined and azp_agent_instances | length > 0
+    fail_msg: >-
+      Missing required variables for azure_pipelines_agent role.
+      Please set azp_url, azp_client_id, azp_tenant_id, azp_client_secret,
+      and azp_agent_instances (list with at least one element).
+    quiet: true
+
+# Step 1 – Resolve target version from GitHub Releases API
+- name: Resolve Azure Pipelines Agent version
+  ansible.builtin.include_tasks: resolve_version.yml
+
+# Step 2 – Download agent tarball (with SHA-256 verification)
+- name: Download Azure Pipelines Agent
+  ansible.builtin.include_tasks: download.yml
+
+# Step 3 – Configure each agent instance (install / update)
+- name: Configure agent instances
+  ansible.builtin.include_tasks:
+    file: configure_instance.yml
+  loop: "{{ azp_agent_instances }}"
+  loop_control:
+    loop_var: _instance
+    label: "{{ _instance.name }}"
+
+# Step 4 – Summary
+- name: Display deployment summary
+  ansible.builtin.debug:
+    msg: |
+      ============================================
+      Azure Pipelines Agent deployment complete
+      ============================================
+      Version : {{ _azp_resolved_version }} {{ '(pre-release)' if (_azp_is_prerelease | bool) else '(stable)' }}
+      Platform: linux-{{ _azp_platform }}
+      Base dir: {{ azp_agent_base_dir }}
+      Pool    : {{ azp_pool }}
+      Auth    : Service Principal ({{ azp_auth_type }})
+      Instances:
+      {% for inst in azp_agent_instances %}
+        - {{ inst.name }} (pool: {{ inst.pool | default(azp_pool) }})
+      {% endfor %}
+      ============================================

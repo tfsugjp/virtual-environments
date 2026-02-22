@@ -1,0 +1,97 @@
+---
+# =============================================================================
+# Download Azure Pipelines Agent tarball
+# =============================================================================
+# Depends on: resolve_version.yml having set _azp_resolved_version,
+#             _azp_release_json, _azp_platform, _azp_github_api_headers
+# Outputs:
+#   _azp_tarball_path  – path to downloaded tarball on remote host
+#   _azp_checksum      – SHA-256 checksum of the tarball
+
+- name: Compute agent asset names
+  ansible.builtin.set_fact:
+    _azp_tarball_name: "vsts-agent-linux-{{ _azp_platform }}-{{ _azp_resolved_version }}.tar.gz"
+    _azp_download_url: "https://download.agent.dev.azure.com/agent/{{ _azp_resolved_version }}/vsts-agent-linux-{{ _azp_platform }}-{{ _azp_resolved_version }}.tar.gz"
+    _azp_tarball_path: "/tmp/vsts-agent-linux-{{ _azp_platform }}-{{ _azp_resolved_version }}.tar.gz"
+
+# ---- Retrieve checksum from assets.json ----------------------------------
+
+- name: Locate assets.json in release assets
+  ansible.builtin.set_fact:
+    _azp_assets_json_url: >-
+      {{
+        (_azp_release_json.assets
+          | selectattr('name', 'equalto', 'assets.json')
+          | map(attribute='browser_download_url')
+          | list
+          | first)
+        | default('')
+      }}
+
+- name: Download assets.json for checksum lookup
+  ansible.builtin.uri:
+    url: "{{ _azp_assets_json_url }}"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers:
+      User-Agent: "tfsug-virtual-environments"
+  register: _azp_assets_json_resp
+  retries: 5
+  delay: 2
+  until: _azp_assets_json_resp is succeeded
+  changed_when: false
+  when: _azp_assets_json_url | length > 0
+
+- name: Extract SHA-256 checksum from assets.json
+  ansible.builtin.set_fact:
+    _azp_checksum: >-
+      {{
+        (_azp_assets_json_resp.json | default(_azp_assets_json_resp.content | from_json))
+        | selectattr('name', 'equalto', _azp_tarball_name)
+        | map(attribute='hash')
+        | list
+        | first
+        | default('')
+      }}
+  when: _azp_assets_json_url | length > 0
+
+- name: Warn if checksum is unavailable (assets.json not found)
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: Could not retrieve assets.json from the release.
+      Download will proceed WITHOUT SHA-256 verification.
+  when: (_azp_assets_json_url | length == 0) or (_azp_checksum | default('') | length == 0)
+
+# ---- Download tarball ----------------------------------------------------
+
+- name: Download Azure Pipelines Agent tarball (with checksum)
+  ansible.builtin.get_url:
+    url: "{{ _azp_download_url }}"
+    dest: "{{ _azp_tarball_path }}"
+    mode: '0644'
+    checksum: "sha256:{{ _azp_checksum }}"
+    force: false
+  register: _azp_download
+  retries: 5
+  delay: 3
+  until: _azp_download is succeeded
+  become: true
+  when: (_azp_checksum | default('')) | length > 0
+
+- name: Download Azure Pipelines Agent tarball (without checksum)
+  ansible.builtin.get_url:
+    url: "{{ _azp_download_url }}"
+    dest: "{{ _azp_tarball_path }}"
+    mode: '0644'
+    force: false
+  register: _azp_download_nochecksum
+  retries: 5
+  delay: 3
+  until: _azp_download_nochecksum is succeeded
+  become: true
+  when: (_azp_checksum | default('')) | length == 0
+
+- name: Display download result
+  ansible.builtin.debug:
+    msg: "Agent tarball ready at {{ _azp_tarball_path }} (version {{ _azp_resolved_version }})"

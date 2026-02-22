@@ -1,0 +1,3 @@
+---
+# This file contains Ubuntu 24.04 specific variables
+# Override any variables from all.yml or ubuntu.yml here

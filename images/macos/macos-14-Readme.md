@@ -1,112 +1,107 @@
 | Announcements |
 |-|
-| [[macOS] Default Xcode on macOS 26 Tahoe will be set to Xcode 26.2 on January 26th](https://github.com/actions/runner-images/issues/13519) |
+| [macOS 26 (on Intel) is now available as a public beta in GitHub Actions](https://github.com/actions/runner-images/issues/13637) |
+| [[macOS] Deprecation of simulator runtimes for Xcode 26.0.1 on macOS 15 on January 26th](https://github.com/actions/runner-images/issues/13570) |
 | [[macOS] The macOS 14 Sonoma based runner images will begin deprecation on July 6th and will be fully unsupported by November 2nd for GitHub Actions and Azure DevOps](https://github.com/actions/runner-images/issues/13518) |
-| [[all OSs] Updating Azure PowerShell Module version to 14.6.0 on January 26th, 2026.](https://github.com/actions/runner-images/issues/13473) |
-| [[macOS] DOTNET_ROOT environment variable variable will be removed on January 12th, 2026](https://github.com/actions/runner-images/issues/13470) |
-| [[Ubuntu-22.04, macOS-14, Windows-2022] Android SDK platforms and build tools older than version 34 will be removed on January 12th, 2026.](https://github.com/actions/runner-images/issues/13469) |
-| [[all OSs] Python 3.9 will be removed; Python 3.12 will become the default on Windows images on January 12th, 2026.](https://github.com/actions/runner-images/issues/13468) |
-| [[all OSs] Android NDK 26 will be removed, Android NDK 27 will be used by default on January 12th, 2026.](https://github.com/actions/runner-images/issues/13467) |
-| [[macOS] Deprecation of simulator runtimes for Xcode 16.3 and older on macOS 15 on January 12th, 2026.](https://github.com/actions/runner-images/issues/13392) |
 | [macOS 26 (Tahoe) is now available as a public beta in GitHub Actions](https://github.com/actions/runner-images/issues/13008) |
 ***
 # macOS 14
 - OS Version: macOS 14.8.3 (23J220)
 - Kernel Version: Darwin 23.6.0
-- Image Version: 20260112.0114.1
+- Image Version: 20260209.0180.1
 
 ## Installed Software
 
 ### Language and Runtime
-- .NET Core SDK: 8.0.101, 8.0.204, 8.0.303, 8.0.416, 9.0.102, 9.0.203, 9.0.308, 10.0.101
+- .NET Core SDK: 8.0.101, 8.0.204, 8.0.303, 8.0.417, 9.0.102, 9.0.203, 9.0.310, 10.0.102
 - Bash 3.2.57(1)-release
 - Clang/LLVM 15.0.0
 - Clang/LLVM (Homebrew) 15.0.7 - available on `$(brew --prefix llvm@15)/bin/clang`
 - GCC 13 (Homebrew GCC 13.4.0) - available by `gcc-13` alias
 - GCC 14 (Homebrew GCC 14.3.0) - available by `gcc-14` alias
-- GCC 15 (Homebrew GCC 15.2.0) - available by `gcc-15` alias
+- GCC 15 (Homebrew GCC 15.2.0_1) - available by `gcc-15` alias
 - GNU Fortran 13 (Homebrew GCC 13.4.0) - available by `gfortran-13` alias
 - GNU Fortran 14 (Homebrew GCC 14.3.0) - available by `gfortran-14` alias
-- GNU Fortran 15 (Homebrew GCC 15.2.0) - available by `gfortran-15` alias
-- Kotlin 2.3.0-release-356
+- GNU Fortran 15 (Homebrew GCC 15.2.0_1) - available by `gfortran-15` alias
+- Kotlin 2.3.10-release-465
 - Mono 6.12.0.188
-- Node.js 20.19.6
+- Node.js 20.20.0
 - Perl 5.42.0
-- PHP 8.5.1
-- Python3 3.14.2
+- PHP 8.5.2
+- Python3 3.14.3
 - Ruby 3.3.10
 
 ### Package Management
-- Bundler 4.0.3
+- Bundler 4.0.6
 - Carthage 0.40.0
 - CocoaPods 1.16.2
-- Composer 2.9.3
-- Homebrew 5.0.9
+- Composer 2.9.5
+- Homebrew 5.0.14
 - NPM 10.8.2
 - NuGet 6.3.1.1
-- Pip3 25.3 (python 3.14)
+- Pip3 26.0 (python 3.14)
 - Pipx 1.8.0
-- RubyGems 4.0.3
-- Vcpkg 2025 (build from commit fafcc0e93b)
+- RubyGems 4.0.6
+- Vcpkg 2025 (build from commit aa2d37682e)
 - Yarn 1.22.22
 
 ### Project Management
 - Apache Ant 1.10.15
 - Apache Maven 3.9.12
-- Gradle 9.2.1
+- Gradle 9.3.1
 
 ### Utilities
 - 7-Zip 17.05
 - aria2 1.37.0
-- azcopy 10.31.1
-- bazel 8.5.0
-- bazelisk 1.27.0
+- azcopy 10.32.0
+- bazel 9.0.0
+- bazelisk 1.28.1
 - bsdtar 3.5.3 - available by 'tar' alias
 - Curl 8.18.0
 - Git 2.52.0
 - Git LFS 3.7.1
-- GitHub CLI 2.83.2
+- GitHub CLI 2.86.0
 - GNU Tar 1.35 - available by 'gtar' alias
 - GNU Wget 1.25.0
 - gpg (GnuPG) 2.4.9
 - jq 1.8.1
 - OpenSSL 1.1.1w  11 Sep 2023
-- Packer 1.14.3
+- Packer 1.15.0
 - pkgconf 2.5.1
-- Unxip 3.2
-- yq 4.50.1
+- Unxip 3.3
+- yq 4.52.2
 - zstd 1.5.7
 - Ninja 1.13.2
 
 ### Tools
-- AWS CLI 2.32.32
-- AWS SAM CLI 1.151.0
+- AWS CLI 2.33.17
+- AWS SAM CLI 1.153.1
 - AWS Session Manager CLI 1.2.764.0
-- Azure CLI 2.81.0
+- Azure CLI 2.83.0
 - Azure CLI (azure-devops) 1.0.2
-- Bicep CLI 0.39.26
-- Cmake 4.2.1
-- CodeQL Action Bundle 2.23.8
-- Fastlane 2.230.0
-- SwiftFormat 0.58.7
-- Xcbeautify 3.1.2
+- Bicep CLI 0.40.2
+- Cmake 4.2.3
+- CodeQL Action Bundle 2.24.1
+- Fastlane 2.232.0
+- SwiftFormat 0.59.1
+- Xcbeautify 3.1.4
 - Xcode Command Line Tools 16.2.0.0.1.1733547573
 - Xcodes 1.6.2
 
 ### Linters
-- SwiftLint 0.63.0
+- SwiftLint 0.63.2
 
 ### Browsers
 - Safari 26.2 (19623.1.14.18.4)
 - SafariDriver 26.2 (19623.1.14.18.4)
-- Google Chrome 143.0.7499.193
-- Google Chrome for Testing 143.0.7499.192
-- ChromeDriver 143.0.7499.192
-- Microsoft Edge 143.0.3650.139
-- Microsoft Edge WebDriver 143.0.3650.139
-- Mozilla Firefox 146.0.1
+- Google Chrome 144.0.7559.133
+- Google Chrome for Testing 144.0.7559.133
+- ChromeDriver 144.0.7559.133
+- Microsoft Edge 144.0.3719.115
+- Microsoft Edge WebDriver 144.0.3719.115
+- Mozilla Firefox 147.0.3
 - geckodriver 0.36.0
-- Selenium server 4.39.0
+- Selenium server 4.40.0
 
 #### Environment variables
 | Name            | Value                                 |
@@ -118,52 +113,53 @@
 ### Java
 | Version               | Environment Variable |
 | --------------------- | -------------------- |
-| 8.0.472+8             | JAVA_HOME_8_X64      |
-| 11.0.29+7             | JAVA_HOME_11_X64     |
-| 17.0.17+10            | JAVA_HOME_17_X64     |
-| 21.0.9+10.0 (default) | JAVA_HOME_21_X64     |
-| 25.0.1+8.0            | JAVA_HOME_25_X64     |
+| 8.0.482+8             | JAVA_HOME_8_X64      |
+| 11.0.30+7             | JAVA_HOME_11_X64     |
+| 17.0.18+8             | JAVA_HOME_17_X64     |
+| 21.0.10+7.0 (default) | JAVA_HOME_21_X64     |
+| 25.0.2+10.0           | JAVA_HOME_25_X64     |
 
 ### Cached Tools
 
 #### Ruby
-- 3.2.9
+- 3.2.10
 - 3.3.10
 - 3.4.8
+- 4.0.1
 
 #### Python
 - 3.10.19
 - 3.11.9
 - 3.12.10
-- 3.13.11
-- 3.14.2
+- 3.13.12
+- 3.14.3
 
 #### Node.js
-- 20.19.6
-- 22.21.1
-- 24.12.0
+- 20.20.0
+- 22.22.0
+- 24.13.0
 
 #### Go
 - 1.22.12
 - 1.23.12
-- 1.24.11
-- 1.25.5
+- 1.24.13
+- 1.25.7
 
 ### Rust Tools
-- Cargo 1.92.0
-- Rust 1.92.0
-- Rustdoc 1.92.0
+- Cargo 1.93.0
+- Rust 1.93.0
+- Rustdoc 1.93.0
 - Rustup 1.28.2
 
 #### Packages
-- Clippy 0.1.92
+- Clippy 0.1.93
 - Rustfmt 1.8.0-stable
 
 ### PowerShell Tools
 - PowerShell 7.4.13
 
 #### PowerShell Modules
-- Az: 12.5.0
+- Az: 14.6.0
 - Pester: 5.7.1
 - PSScriptAnalyzer: 1.24.0
 
@@ -245,7 +241,7 @@
 | ------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | iOS 17.0     | 17.0.1 | iPhone 15<br>iPhone 15 Plus<br>iPhone 15 Pro<br>iPhone 15 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air (5th generation)<br>iPad mini (6th generation)<br>iPad Pro (11-inch) (4th generation)<br>iPad Pro (12.9-inch) (6th generation)                                                                                                   |
 | iOS 17.2     | 17.2   | iPhone 15<br>iPhone 15 Plus<br>iPhone 15 Pro<br>iPhone 15 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air (5th generation)<br>iPad mini (6th generation)<br>iPad Pro (11-inch) (4th generation)<br>iPad Pro (12.9-inch) (6th generation)                                                                                                   |
-| iOS 17.4     | 17.4   | iPhone 15<br>iPhone 15 Plus<br>iPhone 15 Pro<br>iPhone 15 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air 11-inch (M2)<br>iPad Air 13-inch (M2)<br>iPad mini (6th generation)<br>iPad Pro (12.9-inch) (6th generation)<br>iPad Pro 11-inch (M4)<br>iPad Pro 13-inch (M4)                                                                   |
+| iOS 17.4     | 17.4   | iPhone 15<br>iPhone 15 Plus<br>iPhone 15 Pro<br>iPhone 15 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air 11-inch (M2)<br>iPad Air 13-inch (M2)<br>iPad mini (6th generation)<br>iPad Pro 11-inch (M4)<br>iPad Pro 13-inch (M4)                                                                                                            |
 | iOS 17.5     | 17.5   | iPhone 15<br>iPhone 15 Plus<br>iPhone 15 Pro<br>iPhone 15 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air 11-inch (M2)<br>iPad Air 13-inch (M2)<br>iPad mini (6th generation)<br>iPad Pro 11-inch (M4)<br>iPad Pro 13-inch (M4)                                                                                                            |
 | iOS 18.1     | 18.1   | iPhone 16<br>iPhone 16 Plus<br>iPhone 16 Pro<br>iPhone 16 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air 11-inch (M2)<br>iPad Air 13-inch (M2)<br>iPad mini (A17 Pro)<br>iPad Pro 11-inch (M4)<br>iPad Pro 13-inch (M4)                                                                                                                   |
 | iOS 18.2     | 18.2   | iPhone 16<br>iPhone 16 Plus<br>iPhone 16 Pro<br>iPhone 16 Pro Max<br>iPhone SE (3rd generation)<br>iPad (10th generation)<br>iPad Air 11-inch (M2)<br>iPad Air 13-inch (M2)<br>iPad mini (A17 Pro)<br>iPad Pro 11-inch (M4)<br>iPad Pro 13-inch (M4)                                                                                                                   |
@@ -292,7 +288,7 @@
 #### Environment variables
 | Name              | Value                                                                                     |
 | ----------------- | ----------------------------------------------------------------------------------------- |
-| PARALLELS_DMG_URL | https://download.parallels.com/desktop/v26/26.2.0-57363/ParallelsDesktop-26.2.0-57363.dmg |
+| PARALLELS_DMG_URL | https://download.parallels.com/desktop/v26/26.2.2-57373/ParallelsDesktop-26.2.2-57373.dmg |
 
 ##### Notes
 ```

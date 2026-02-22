@@ -1,0 +1,310 @@
+---
+# system_base role - Phase 1: Base system setup
+
+- name: Set runner-images source (remote fetch)
+  ansible.builtin.set_fact:
+    runner_images_repo: "{{ runner_images_repo | default('actions/runner-images') }}"
+    runner_images_ref: "{{ runner_images_ref | default('main') }}"
+
+- name: Compute runner-images download variables
+  ansible.builtin.set_fact:
+    runner_images_cache_dir: "{{ image_folder }}/.cache/runner-images"
+    runner_images_tarball: "/tmp/runner-images-{{ runner_images_ref }}.tar.gz"
+    runner_images_download_url: "https://github.com/{{ runner_images_repo }}/archive/{{ runner_images_ref }}.tar.gz"
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+  loop:
+    - "{{ image_folder }}"
+    - "{{ helper_script_folder }}"
+    - "{{ installer_script_folder }}"
+  become: true
+
+- name: Install minimal prerequisites for fetching/extracting runner-images
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - tar
+      - gzip
+    state: present
+    update_cache: false
+  become: true
+
+- name: Create runner-images cache directory
+  ansible.builtin.file:
+    path: "{{ runner_images_cache_dir }}"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download runner-images source tarball (public)
+  ansible.builtin.get_url:
+    url: "{{ runner_images_download_url }}"
+    dest: "{{ runner_images_tarball }}"
+    mode: '0644'
+    force: true
+  register: _runner_images_download
+  retries: 5
+  delay: 2
+  until: _runner_images_download is succeeded
+  become: true
+
+- name: Extract runner-images tarball
+  ansible.builtin.unarchive:
+    src: "{{ runner_images_tarball }}"
+    dest: "{{ runner_images_cache_dir }}"
+    remote_src: true
+  become: true
+
+- name: Locate extracted runner-images directory
+  ansible.builtin.find:
+    paths: "{{ runner_images_cache_dir }}"
+    file_type: directory
+    patterns: "runner-images-*"
+    recurse: false
+  register: _runner_images_find
+  changed_when: false
+
+- name: Fail if extracted runner-images directory was not found
+  ansible.builtin.fail:
+    msg: "runner-images extraction failed: no runner-images-* directory found under {{ runner_images_cache_dir }}"
+  when: _runner_images_find.files | length == 0
+
+- name: Set runner-images paths
+  ansible.builtin.set_fact:
+    runner_images_root: "{{ (_runner_images_find.files | sort(attribute='path') | last).path }}"
+    runner_images_ubuntu: "{{ (_runner_images_find.files | sort(attribute='path') | last).path }}/images/ubuntu"
+
+- name: Populate helper scripts (from runner-images)
+  ansible.builtin.command:
+    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/helpers/. {{ helper_script_folder }}/"
+  become: true
+
+- name: Populate build scripts (from runner-images)
+  ansible.builtin.command:
+    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/build/. {{ installer_script_folder }}/"
+  become: true
+
+- name: Find installer shell scripts (for patching)
+  ansible.builtin.find:
+    paths: "{{ installer_script_folder }}"
+    patterns: "*.sh"
+    file_type: file
+    recurse: true
+  register: _installer_sh_scripts_patch
+  changed_when: false
+
+- name: Filter installer shell scripts to patch (exclude Ruby/Haskell originals)
+  ansible.builtin.set_fact:
+    _installer_sh_scripts_patch_filtered: >-
+      {{
+        _installer_sh_scripts_patch.files
+        | rejectattr('path', 'search', '/install-(?:ruby|haskell)\\.sh$')
+        | list
+      }}
+  changed_when: false
+
+- name: Make unzip non-interactive in installer scripts (avoid prompts on reruns)
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: '^(\s*)unzip\b(?!.*\s-(?:o|n)\b)\s+(.*)$'
+    replace: '\g<1>unzip -o \g<2>'
+  loop: "{{ _installer_sh_scripts_patch_filtered }}"
+  loop_control:
+    label: "{{ item.path }}"
+  become: true
+
+- name: Make symlink creation idempotent in installer scripts (avoid failures on reruns)
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: '^(\s*)ln\s+-s(\s+)'
+    replace: '\g<1>ln -sf\g<2>'
+  loop: "{{ _installer_sh_scripts_patch_filtered }}"
+  loop_control:
+    label: "{{ item.path }}"
+  become: true
+
+- name: Make waagent.conf edits safe in configure-environment.sh (Hyper-V)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/configure-environment.sh"
+    regexp: '^(\s*)(sed\s+-i\s+.*?/etc/waagent\.conf)(\s*\|\|\s*true)?\s*$'
+    replace: '\g<1>test -f /etc/waagent.conf && \g<2> || true'
+  become: true
+
+- name: Make toolcache directory creation safe in configure-environment.sh
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/configure-environment.sh"
+    regexp: '^(\s*)mkdir\s+\$\{?AGENT_TOOLSDIRECTORY\}?\s*$'
+    replace: '\g<1>mkdir -p $AGENT_TOOLSDIRECTORY'
+  become: true
+
+- name: Make invoke_tests symlink creation safe in configure-environment.sh
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/configure-environment.sh"
+    regexp: '^(\s*)ln\s+-s\s+(.*/invoke-tests\.sh)\s+/usr/local/bin/invoke_tests\s*$'
+    replace: '\g<1>ln -sf \g<2> /usr/local/bin/invoke_tests'
+  become: true
+
+- name: Make AWS CLI installer rerunnable (add --update)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-aws-tools.sh"
+    regexp: '^(\s*/tmp/aws/install\b(?!.*--update).*)$'
+    replace: '\g<1> --update'
+  become: true
+
+- name: Make AWS SAM CLI unzip non-interactive (avoid prompts on reruns)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-aws-tools.sh"
+    regexp: '^(\s*)unzip\s+"\$aws_sam_cli_archive_path"\s+-d\s+/tmp\s*$'
+    replace: '\g<1>unzip -o "$aws_sam_cli_archive_path" -d /tmp'
+  become: true
+
+- name: Make AWS SAM CLI installer rerunnable (add --update)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-aws-tools.sh"
+    regexp: '^(\s*/tmp/install\b(?!.*--update).*)$'
+    replace: '\g<1> --update'
+  become: true
+
+- name: Make Swift installer symlink creation safe on reruns
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-swift.sh"
+    regexp: '^(\s*)ln\s+-s\s+(".*?")\s+(/usr/local/(bin|lib)/\S+)\s*$'
+    replace: '\g<1>ln -sf \g<2> \g<3>'
+  become: true
+
+- name: Make Swift install directory replacement safe on reruns
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-swift.sh"
+    regexp: '^(\s*)mv\s+"/tmp/\$\{swift_release_name\}"\s+\$SWIFT_INSTALL_ROOT\s*$'
+    replace: |
+      \g<1>rm -rf "$SWIFT_INSTALL_ROOT/${swift_release_name}"
+      \g<1>mv "/tmp/${swift_release_name}" $SWIFT_INSTALL_ROOT
+  become: true
+
+- name: Make Java tools installer rerunnable (no interactive unzip / idempotent symlinks)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-java-tools.sh"
+    regexp: '{{ item.regexp }}'
+    replace: '{{ item.replace }}'
+  loop:
+    # Maven unzip can prompt when /usr/share/apache-maven-<ver> already exists.
+    - regexp: '^(\s*)unzip\s+-qq\s+-d\s+/usr/share\s+"\$maven_archive_path"\s*$'
+      replace: '\g<1>unzip -o -qq -d /usr/share "$maven_archive_path"'
+    # Gradle unzip can prompt when rerun.
+    - regexp: '^(\s*)unzip\s+-qq\s+-d\s+/usr/share\s+"\$gradle_archive_path"\s*$'
+      replace: '\g<1>unzip -o -qq -d /usr/share "$gradle_archive_path"'
+    # Symlinks can already exist on rerun.
+    - regexp: '^(\s*)ln\s+-s\s+(/usr/share/apache-maven-\$\{?mavenVersion\}?/bin/mvn)\s+/usr/bin/mvn\s*$'
+      replace: '\g<1>ln -sf \g<2> /usr/bin/mvn'
+    - regexp: '^(\s*)ln\s+-s\s+(/usr/share/gradle-"\$\{?gradleLatestVersion\}?"/bin/gradle)\s+/usr/bin/gradle\s*$'
+      replace: '\g<1>ln -sf \g<2> /usr/bin/gradle'
+    # Toolcache Java symlink can already exist.
+    - regexp: '^(\s*)ln\s+-s\s+\$\{?java_version_path\}?\s+"\$\{?java_toolcache_version_path\}?/x64"\s*$'
+      replace: '\g<1>ln -sf ${java_version_path} "${java_toolcache_version_path}/x64"'
+  loop_control:
+    label: "{{ item.regexp }}"
+  become: true
+
+- name: Make Kotlin installer unzip non-interactive (avoid prompts on reruns)
+  ansible.builtin.replace:
+    path: "{{ installer_script_folder }}/install-kotlin.sh"
+    regexp: '^(\s*)unzip\s+-qq\s+"\$archive_path"\s+-d\s+\$KOTLIN_ROOT\s*$'
+    replace: '\g<1>unzip -o -qq "$archive_path" -d $KOTLIN_ROOT'
+  become: true
+
+- name: Verify configure-environment.sh has no unguarded waagent.conf sed lines (Hyper-V)
+  ansible.builtin.command:
+    cmd: "grep -nE '^\\s*sed\\s+-i\\s+.*?/etc/waagent\\.conf\\s*$' {{ installer_script_folder }}/configure-environment.sh"
+  register: _waagent_unguarded_sed_grep
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Fail if configure-environment.sh still contains unguarded waagent.conf edits (Hyper-V)
+  ansible.builtin.fail:
+    msg: |
+      configure-environment.sh still contains unguarded waagent.conf edits which fail on Hyper-V.
+      Matches:
+      {{ _waagent_unguarded_sed_grep.stdout | default('') }}
+  when: _waagent_unguarded_sed_grep.rc == 0
+
+- name: Find installer shell scripts
+  ansible.builtin.find:
+    paths: "{{ installer_script_folder }}"
+    patterns: "*.sh"
+    file_type: file
+    recurse: true
+  register: _installer_sh_scripts
+  changed_when: false
+
+- name: Ensure installer shell scripts are executable
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: '0755'
+  loop: "{{ _installer_sh_scripts.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  become: true
+
+- name: Create directory for test scripts
+  ansible.builtin.file:
+    path: "{{ image_folder }}/tests"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Populate test scripts (from runner-images)
+  ansible.builtin.command:
+    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/tests/. {{ image_folder }}/tests/"
+  become: true
+
+- name: Create directory for SoftwareReport
+  ansible.builtin.file:
+    path: "{{ image_folder }}/SoftwareReport"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Populate docs-gen scripts (from runner-images)
+  ansible.builtin.command:
+    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/docs-gen/. {{ image_folder }}/SoftwareReport/"
+  become: true
+
+- name: Populate software-report-base (from runner-images)
+  ansible.builtin.command:
+    cmd: "cp -a {{ runner_images_root }}/helpers/software-report-base {{ image_folder }}/SoftwareReport/"
+  become: true
+
+- name: Create directory for post-generation scripts
+  ansible.builtin.file:
+    path: "{{ image_folder }}/post-generation"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Populate post-gen assets (from runner-images)
+  ansible.builtin.command:
+    cmd: "cp -a {{ runner_images_ubuntu }}/assets/post-gen/. {{ image_folder }}/post-generation/"
+  become: true
+
+- name: Copy toolset configuration
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../toolsets/toolset-2404.json"
+    dest: "{{ installer_script_folder }}/toolset.json"
+    mode: '0644'
+  become: true
+
+- name: Configure system limits
+  ansible.builtin.command:
+    cmd: "/bin/bash {{ installer_script_folder }}/configure-limits.sh"
+  become: true
+  register: configure_limits_result
+  changed_when: configure_limits_result.rc == 0
+
+- name: Display system_base completion
+  ansible.builtin.debug:
+    msg: "System base configuration completed successfully"

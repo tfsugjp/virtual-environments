@@ -1,0 +1,123 @@
+---
+# Install one Ruby version into toolcache based on ruby_version_spec.
+# Expects variables:
+# - ruby_version_spec
+# - ruby_platform_version, ruby_arch
+# - ruby_toolcache_dir
+
+- name: Compute Ruby toolcache install variables
+  ansible.builtin.set_fact:
+    _ruby_spec_prefix: "{{ ruby_version_spec | regex_replace('\\.\\*$', '') }}"
+
+- name: Build GitHub API headers for ruby-builder requests (optional token)
+  ansible.builtin.set_fact:
+    _ruby_github_api_token: >-
+      {{
+        (lookup('env', 'GITHUB_TOKEN') | default('', true))
+        | default((lookup('env', 'GH_TOKEN') | default('', true)), true)
+        | default((lookup('env', 'GITHUB_API_TOKEN') | default('', true)), true)
+      }}
+    _ruby_github_api_headers: >-
+      {{
+        {
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'User-Agent': 'tfsug-virtual-environments'
+        }
+        | combine((_ruby_github_api_token | length > 0) | ternary({'Authorization': 'Bearer ' ~ _ruby_github_api_token}, {}))
+      }}
+
+- name: Fetch ruby-builder tag refs for requested Ruby version prefix
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/ruby/ruby-builder/git/matching-refs/tags/ruby-{{ _ruby_spec_prefix }}.?per_page=100"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers: "{{ _ruby_github_api_headers }}"
+  register: _ruby_builder_tag_refs
+  retries: 5
+  delay: 2
+  until: _ruby_builder_tag_refs is succeeded
+  changed_when: false
+
+- name: Compute latest Ruby patch version and release asset details
+  ansible.builtin.set_fact:
+    _ruby_available_versions: >-
+      {{
+        (_ruby_builder_tag_refs.content | from_json)
+        | map(attribute='ref')
+        | map('regex_replace', '^refs/tags/ruby-', '')
+        | list
+      }}
+    _ruby_matching_versions: "{{ _ruby_available_versions | select('match', '^' + (_ruby_spec_prefix | regex_escape) + '\\.[0-9]+$') | list }}"
+    _ruby_selected_version: "{{ (_ruby_matching_versions | community.general.version_sort) | last }}"
+    _ruby_selected_tag: "ruby-{{ _ruby_selected_version }}"
+    _ruby_asset_name: "ruby-{{ _ruby_selected_version }}-ubuntu-{{ ruby_platform_version }}-{{ ruby_arch }}.tar.gz"
+    _ruby_version_dir: "{{ ruby_toolcache_dir }}/{{ _ruby_selected_version }}"
+    _ruby_archive_path: "/tmp/{{ _ruby_asset_name }}"
+    _ruby_complete_path: "{{ _ruby_version_dir }}/{{ ruby_arch }}.complete"
+
+- name: Fail if Ruby version spec matched no release tags
+  ansible.builtin.fail:
+    msg: >-
+      No ruby-builder tag refs matched Ruby version spec '{{ ruby_version_spec }}' (prefix '{{ _ruby_spec_prefix }}').
+      This usually indicates GitHub API access issues from the build VM, or a change in upstream tag naming.
+      If you are running many GitHub API calls, consider providing a token via GITHUB_TOKEN/GH_TOKEN.
+  when: _ruby_matching_versions | length == 0
+
+- name: Fetch ruby-builder release by tag (for assets)
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/ruby/ruby-builder/releases/tags/{{ _ruby_selected_tag }}"
+    method: GET
+    return_content: true
+    status_code: [200]
+    headers: "{{ _ruby_github_api_headers }}"
+  register: _ruby_selected_release_resp
+  retries: 5
+  delay: 2
+  until: _ruby_selected_release_resp is succeeded
+  changed_when: false
+
+- name: Select ruby-builder asset download URL
+  ansible.builtin.set_fact:
+    _ruby_selected_release: "{{ _ruby_selected_release_resp.content | from_json }}"
+    _ruby_asset: "{{ ((_ruby_selected_release.assets | default([])) | selectattr('name', 'equalto', _ruby_asset_name) | list | first) | default({}) }}"
+    _ruby_download_url: "{{ _ruby_asset.browser_download_url | default('') }}"
+
+- name: Fail if expected ruby-builder asset is missing
+  ansible.builtin.fail:
+    msg: "ruby-builder release '{{ _ruby_selected_tag }}' is missing asset '{{ _ruby_asset_name }}'"
+  when: _ruby_asset is not mapping or (_ruby_download_url | length == 0)
+
+- name: Create Ruby version directory
+  ansible.builtin.file:
+    path: "{{ _ruby_version_dir }}"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Download Ruby toolcache archive (public GitHub Releases URL)
+  ansible.builtin.get_url:
+    url: "{{ _ruby_download_url }}"
+    dest: "{{ _ruby_archive_path }}"
+    mode: '0644'
+    force: false
+  register: _ruby_download
+  retries: 5
+  delay: 2
+  until: _ruby_download is succeeded
+  become: true
+
+- name: Extract Ruby archive into toolcache
+  ansible.builtin.unarchive:
+    src: "{{ _ruby_archive_path }}"
+    dest: "{{ _ruby_version_dir }}"
+    remote_src: true
+  become: true
+
+- name: Create toolcache complete marker
+  ansible.builtin.file:
+    path: "{{ _ruby_complete_path }}"
+    state: touch
+    mode: '0644'
+  become: true

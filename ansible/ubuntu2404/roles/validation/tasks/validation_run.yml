@@ -1,0 +1,204 @@
+# validation role - Phase 8: Validation and reporting (execution)
+
+- name: Ensure image folder exists (validation)
+  ansible.builtin.file:
+    path: "{{ image_folder }}"
+    state: directory
+    mode: '0777'
+  become: true
+
+- name: Generate software report
+  ansible.builtin.command:
+    argv:
+      - pwsh
+      - -NoProfile
+      - -NonInteractive
+      - -File
+      - "{{ image_folder }}/SoftwareReport/Generate-SoftwareReport.ps1"
+      - -OutputDirectory
+      - "{{ image_folder }}"
+  environment:
+    IMAGE_VERSION: "{{ image_version }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+  register: software_report_result
+  changed_when: software_report_result.rc == 0
+  failed_when: software_report_result.rc != 0
+
+- name: Run all tests
+  ansible.builtin.command:
+    argv:
+      - pwsh
+      - -NoProfile
+      - -NonInteractive
+      - -File
+      - "{{ image_folder }}/tests/RunAll-Tests.ps1"
+      - -OutputDirectory
+      - "{{ image_folder }}"
+  environment:
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+  register: test_results
+  failed_when: test_results.rc != 0
+
+- name: Verify software report exists
+  ansible.builtin.stat:
+    path: "{{ image_folder }}/software-report.md"
+  register: report_md_check
+  failed_when: false
+
+- name: Verify JSON report exists
+  ansible.builtin.stat:
+    path: "{{ image_folder }}/software-report.json"
+  register: report_json_check
+  failed_when: false
+
+- name: Find software report files under image folder
+  ansible.builtin.find:
+    paths: "{{ image_folder }}"
+    patterns:
+      - software-report.md
+      - software-report.json
+    recurse: true
+    file_type: file
+  register: _software_report_find
+  changed_when: false
+  failed_when: false
+  when: not report_md_check.stat.exists or not report_json_check.stat.exists
+
+- name: Normalize software report locations when found elsewhere
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: '0644'
+  loop:
+    - {
+        src: "{{ (_software_report_find.files | selectattr('path', 'search', 'software-report\\.md$') | map(attribute='path') | list | first) | default('') }}",
+        dest: "{{ image_folder }}/software-report.md"
+      }
+    - {
+        src: "{{ (_software_report_find.files | selectattr('path', 'search', 'software-report\\.json$') | map(attribute='path') | list | first) | default('') }}",
+        dest: "{{ image_folder }}/software-report.json"
+      }
+  when:
+    - not report_md_check.stat.exists or not report_json_check.stat.exists
+    - _software_report_find.files is defined
+    - item.src | length > 0
+    - item.src != item.dest
+  become: true
+
+- name: Re-check software report exists after normalization
+  ansible.builtin.stat:
+    path: "{{ image_folder }}/software-report.md"
+  register: report_md_check
+  failed_when: false
+  when: not report_md_check.stat.exists or not report_json_check.stat.exists
+
+- name: Re-check JSON report exists after normalization
+  ansible.builtin.stat:
+    path: "{{ image_folder }}/software-report.json"
+  register: report_json_check
+  failed_when: false
+  when: not report_md_check.stat.exists or not report_json_check.stat.exists
+
+- name: List image folder when report is missing
+  ansible.builtin.shell: |
+    set -euo pipefail
+    ls -la "{{ image_folder }}" 2>&1
+    echo
+    echo "---"
+    echo "SoftwareReport dir:"
+    ls -la "{{ image_folder }}/SoftwareReport" 2>&1 || true
+  register: _image_folder_ls
+  changed_when: false
+  failed_when: false
+  when: not report_md_check.stat.exists or not report_json_check.stat.exists
+
+- name: Fail if software report files were not generated
+  ansible.builtin.fail:
+    msg: |
+      Software report files were not generated.
+
+      Expected:
+        - {{ image_folder }}/software-report.md (exists={{ report_md_check.stat.exists | default(false) }})
+        - {{ image_folder }}/software-report.json (exists={{ report_json_check.stat.exists | default(false) }})
+
+      Generate-SoftwareReport.ps1 exit code: {{ software_report_result.rc | default('unknown') }}
+
+      stdout:
+      {{ software_report_result.stdout | default('') }}
+
+      stderr:
+      {{ software_report_result.stderr | default('') }}
+
+      ls -la {{ image_folder }}:
+      {{ _image_folder_ls.stdout | default('') }}
+
+        find {{ image_folder }} -name software-report.* (paths):
+        {{ (_software_report_find.files | map(attribute='path') | list) | default([]) | join('\n') }}
+  when: not report_md_check.stat.exists or not report_json_check.stat.exists
+
+- name: Download software reports
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    flat: true
+  loop:
+    - { src: "{{ image_folder }}/software-report.md", dest: "{{ outputs_dir }}/Ubuntu2404-Readme.md" }
+    - { src: "{{ image_folder }}/software-report.json", dest: "{{ outputs_dir }}/software-report.json" }
+  when: report_md_check.stat.exists and report_json_check.stat.exists
+
+- name: List installed dpkg packages
+  ansible.builtin.command: dpkg-query -W -f=${Package}\ ${Version}\n
+  register: dpkg_packages
+  changed_when: false
+
+- name: Write dpkg package list artifact
+  ansible.builtin.copy:
+    dest: "{{ image_folder }}/dpkg-packages.txt"
+    content: "{{ dpkg_packages.stdout }}\n"
+    mode: '0644'
+  become: true
+
+- name: Download dpkg package list
+  ansible.builtin.fetch:
+    src: "{{ image_folder }}/dpkg-packages.txt"
+    dest: "{{ outputs_dir }}/dpkg-packages.txt"
+    flat: true
+
+- name: Configure system settings
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-system.sh"
+  environment:
+    HELPER_SCRIPT_FOLDER: "{{ helper_script_folder }}"
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+    IMAGE_FOLDER: "{{ image_folder }}"
+  become: true
+  register: system_config_result
+  changed_when: system_config_result.rc == 0
+
+- name: Post-build validation
+  ansible.builtin.shell: "{{ installer_script_folder }}/post-build-validation.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+  become: true
+  register: validation_result
+  failed_when: validation_result.rc != 0
+
+- name: Clear SSH authorized_keys (may drop SSH)
+  ansible.builtin.shell: |
+    set -euo pipefail
+    rm -f /root/.ssh/authorized_keys || true
+    find /home -maxdepth 3 -type f -path '*/.ssh/authorized_keys' -print -delete || true
+  args:
+    executable: /bin/bash
+  become: true
+  async: 120
+  poll: 0
+  changed_when: true
+
+- name: Display validation completion
+  ansible.builtin.debug:
+    msg: |
+      Validation completed successfully!
+      - Software report: {{ outputs_dir }}/Ubuntu2404-Readme.md
+      - JSON report: {{ outputs_dir }}/software-report.json
+      - All tests passed

@@ -1,0 +1,27 @@
+# Ansible
+*.retry
+/tmp/
+/outputs/
+/files/scripts/
+
+# Fact cache
+/tmp/ansible_facts/
+
+# Vault password files
+.vault_pass
+vault_pass.txt
+
+# Local test files
+test_*.yml
+local_*.yml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

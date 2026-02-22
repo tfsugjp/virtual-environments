@@ -1,0 +1,21 @@
+---
+# Directory structure
+image_folder: "/imagegeneration"
+helper_script_folder: "/imagegeneration/helpers"
+installer_script_folder: "/imagegeneration/installers"
+imagedata_file: "/imagegeneration/imagedata.json"
+
+# Image metadata
+image_version: "20260111.1"
+image_os: "ubuntu24"
+
+# Hyper-V build (no cloud-provider specific steps)
+
+# Scripts source (controller path)
+# Resolved dynamically in playbook pre_tasks to support different repo layouts.
+scripts_source_base: ""
+
+# Tool/version pins are single-sourced from:
+#   images/ubuntu/toolsets/toolset-2404.json
+# and loaded into the `toolset` variable via:
+#   ansible-ubuntu2404/group_vars/toolset_2404.yml

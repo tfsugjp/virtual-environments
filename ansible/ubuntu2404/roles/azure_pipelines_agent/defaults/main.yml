@@ -1,0 +1,68 @@
+---
+# =============================================================================
+# Azure Pipelines Agent - Default Variables
+# =============================================================================
+# All sensitive values (azp_client_secret, etc.) should be stored in
+# ansible-vault encrypted files.  See the README for inventory examples.
+
+# ---------------------------------------------------------------------------
+# Azure DevOps Organisation
+# ---------------------------------------------------------------------------
+# Required.  Example: https://dev.azure.com/myorg
+# azp_url: ""
+
+# ---------------------------------------------------------------------------
+# Authentication – Service Principal (SP)
+# ---------------------------------------------------------------------------
+azp_auth_type: "sp"         # Currently only 'sp' is implemented
+# azp_client_id: ""         # Azure AD Application (client) ID
+# azp_tenant_id: ""         # Azure AD Directory (tenant) ID
+# azp_client_secret: ""     # Client secret (vault encrypted)
+
+# ---------------------------------------------------------------------------
+# Agent Pool
+# ---------------------------------------------------------------------------
+azp_pool: "Default"
+
+# ---------------------------------------------------------------------------
+# Agent Installation
+# ---------------------------------------------------------------------------
+azp_agent_base_dir: "/opt/azure-pipelines-agent"
+azp_agent_user: "azpagent"
+azp_agent_work_dir: "_work"
+azp_replace_existing: true
+
+# ---------------------------------------------------------------------------
+# Agent Instances (multi-agent)
+# ---------------------------------------------------------------------------
+# Each element requires 'name'.  Optional 'pool' overrides azp_pool per
+# instance.
+#
+# azp_agent_instances:
+#   - { name: "agent-1" }
+#   - { name: "agent-2", pool: "GPU-Pool" }
+azp_agent_instances:
+  - name: "agent-1"
+
+# ---------------------------------------------------------------------------
+# Version Resolution
+# ---------------------------------------------------------------------------
+# Set to 'latest' to auto-resolve from GitHub Releases.
+# Set to a specific version (e.g. '4.269.0') to pin.
+azp_agent_version: "latest"
+
+# Include pre-release versions when resolving 'latest'.
+azp_include_prerelease: true
+
+# Optional GitHub token to avoid API rate-limiting (60 req/h unauthenticated).
+azp_github_token: ""
+
+# ---------------------------------------------------------------------------
+# Misc
+# ---------------------------------------------------------------------------
+# Architecture mapping (auto-detected, override only if needed)
+_azp_arch_map:
+  x86_64: "x64"
+  amd64: "x64"
+  aarch64: "arm64"
+  armv7l: "arm"

@@ -1,0 +1,8 @@
+---
+# Common variables for all hosts
+
+# Output directory for reports
+outputs_dir: "./outputs"
+
+# Ansible behavior
+ansible_python_interpreter: /usr/bin/python3

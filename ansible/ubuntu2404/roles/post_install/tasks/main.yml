@@ -1,0 +1,50 @@
+---
+# post_install role - Phase 7: Post-installation tasks
+
+- name: Install Homebrew
+  ansible.builtin.shell: "{{ installer_script_folder }}/install-homebrew.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+    DEBIAN_FRONTEND: noninteractive
+    INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
+  become: false  # Homebrew must be installed as non-root user
+  register: homebrew_result
+  changed_when: "'Installing' in homebrew_result.stdout or 'installed' in homebrew_result.stdout.lower()"
+
+- name: Configure Snap
+  ansible.builtin.shell: "{{ installer_script_folder }}/configure-snap.sh"
+  environment:
+    HELPER_SCRIPTS: "{{ helper_script_folder }}"
+  become: true
+  register: snap_result
+  changed_when: snap_result.rc == 0
+
+- name: Reboot system
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 300  # Wait 5 minutes for system to stabilize
+    test_command: uptime
+    msg: "Rebooting for configuration changes"
+  become: true
+
+- name: Wait for system to be reachable
+  ansible.builtin.wait_for_connection:
+    delay: 10
+    timeout: 600
+
+- name: Wait for cloud-init to finish
+  ansible.builtin.command: cloud-init status --wait
+  become: true
+  changed_when: false
+  failed_when: false
+
+- name: Run cleanup
+  ansible.builtin.shell: "{{ installer_script_folder }}/cleanup.sh"
+  become: true
+  register: cleanup_result
+  changed_when: cleanup_result.rc == 0
+
+- name: Display post_install completion
+  ansible.builtin.debug:
+    msg: "Post-installation tasks completed (system rebooted and cleaned)"
