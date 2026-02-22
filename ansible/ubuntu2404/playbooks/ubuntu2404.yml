@@ -62,10 +62,6 @@
     - role: validation
       tags: ['test', 'validate', 'validation']
 
-    - role: azure_pipelines_agent
-      tags: ['agent', 'azure_agent', 'azure_pipelines_agent']
-      when: azp_url is defined and azp_url | length > 0
-
   post_tasks:
     - name: Display build summary
       ansible.builtin.debug:
