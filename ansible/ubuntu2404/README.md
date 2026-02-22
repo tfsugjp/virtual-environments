@@ -1,60 +1,60 @@
 # Ubuntu 24.04 Ansible Playbook
 
-このディレクトリには、Ubuntu 24.04 GitHub Actions Runnerイメージを構築するためのAnsible Playbookが含まれています。
+This directory contains the Ansible playbook used to build the Ubuntu 24.04 GitHub Actions runner image.
 
-## 📁 ディレクトリ構造
+## 📁 Directory Structure
 
-```text
+```
 ansible-ubuntu2404/
-├── ansible.cfg                     # Ansible設定ファイル
-├── requirements.yml                # 必要なAnsibleコレクション
-├── inventories/                    # インベントリファイル
+├── ansible.cfg                     # Ansible configuration file
+├── requirements.yml                # Required Ansible collections
+├── inventories/                    # Inventory files
 │   ├── production/
-│   │   ├── hosts.yml              # 本番環境ホスト定義
+│   │   ├── hosts.yml              # Production host definitions
 │   │   └── group_vars/
-│   │       └── ubuntu2404.yml     # Ubuntu 24.04固有の変数
+│   │       └── ubuntu2404.yml     # Ubuntu 24.04-specific variables
 │   └── staging/
-│       └── hosts.yml              # ステージング環境ホスト定義
+│       └── hosts.yml              # Staging host definitions
 ├── playbooks/
-│   └── ubuntu2404.yml             # メインプレイブック
-├── roles/                          # Ansibleロール
-│   ├── system_base/               # Phase 1: ベースシステム設定
-│   ├── microsoft_repos/           # Phase 2: Microsoftリポジトリ
+│   └── ubuntu2404.yml             # Main playbook
+├── roles/                          # Ansible roles
+│   ├── system_base/               # Phase 1: Base system setup
+│   ├── microsoft_repos/           # Phase 2: Microsoft repositories
 │   ├── powershell/                # Phase 3: PowerShell
-│   ├── development_tools/         # Phase 4: 開発ツール (50+ tools)
+│   ├── development_tools/         # Phase 4: Development tools (50+ tools)
 │   ├── container_tools/           # Phase 5: Docker
-│   ├── toolset_configuration/     # Phase 6: ツールセット設定
-│   ├── post_install/              # Phase 7: 後処理・再起動
-│   └── validation/                # Phase 8: テスト・検証
+│   ├── toolset_configuration/     # Phase 6: Toolset configuration
+│   ├── post_install/              # Phase 7: Post-install and reboot
+│   └── validation/                # Phase 8: Testing and validation
 ├── group_vars/
-│   ├── all.yml                    # 全ホスト共通変数
-│   └── ubuntu.yml                 # Ubuntu固有変数
-└── templates/                      # テンプレートファイル
+│   ├── all.yml                    # Variables shared by all hosts
+│   └── ubuntu.yml                 # Ubuntu-specific variables
+└── templates/                      # Template files
 ```
 
-## 🚀 クイックスタート
+## 🚀 Quick Start
 
-### 1. 前提条件
+### 1. Prerequisites
 
 - Ansible >= 2.14
 - Python >= 3.9
-- ターゲットVM: Ubuntu 24.04 LTS
-- SSH接続可能な環境
+- Target VM: Ubuntu 24.04 LTS
+- SSH access to the target environment
 
-### 2. セットアップ
+### 2. Setup
 
 ```bash
-# Ansibleのインストール
+# Install Ansible
 python3 -m pip install ansible
 
-# 必要なコレクションのインストール
+# Install required collections
 cd ansible-ubuntu2404
 ansible-galaxy collection install -r requirements.yml
 ```
 
-### 3. インベントリの設定
+### 3. Configure Inventory
 
-`inventories/production/hosts.yml`を編集:
+Edit `inventories/production/hosts.yml`:
 
 ```yaml
 ubuntu2404_builders:
@@ -65,50 +65,45 @@ ubuntu2404_builders:
       ansible_ssh_private_key_file: ~/.ssh/YOUR_KEY
 ```
 
-### 4. 実行
+### 4. Run
 
 ```bash
-# 構文チェック
+# Syntax check
 ansible-playbook playbooks/ubuntu2404.yml --syntax-check
 
-# Dry-run実行（変更なし）
+# Dry run (no changes applied)
 ansible-playbook playbooks/ubuntu2404.yml --check
 
-# 実際に実行
+# Run the playbook
 ansible-playbook playbooks/ubuntu2404.yml
 
-# 特定のロールのみ実行
+# Run only specific roles
 ansible-playbook playbooks/ubuntu2404.yml --tags "system_base,powershell"
 
-# 特定のロールをスキップ
+# Skip specific roles
 ansible-playbook playbooks/ubuntu2404.yml --skip-tags "development_tools"
 ```
 
-## 🏗️ ロール詳細
+## 🏗️ Role Details
 
 ### Phase 1: system_base
-
-- ディレクトリ構造の作成
-- ヘルパースクリプトの配置
-- ビルドスクリプトの配置
-- toolset.jsonの配置
+- Create directory structure
+- Deploy helper scripts
+- Deploy build scripts
+- Deploy `toolset.json`
 
 ### Phase 2: microsoft_repos
-
-- Microsoft APTリポジトリの追加
-- APTソースの最適化
-- イメージメタデータの設定
+- Add Microsoft APT repositories
+- Optimize APT sources
+- Configure image metadata
 
 ### Phase 3: powershell
-
-- PowerShell Coreのインストール
-- PowerShellモジュールのインストール
-- Azure PowerShellモジュールのインストール
+- Install PowerShell Core
+- Install PowerShell modules
+- Install Azure PowerShell modules
 
 ### Phase 4: development_tools
-
-**最大のロール - 50以上のツールをインストール:**
-
+**Largest role — installs 50+ tools:**
 - Cloud & Container: Azure CLI, AWS Tools, Kubernetes
 - Compilers: Clang, GCC, Swift, CMake
 - Languages: Java, Ruby, Rust, PHP, Python, Node.js, Go
@@ -118,45 +113,41 @@ ansible-playbook playbooks/ubuntu2404.yml --skip-tags "development_tools"
 - Misc: Git, GitHub CLI, Android SDK, .NET SDK
 
 ### Phase 5: container_tools
-
-- Dockerのインストールと設定
-- Docker Composeのインストール
+- Install and configure Docker
+- Install Docker Compose
 
 ### Phase 6: toolset_configuration
-
-- Python/Node.js/Ruby/Goのバージョン管理
-- pipxパッケージのインストール
+- Manage Python/Node.js/Ruby/Go versions
+- Install `pipx` packages
 
 ### Phase 7: post_install
-
-- Homebrewのインストール
-- Snap設定
-- システム再起動
-- クリーンアップ
+- Install Homebrew
+- Configure Snap
+- Reboot the system
+- Perform cleanup
 
 ### Phase 8: validation
+- Generate software reports
+- Run tests
+- Apply final system configuration
+- Run `waagent deprovision` (Azure environment)
 
-- ソフトウェアレポート生成
-- テスト実行
-- システム最終設定
-- （Hyper-V向け）クラウド固有の deprovision 処理は実施しません
+## 📊 Estimated Execution Time
 
-## 📊 推定実行時間
+| Phase | Estimated Time |
+|-------|---------|
+| Phase 1-3 | 15 min |
+| Phase 4 | 60-90 min |
+| Phase 5-6 | 20 min |
+| Phase 7 | 10 min (+ reboot) |
+| Phase 8 | 10 min |
+| **Total** | **2-3 hours** |
 
-| Phase | 推定時間 |
-| ----- | ------- |
-| Phase 1-3 | 15分 |
-| Phase 4 | 60-90分 |
-| Phase 5-6 | 20分 |
-| Phase 7 | 10分 (+ 再起動) |
-| Phase 8 | 10分 |
-| **合計** | **2-3時間** |
+## 🔧 Customization
 
-## 🔧 カスタマイズ
+### Override Variables
 
-### 変数のオーバーライド
-
-`group_vars/ubuntu.yml`で定義されている変数を上書き:
+Override variables defined in `group_vars/ubuntu.yml`:
 
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml \
@@ -164,112 +155,106 @@ ansible-playbook playbooks/ubuntu2404.yml \
   -e "nodejs_default=22"
 ```
 
-### タグを使った部分実行
+### Partial Execution with Tags
 
 ```bash
-# 開発ツールのみインストール
+# Install development tools only
 ansible-playbook playbooks/ubuntu2404.yml --tags "development_tools"
 
-# 言語系ツールのみ
+# Install language-related tools only
 ansible-playbook playbooks/ubuntu2404.yml --tags "languages"
 
-# データベースのみスキップ
+# Skip database-related tasks only
 ansible-playbook playbooks/ubuntu2404.yml --skip-tags "databases"
 ```
 
-### 並列実行の調整
+### Tune Parallel Execution
 
-`ansible.cfg`の`forks`を調整:
+Adjust `forks` in `ansible.cfg`:
 
 ```ini
 [defaults]
-forks = 10  # デフォルトは5
+forks = 10  # Default is 5
 ```
 
-## 🧪 テスト
+## 🧪 Testing
 
-### 構文チェック
-
+### Syntax Check
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml --syntax-check
 ```
 
 ### Dry-run
-
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml --check --diff
 ```
 
-### デバッグモード
-
+### Debug Mode
 ```bash
 ansible-playbook playbooks/ubuntu2404.yml -vvv
 ```
 
-## 📦 出力
+## 📦 Output
 
-実行後、以下のファイルが生成されます:
+After execution, the following files are generated:
 
-- `./outputs/Ubuntu2404-Readme.md` - ソフトウェアレポート (Markdown)
-- `./outputs/software-report.json` - ソフトウェアレポート (JSON)
-- ターゲットVM上の`/imagegeneration/tests/testResults.xml` - テスト結果
+- `./outputs/Ubuntu2404-Readme.md` - Software report (Markdown)
+- `./outputs/software-report.json` - Software report (JSON)
+- `/imagegeneration/tests/testResults.xml` on the target VM - Test results
 
-## 🔒 セキュリティ
+## 🔒 Security
 
-### パスワードの暗号化
+### Encrypt Passwords
 
 ```bash
-# 変数を暗号化
+# Encrypt a variable
 ansible-vault encrypt_string 'your_password' --name 'ansible_become_password'
 
-# ファイル全体を暗号化
+# Encrypt an entire file
 ansible-vault encrypt group_vars/ubuntu.yml
 
-# 実行時に復号化
+# Decrypt at runtime
 ansible-playbook playbooks/ubuntu2404.yml --ask-vault-pass
 ```
 
-## 🐛 トラブルシューティング
+## 🐛 Troubleshooting
 
-### APTロック競合
-
+### APT Lock Conflicts
 ```bash
-# タスクにリトライ設定を追加済み
-# エラーが続く場合は手動でロックを解除:
+# Retry logic is already configured in tasks.
+# If errors persist, clear lock files manually:
 sudo rm /var/lib/apt/lists/lock
 sudo rm /var/cache/apt/archives/lock
 sudo rm /var/lib/dpkg/lock*
 ```
 
-### SSH接続失敗
-
+### SSH Connection Failures
 ```bash
-# 接続テスト
+# Connection test
 ansible ubuntu2404_builders -m ping
 
-# 詳細ログ
+# Verbose logs
 ansible ubuntu2404_builders -m ping -vvv
 ```
 
-### 再起動後の接続失敗
-
-`post_reboot_delay`を増やす (デフォルト: 300秒):
+### Connection Failures After Reboot
+Increase `post_reboot_delay` (default: 300 seconds):
 
 ```yaml
 # roles/post_install/tasks/main.yml
-post_reboot_delay: 600  # 10分に延長
+post_reboot_delay: 600  # Increase to 10 minutes
 ```
 
-## 📚 関連ドキュメント
+## 📚 Related Documentation
 
 - [Ansible Documentation](https://docs.ansible.com/)
 - [Packer to Ansible Migration Plan](../../docs/ansible-migration.md)
 - [Original Packer Template](../../images/ubuntu/templates/build.ubuntu-24_04.pkr.hcl)
 
-## 🤝 コントリビューション
+## 🤝 Contributing
 
-改善提案やバグ報告は、Issueまたはプルリクエストでお願いします。
+Please use Issues or pull requests for improvement ideas and bug reports.
 
-## 📝 ライセンス
+## 📝 License
 
-このプロジェクトは元のリポジトリと同じライセンスに従います。
+This project follows the same license as the original repository.
