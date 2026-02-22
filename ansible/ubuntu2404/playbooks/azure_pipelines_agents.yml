@@ -1,0 +1,64 @@
+---
+- name: Deploy Azure Pipelines Agents on Ubuntu 24.04
+  hosts: ubuntu2404_agents
+  gather_facts: true
+  become: false
+
+  vars_files:
+    - ../group_vars/all.yml
+    - ../group_vars/ubuntu.yml
+
+  pre_tasks:
+    - name: Verify SSH connectivity
+      ansible.builtin.ping:
+
+    - name: Check Ubuntu version
+      ansible.builtin.command: lsb_release -rs
+      register: ubuntu_version
+      changed_when: false
+      failed_when: ubuntu_version.stdout != "24.04"
+
+    - name: Display deployment target
+      ansible.builtin.debug:
+        msg: "Deploying Azure Pipelines agents on Ubuntu {{ ubuntu_version.stdout }}"
+
+    - name: Load Azure Pipelines credentials from runtime environment
+      ansible.builtin.set_fact:
+        azp_url: "{{ azp_url | default(lookup('ansible.builtin.env', 'AZP_URL'), true) }}"
+        azp_client_id: "{{ azp_client_id | default(lookup('ansible.builtin.env', 'AZP_CLIENT_ID'), true) }}"
+        azp_tenant_id: "{{ azp_tenant_id | default(lookup('ansible.builtin.env', 'AZP_TENANT_ID'), true) }}"
+        azp_client_secret: "{{ azp_client_secret | default(lookup('ansible.builtin.env', 'AZP_CLIENT_SECRET'), true) }}"
+      no_log: true
+
+    - name: Validate required runtime Azure Pipelines credentials
+      ansible.builtin.assert:
+        that:
+          - azp_url is defined and azp_url | length > 0
+          - azp_client_id is defined and azp_client_id | length > 0
+          - azp_tenant_id is defined and azp_tenant_id | length > 0
+          - azp_client_secret is defined and azp_client_secret | length > 0
+        fail_msg: >-
+          Missing Azure Pipelines credentials.
+          Pass them at runtime with -e variables or AZP_URL/AZP_CLIENT_ID/
+          AZP_TENANT_ID/AZP_CLIENT_SECRET environment variables.
+        quiet: true
+
+  roles:
+    - role: azure_pipelines_agent
+      tags: ['deploy', 'agent', 'azure_agent']
+
+  post_tasks:
+    - name: Display deployment summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================
+          Azure Pipelines Agent deployment complete
+          ============================================
+          Hosts group : ubuntu2404_agents
+          Base dir    : {{ azp_agent_base_dir | default('/opt/azure-pipelines-agent') }}
+          Pool        : {{ azp_pool | default('Default') }}
+          Instances   :
+          {% for inst in (azp_agent_instances | default([])) %}
+            - {{ inst.name }}
+          {% endfor %}
+          ============================================

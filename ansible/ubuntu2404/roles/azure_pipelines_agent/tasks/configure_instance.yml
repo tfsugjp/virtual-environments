@@ -42,7 +42,11 @@
 
 - name: "{{ _instance.name }} | Determine if install/update is needed"
   ansible.builtin.set_fact:
-    _inst_needs_update: "{{ _inst_current_version != _azp_resolved_version }}"
+    _inst_needs_update: >-
+      {{
+        (azp_force_reinstall | default(false) | bool)
+        or (_inst_current_version != _azp_resolved_version)
+      }}
 
 - name: "{{ _instance.name }} | Display version comparison"
   ansible.builtin.debug:
@@ -50,7 +54,11 @@
       Instance '{{ _instance.name }}':
       current={{ _inst_current_version | default('(none)') }},
       target={{ _azp_resolved_version }},
-      action={{ 'install/update' if (_inst_needs_update | bool) else 'skip (up-to-date)' }}
+      force_reinstall={{ azp_force_reinstall | default(false) | bool }},
+      action={{
+        'force reinstall' if (azp_force_reinstall | default(false) | bool)
+        else ('install/update' if (_inst_needs_update | bool) else 'skip (up-to-date)')
+      }}
 
 # ---- Skip if already at target version ----------------------------------
 

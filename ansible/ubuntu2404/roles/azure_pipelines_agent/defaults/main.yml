@@ -2,8 +2,8 @@
 # =============================================================================
 # Azure Pipelines Agent - Default Variables
 # =============================================================================
-# All sensitive values (azp_client_secret, etc.) should be stored in
-# ansible-vault encrypted files.  See the README for inventory examples.
+# Sensitive values (azp_client_secret, etc.) should be injected at runtime
+# (environment variables or -e), or stored in encrypted files when needed.
 
 # ---------------------------------------------------------------------------
 # Azure DevOps Organisation
@@ -31,6 +31,7 @@ azp_agent_base_dir: "/opt/azure-pipelines-agent"
 azp_agent_user: "azpagent"
 azp_agent_work_dir: "_work"
 azp_replace_existing: true
+azp_force_reinstall: false
 
 # ---------------------------------------------------------------------------
 # Agent Instances (multi-agent)

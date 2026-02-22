@@ -16,7 +16,8 @@ ansible-ubuntu2404/
 │   └── staging/
 │       └── hosts.yml              # Staging host definitions
 ├── playbooks/
-│   └── ubuntu2404.yml             # Main playbook
+│   ├── ubuntu2404.yml             # Main image build playbook
+│   └── azure_pipelines_agents.yml # Azure Pipelines agent deployment playbook
 ├── roles/                          # Ansible roles
 │   ├── system_base/               # Phase 1: Base system setup
 │   ├── microsoft_repos/           # Phase 2: Microsoft repositories
@@ -25,7 +26,8 @@ ansible-ubuntu2404/
 │   ├── container_tools/           # Phase 5: Docker
 │   ├── toolset_configuration/     # Phase 6: Toolset configuration
 │   ├── post_install/              # Phase 7: Post-install and reboot
-│   └── validation/                # Phase 8: Testing and validation
+│   ├── validation/                # Phase 8: Testing and validation
+│   └── azure_pipelines_agent/     # Azure Pipelines self-hosted agent role
 ├── group_vars/
 │   ├── all.yml                    # Variables shared by all hosts
 │   └── ubuntu.yml                 # Ubuntu-specific variables
@@ -82,6 +84,12 @@ ansible-playbook playbooks/ubuntu2404.yml --tags "system_base,powershell"
 
 # Skip specific roles
 ansible-playbook playbooks/ubuntu2404.yml --skip-tags "development_tools"
+
+# Deploy Azure Pipelines agents (ubuntu2404_agents group)
+AZP_URL="https://dev.azure.com/myorg" AZP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" AZP_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" AZP_CLIENT_SECRET="your-secret-value" ansible-playbook -i inventories/production/hosts.yml playbooks/azure_pipelines_agents.yml --limit ubuntu2404_agents
+
+# Force reinstall even when target version is already installed
+AZP_URL="https://dev.azure.com/myorg" AZP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" AZP_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" AZP_CLIENT_SECRET="your-secret-value" ansible-playbook -i inventories/production/hosts.yml playbooks/azure_pipelines_agents.yml --limit ubuntu2404_agents -e azp_force_reinstall=true
 ```
 
 ## 🏗️ Role Details
@@ -249,6 +257,7 @@ post_reboot_delay: 600  # Increase to 10 minutes
 
 - [Ansible Documentation](https://docs.ansible.com/)
 - [Packer to Ansible Migration Plan](../../docs/ansible-migration.md)
+- [Azure Pipelines Agent Role](../../docs/azure-pipelines-agent-role.md)
 - [Original Packer Template](../../images/ubuntu/templates/build.ubuntu-24_04.pkr.hcl)
 
 ## 🤝 Contributing
