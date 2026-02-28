@@ -224,6 +224,15 @@ ansible-playbook \
 
 Use tags to run only the agent role:
 
+> [!IMPORTANT]
+> The `agent` tag is applied to the `azure_pipelines_agent` role **only** in the dedicated playbook
+> `ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml`.
+>
+> The image build playbook `ansible/ubuntu2404/playbooks/ubuntu2404.yml` does **not** include the
+> `azure_pipelines_agent` role, so running `ubuntu2404.yml --tags agent` will **not** install the
+> Azure Pipelines agent. You may still see some tasks run due to Ansible's special `always` tag
+> (e.g., the `system_base` role has `tags: ['always', ...]`).
+
 ```bash
 ansible-playbook \
   -i ansible/ubuntu2404/inventories/production/hosts.yml \
@@ -338,6 +347,11 @@ ansible-playbook ... --tags agent
 # Run all tasks in the dedicated agent playbook (no tag filter)
 ansible-playbook ...
 ```
+
+> [!NOTE]
+> If you run `--tags agent` against a playbook that doesn't include the agent role (for example
+> `playbooks/ubuntu2404.yml`), the agent will not be deployed and the install directory (default:
+> `/opt/azure-pipelines-agent`) will not be created.
 
 ---
 

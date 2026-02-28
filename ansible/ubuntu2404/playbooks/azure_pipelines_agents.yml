@@ -29,6 +29,7 @@
         azp_tenant_id: "{{ azp_tenant_id | default(lookup('ansible.builtin.env', 'AZP_TENANT_ID'), true) }}"
         azp_client_secret: "{{ azp_client_secret | default(lookup('ansible.builtin.env', 'AZP_CLIENT_SECRET'), true) }}"
       no_log: true
+      tags: ['deploy', 'agent', 'azure_agent']
 
     - name: Validate required runtime Azure Pipelines credentials
       ansible.builtin.assert:
@@ -42,6 +43,7 @@
           Pass them at runtime with -e variables or AZP_URL/AZP_CLIENT_ID/
           AZP_TENANT_ID/AZP_CLIENT_SECRET environment variables.
         quiet: true
+      tags: ['deploy', 'agent', 'azure_agent']
 
   roles:
     - role: azure_pipelines_agent
