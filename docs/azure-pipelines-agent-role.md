@@ -123,6 +123,7 @@ These must be provided at runtime using `-e`, `-e @file`, or environment variabl
 |---|---|---|
 | `azp_auth_type` | `sp` | Authentication type. Currently only `sp` (Service Principal) is implemented. |
 | `azp_pool` | `Default` | Default agent pool. Can be overridden per-instance. |
+| `azp_pool_runtime_override` | `""` | Force one pool for all agent instances at runtime. Takes precedence over `azp_agent_instances[].pool` and `azp_pool`. |
 | `azp_agent_base_dir` | `/opt/azure-pipelines-agent` | Base directory under which instance directories are created. |
 | `azp_agent_user` | `azpagent` | System user that owns the agent files and runs the service. Automatically created if absent. |
 | `azp_agent_work_dir` | `_work` | Working directory name (relative to instance directory). |
@@ -131,6 +132,7 @@ These must be provided at runtime using `-e`, `-e @file`, or environment variabl
 | `azp_agent_version` | `latest` | Set to `latest` for auto-resolution or a specific version string (e.g. `4.269.0`) to pin. |
 | `azp_include_prerelease` | `true` | When `azp_agent_version` is `latest`, include pre-release versions in resolution. |
 | `azp_force_reinstall` | `false` | Force reinstall/update flow even when installed and target versions are the same. |
+| `azp_no_log_sensitive` | `true` | Keep credential-bearing tasks hidden (`no_log`) to avoid leaking secrets in logs. Set `false` only for temporary troubleshooting. |
 | `azp_github_token` | `""` | GitHub Personal Access Token for API calls. Falls back to `GITHUB_TOKEN` / `GH_TOKEN` environment variables. |
 
 ---
@@ -178,6 +180,10 @@ The dedicated playbook reads values from either runtime `-e` variables or these 
 - `AZP_CLIENT_ID`
 - `AZP_TENANT_ID`
 - `AZP_CLIENT_SECRET`
+- `AZP_POOL` (optional override; default is `Default`)
+
+When `AZP_POOL` is set, the playbook applies it as a runtime override for all instances.
+This override takes precedence over both `azp_pool` and per-instance `pool` values in inventory.
 
 ### Option A: Environment variables (recommended)
 
@@ -186,6 +192,7 @@ export AZP_URL="https://dev.azure.com/myorg"
 export AZP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export AZP_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export AZP_CLIENT_SECRET="your-secret-value"
+export AZP_POOL="MyAgentPool"
 ```
 
 ### Option B: Ephemeral runtime vars file
@@ -388,14 +395,48 @@ Two handlers are available and can be triggered with `notify`:
 - `azp_url` is incorrect or unreachable from the target host.
 - The specified pool does not exist.
 
+### Agent pool not found
+
+**Symptom:** `Agent pool not found: 'Default'`
+
+**Cause:** Your Azure DevOps organization does not have a pool named `Default`.
+
+**Fix:** pass an existing pool at runtime:
+
+```bash
+export AZP_POOL="<existing-pool-name>"
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml
+```
+
+Or with extra vars:
+
+```bash
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
+  -e azp_pool_runtime_override=<existing-pool-name>
+```
+
 **Debugging:** Re-run with increased verbosity:
 
 ```bash
 ansible-playbook ... --tags agent -vvv
 ```
 
+If you need to see `config.sh` output temporarily:
+
+```bash
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
+  -e azp_no_log_sensitive=false \
+  -vvv
+```
+
 > [!IMPORTANT]
-> The `config.sh` task uses `no_log: true` to protect credentials. Temporarily set `no_log: false` in `configure_instance.yml` if you need to see the full command output during debugging. **Revert this change immediately afterward.**
+> `azp_no_log_sensitive=false` may expose secrets in output/logs. Use only in an isolated troubleshooting session and rotate credentials if exposure is suspected.
 
 ### Agent service does not start
 

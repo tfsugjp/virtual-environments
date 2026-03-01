@@ -23,6 +23,8 @@ azp_auth_type: "sp"         # Currently only 'sp' is implemented
 # Agent Pool
 # ---------------------------------------------------------------------------
 azp_pool: "Default"
+# Optional: force one pool for all instances at runtime (e.g. via AZP_POOL)
+azp_pool_runtime_override: ""
 
 # ---------------------------------------------------------------------------
 # Agent Installation
@@ -32,6 +34,7 @@ azp_agent_user: "azpagent"
 azp_agent_work_dir: "_work"
 azp_replace_existing: true
 azp_force_reinstall: false
+azp_no_log_sensitive: true
 
 # ---------------------------------------------------------------------------
 # Agent Instances (multi-agent)

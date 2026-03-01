@@ -31,6 +31,21 @@
       no_log: true
       tags: ['deploy', 'agent', 'azure_agent']
 
+    - name: Override agent pool from runtime environment when provided
+      ansible.builtin.set_fact:
+        azp_pool: "{{ lookup('ansible.builtin.env', 'AZP_POOL') }}"
+        azp_pool_runtime_override: "{{ lookup('ansible.builtin.env', 'AZP_POOL') }}"
+      when: lookup('ansible.builtin.env', 'AZP_POOL') | length > 0
+      tags: ['deploy', 'agent', 'azure_agent']
+
+    - name: Warn when default pool name is used
+      ansible.builtin.debug:
+        msg: >-
+          Agent pool is set to 'Default'. Ensure this pool exists in Azure DevOps,
+          or set AZP_POOL / -e azp_pool_runtime_override=<pool-name> at runtime.
+      when: (azp_pool | default('Default')) == 'Default'
+      tags: ['deploy', 'agent', 'azure_agent']
+
     - name: Validate required runtime Azure Pipelines credentials
       ansible.builtin.assert:
         that:
