@@ -1,0 +1,149 @@
+---
+# =============================================================================
+# Windows Base – Directory Setup, File Copy, Build User
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phases 1-6
+
+- name: Create ImageGeneration directory
+  ansible.windows.win_file:
+    path: "{{ image_folder }}"
+    state: directory
+
+- name: Create temp directory
+  ansible.windows.win_file:
+    path: "{{ temp_dir }}"
+    state: directory
+
+# ---- Copy scripts, helpers, toolsets, and assets from controller ---------
+
+- name: Detect scripts source base path
+  ansible.builtin.set_fact:
+    _scripts_base: "{{ scripts_source_base | default(playbook_dir ~ '/../../../images/windows', true) }}"
+  delegate_to: localhost
+
+- name: Copy build scripts to target
+  ansible.windows.win_copy:
+    src: "{{ _scripts_base }}/scripts/"
+    dest: "{{ image_folder }}\\scripts\\"
+  become: true
+
+- name: Copy toolsets to target
+  ansible.windows.win_copy:
+    src: "{{ _scripts_base }}/toolsets/"
+    dest: "{{ image_folder }}\\toolsets\\"
+  become: true
+
+- name: Copy assets to target
+  ansible.windows.win_copy:
+    src: "{{ _scripts_base }}/assets/"
+    dest: "{{ image_folder }}\\assets\\"
+  become: true
+
+- name: Copy software-report-base helpers to target
+  ansible.windows.win_copy:
+    src: "{{ playbook_dir }}/../../../helpers/software-report-base/"
+    dest: "{{ image_folder }}\\scripts\\docs-gen\\"
+  become: true
+
+# ---- Reorganize directory structure (matches Packer Phase 4) -------------
+
+- name: Reorganize - Move post-gen assets
+  ansible.windows.win_shell: |
+    if (Test-Path '{{ image_folder }}\assets\post-gen') {
+      Move-Item '{{ image_folder }}\assets\post-gen' 'C:\post-generation' -Force
+    }
+    Remove-Item -Recurse -Force '{{ image_folder }}\assets' -ErrorAction SilentlyContinue
+  args:
+    executable: powershell.exe
+
+- name: Reorganize - Move docs-gen to SoftwareReport
+  ansible.windows.win_shell: |
+    if (Test-Path '{{ image_folder }}\scripts\docs-gen') {
+      Move-Item '{{ image_folder }}\scripts\docs-gen' '{{ image_folder }}\SoftwareReport' -Force
+    }
+  args:
+    executable: powershell.exe
+
+- name: Reorganize - Move helpers to ImageHelpers
+  ansible.windows.win_shell: |
+    if (Test-Path '{{ image_folder }}\scripts\helpers') {
+      Move-Item '{{ image_folder }}\scripts\helpers' '{{ helper_script_folder }}\ImageHelpers' -Force
+    }
+  args:
+    executable: powershell.exe
+
+- name: Reorganize - Move tests helpers
+  ansible.windows.win_shell: |
+    New-Item -Type Directory -Path '{{ helper_script_folder }}\TestsHelpers\' -Force | Out-Null
+    if (Test-Path '{{ image_folder }}\scripts\tests\Helpers.psm1') {
+      Move-Item '{{ image_folder }}\scripts\tests\Helpers.psm1' '{{ helper_script_folder }}\TestsHelpers\TestsHelpers.psm1' -Force
+    }
+  args:
+    executable: powershell.exe
+
+- name: Reorganize - Move tests directory
+  ansible.windows.win_shell: |
+    if (Test-Path '{{ image_folder }}\scripts\tests') {
+      Move-Item '{{ image_folder }}\scripts\tests' '{{ image_folder }}\tests' -Force
+    }
+  args:
+    executable: powershell.exe
+
+- name: Reorganize - Clean up scripts directory
+  ansible.windows.win_shell: |
+    Remove-Item -Recurse -Force '{{ image_folder }}\scripts' -ErrorAction SilentlyContinue
+  args:
+    executable: powershell.exe
+
+- name: Reorganize - Move toolset JSON to image folder root
+  ansible.windows.win_shell: |
+    if (Test-Path '{{ image_folder }}\toolsets\toolset-2025.json') {
+      Move-Item '{{ image_folder }}\toolsets\toolset-2025.json' '{{ image_folder }}\toolset.json' -Force
+    }
+    Remove-Item -Recurse -Force '{{ image_folder }}\toolsets' -ErrorAction SilentlyContinue
+  args:
+    executable: powershell.exe
+
+# ---- Create build user ---------------------------------------------------
+
+- name: Create build user
+  ansible.windows.win_user:
+    name: "{{ install_user }}"
+    password: "{{ install_password }}"
+    password_never_expires: true
+    user_cannot_change_password: true
+    state: present
+  become: true
+  when: install_password | length > 0
+
+- name: Add build user to Administrators group
+  ansible.windows.win_group_membership:
+    name: Administrators
+    members:
+      - "{{ install_user }}"
+    state: present
+  become: true
+  when: install_password | length > 0
+
+# ---- Enable WinRM Basic auth ---------------------------------------------
+
+- name: Enable WinRM Basic authentication
+  ansible.windows.win_shell: |
+    winrm set winrm/config/service/auth '@{Basic="true"}'
+  args:
+    executable: cmd.exe
+
+# ---- Enable test signing -------------------------------------------------
+
+- name: Enable test signing (elevated)
+  ansible.windows.win_shell: bcdedit.exe /set TESTSIGNING ON
+  become: true
+  become_method: runas
+  become_user: "{{ install_user }}"
+  vars:
+    ansible_become_password: "{{ install_password }}"
+  when: install_password | length > 0
+
+- name: Display windows_base completion
+  ansible.builtin.debug:
+    msg: "windows_base role completed – directories created, scripts deployed, build user configured"

@@ -1,0 +1,6 @@
+---
+- name: Reboot Windows for Docker
+  ansible.windows.win_reboot:
+    reboot_timeout: 1800
+    post_reboot_delay: 120
+  listen: "reboot windows for docker"

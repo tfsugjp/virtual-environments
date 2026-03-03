@@ -1,0 +1,52 @@
+---
+# =============================================================================
+# System Updates – PostgreSQL, Windows Updates, System Configuration (Elevated)
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phase 14
+
+- name: Set common environment variables for system update scripts
+  ansible.builtin.set_fact:
+    _updates_env:
+      IMAGE_FOLDER: "{{ image_folder }}"
+      TEMP_DIR: "{{ temp_dir }}"
+
+- name: "Run system update and configuration scripts (elevated)"
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\{{ item }}"
+  args:
+    executable: powershell.exe
+  environment: "{{ _updates_env }}"
+  become: true
+  become_method: runas
+  become_user: "{{ install_user }}"
+  vars:
+    ansible_become_password: "{{ install_password }}"
+  loop:
+    - Install-PostgreSQL.ps1
+    - Install-WindowsUpdates.ps1
+    - Configure-DynamicPort.ps1
+    - Configure-GDIProcessHandleQuota.ps1
+    - Configure-Shell.ps1
+    - Configure-DeveloperMode.ps1
+    - Install-LLVM.ps1
+  loop_control:
+    label: "{{ item }}"
+
+- name: Reboot after Windows Updates
+  ansible.windows.win_reboot:
+    reboot_timeout: 1800
+    post_reboot_delay: 120
+    test_command: >-
+      powershell -command "& {
+        if ((-not (Get-Process TiWorker.exe -ErrorAction SilentlyContinue)) -and
+            (-not [System.Environment]::HasShutdownStarted)) {
+          Write-Output 'Restart complete'
+        } else {
+          throw 'TiWorker still running'
+        }
+      }"
+
+- name: Display system_updates completion
+  ansible.builtin.debug:
+    msg: "system_updates role completed – PostgreSQL, Windows Updates, LLVM, and system configuration applied"

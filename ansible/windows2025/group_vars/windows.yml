@@ -1,0 +1,27 @@
+---
+# =============================================================================
+# Windows Server 2025 – Image Build Variables
+# =============================================================================
+
+# Directory structure (must match Packer template conventions)
+image_folder: "C:\\ImageGeneration"
+helper_script_folder: "C:\\ImageGeneration\\helpers"
+temp_dir: "C:\\ImageTemp"
+imagedata_file: "C:\\imagedata.json"
+agent_tools_directory: "C:\\hostedtoolcache\\windows"
+
+# Image metadata
+image_version: "dev"
+image_os: "win25"
+
+# Build user for elevated operations
+install_user: "installer"
+install_password: "{{ vault_install_password | default('') }}"
+
+# Scripts source (controller path)
+# Resolved dynamically in playbook pre_tasks to point to the repo's
+# images/windows directory on the Ansible controller.
+scripts_source_base: ""
+
+# Sysprep control
+run_sysprep: false

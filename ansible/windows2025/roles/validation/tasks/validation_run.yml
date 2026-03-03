@@ -1,0 +1,88 @@
+---
+# =============================================================================
+# Validation Run – Execute tests and generate reports
+# =============================================================================
+
+- name: Set common environment variables for validation
+  ansible.builtin.set_fact:
+    _validation_env:
+      IMAGE_FOLDER: "{{ image_folder }}"
+      TEMP_DIR: "{{ temp_dir }}"
+
+- name: Pause before post-reboot tasks
+  ansible.builtin.pause:
+    seconds: 120
+
+- name: Run post-reboot Windows Updates
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\Install-WindowsUpdatesAfterReboot.ps1"
+  args:
+    executable: powershell.exe
+  environment: "{{ _validation_env }}"
+
+- name: Run cleanup
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\Invoke-Cleanup.ps1"
+  args:
+    executable: powershell.exe
+  environment: "{{ _validation_env }}"
+
+- name: Run all tests
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\tests\RunAll-Tests.ps1"
+  args:
+    executable: powershell.exe
+  environment: "{{ _validation_env }}"
+
+- name: Verify test results file exists
+  ansible.windows.win_stat:
+    path: "{{ image_folder }}\\tests\\testResults.xml"
+  register: _test_results
+  failed_when: not _test_results.stat.exists
+
+- name: Generate software report
+  ansible.windows.win_shell: |
+    pwsh -File '{{ image_folder }}\SoftwareReport\Generate-SoftwareReport.ps1'
+  environment:
+    IMAGE_VERSION: "{{ image_version }}"
+    IMAGE_FOLDER: "{{ image_folder }}"
+
+- name: Verify software report (markdown) exists
+  ansible.windows.win_stat:
+    path: C:\software-report.md
+  register: _report_md
+  failed_when: not _report_md.stat.exists
+
+- name: Verify software report (JSON) exists
+  ansible.windows.win_stat:
+    path: C:\software-report.json
+  register: _report_json
+  failed_when: not _report_json.stat.exists
+
+- name: Download software report (markdown) to control node
+  ansible.builtin.fetch:
+    src: C:\software-report.md
+    dest: "{{ outputs_dir }}/Windows2025-Readme.md"
+    flat: true
+
+- name: Download software report (JSON) to control node
+  ansible.builtin.fetch:
+    src: C:\software-report.json
+    dest: "{{ outputs_dir }}/software-report.json"
+    flat: true
+
+- name: Download test results to control node
+  ansible.builtin.fetch:
+    src: "{{ image_folder }}\\tests\\testResults.xml"
+    dest: "{{ outputs_dir }}/testResults.xml"
+    flat: true
+
+- name: Display validation completion
+  ansible.builtin.debug:
+    msg: |
+      validation role completed
+      Reports: {{ outputs_dir }}/Windows2025-Readme.md, {{ outputs_dir }}/software-report.json
+      Tests: {{ outputs_dir }}/testResults.xml

@@ -1,0 +1,12 @@
+---
+# =============================================================================
+# Validation – Tests, Report Generation, Artifact Collection
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phases 15-16
+
+- name: Skip validation in check mode
+  ansible.builtin.meta: end_play
+  when: ansible_check_mode
+
+- name: Include validation tasks
+  ansible.builtin.include_tasks: validation_run.yml

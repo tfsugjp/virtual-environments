@@ -1,0 +1,22 @@
+---
+# =============================================================================
+# Azure Pipelines Agent – Handlers (Windows)
+# =============================================================================
+
+- name: Restart Azure Pipelines Agent instances
+  ansible.windows.win_shell: |
+    $svcName = "vstsagent.*{{ item.name }}"
+    Get-Service | Where-Object { $_.Name -match $svcName } | Restart-Service -Force
+  loop: "{{ azp_agent_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  listen: "restart azure pipelines agent"
+
+- name: Stop Azure Pipelines Agent instances
+  ansible.windows.win_shell: |
+    $svcName = "vstsagent.*{{ item.name }}"
+    Get-Service | Where-Object { $_.Name -match $svcName } | Stop-Service -Force
+  loop: "{{ azp_agent_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  listen: "stop azure pipelines agent"

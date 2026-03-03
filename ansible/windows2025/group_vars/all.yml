@@ -1,0 +1,3 @@
+---
+# Common variables for all hosts
+outputs_dir: "./outputs"

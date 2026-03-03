@@ -1,0 +1,157 @@
+---
+# =============================================================================
+# Configure a single Azure Pipelines Agent instance (Windows)
+# =============================================================================
+# Called from main.yml via loop.  Expects:
+#   _instance              – dict with at least 'name', optionally 'pool'
+#   _azp_resolved_version  – target version string
+#   _azp_zip_path          – path to downloaded ZIP
+#   All azp_* defaults
+
+- name: "{{ _instance.name }} | Set instance variables"
+  ansible.builtin.set_fact:
+    _inst_dir: "{{ azp_agent_base_dir }}\\{{ _instance.name }}"
+    _inst_pool: "{{ _instance.pool | default(azp_pool) }}"
+    _inst_agent_file: "{{ azp_agent_base_dir }}\\{{ _instance.name }}\\.agent"
+    _inst_version_marker: "{{ azp_agent_base_dir }}\\{{ _instance.name }}\\.ansible_agent_version"
+
+# ---- Check current state ------------------------------------------------
+
+- name: "{{ _instance.name }} | Check for existing .agent file"
+  ansible.windows.win_stat:
+    path: "{{ _inst_agent_file }}"
+  register: _inst_agent_stat
+
+- name: "{{ _instance.name }} | Read current agent version"
+  when: _inst_agent_stat.stat.exists | default(false)
+  block:
+    - name: "{{ _instance.name }} | Read .agent file"
+      ansible.windows.win_shell: Get-Content '{{ _inst_agent_file }}' -Raw
+      register: _inst_agent_content
+      changed_when: false
+
+    - name: "{{ _instance.name }} | Parse current version from .agent JSON"
+      ansible.builtin.set_fact:
+        _inst_current_version: "{{ (_inst_agent_content.stdout | from_json).agentVersion | default('') }}"
+
+- name: "{{ _instance.name }} | Default current version to empty if not installed"
+  ansible.builtin.set_fact:
+    _inst_current_version: ""
+  when: not (_inst_agent_stat.stat.exists | default(false))
+
+- name: "{{ _instance.name }} | Determine if install/update is needed"
+  ansible.builtin.set_fact:
+    _inst_needs_update: "{{ _inst_current_version != _azp_resolved_version }}"
+
+- name: "{{ _instance.name }} | Display version comparison"
+  ansible.builtin.debug:
+    msg: >-
+      Instance '{{ _instance.name }}':
+      current={{ _inst_current_version | default('(none)') }},
+      target={{ _azp_resolved_version }},
+      action={{ 'install/update' if (_inst_needs_update | bool) else 'skip (up-to-date)' }}
+
+# ---- Skip if already at target version ----------------------------------
+
+- name: "{{ _instance.name }} | Install or update agent"
+  when: _inst_needs_update | bool
+  block:
+    # ---- Stop existing service (update path) ---------------------------
+
+    - name: "{{ _instance.name }} | Find existing agent service"
+      ansible.windows.win_shell: |
+        Get-Service | Where-Object { $_.Name -match 'vstsagent.*{{ _instance.name }}' } | Select-Object -ExpandProperty Name
+      register: _inst_svc_name
+      changed_when: false
+      failed_when: false
+
+    - name: "{{ _instance.name }} | Stop agent service (update)"
+      ansible.windows.win_service:
+        name: "{{ _inst_svc_name.stdout | trim }}"
+        state: stopped
+      when:
+        - _inst_current_version | length > 0
+        - _inst_svc_name.stdout | trim | length > 0
+      failed_when: false
+
+    - name: "{{ _instance.name }} | Unconfigure existing agent (update)"
+      ansible.windows.win_shell: |
+        cd '{{ _inst_dir }}'
+        .\config.cmd remove `
+          --auth sp `
+          --clientid {{ azp_client_id }} `
+          --tenantid {{ azp_tenant_id }} `
+          --clientsecret {{ azp_client_secret }}
+      no_log: true
+      when:
+        - _inst_current_version | length > 0
+        - _inst_agent_stat.stat.exists | default(false)
+      changed_when: true
+      failed_when: false
+
+    # ---- Create directory & extract ------------------------------------
+
+    - name: "{{ _instance.name }} | Create instance directory"
+      ansible.windows.win_file:
+        path: "{{ _inst_dir }}"
+        state: directory
+
+    - name: "{{ _instance.name }} | Extract agent ZIP"
+      community.windows.win_unzip:
+        src: "{{ _azp_zip_path }}"
+        dest: "{{ _inst_dir }}"
+        delete_archive: false
+
+    # ---- Configure agent -----------------------------------------------
+
+    - name: "{{ _instance.name }} | Run config.cmd"
+      ansible.windows.win_shell: |
+        cd '{{ _inst_dir }}'
+        .\config.cmd --unattended `
+          --url {{ azp_url }} `
+          --auth {{ azp_auth_type }} `
+          --clientid {{ azp_client_id }} `
+          --tenantid {{ azp_tenant_id }} `
+          --clientsecret {{ azp_client_secret }} `
+          --pool '{{ _inst_pool }}' `
+          --agent '{{ _instance.name }}' `
+          --work '{{ azp_agent_work_dir }}' `
+          --acceptTeeEula `
+          {{ '--replace' if (azp_replace_existing | bool) else '' }}
+      no_log: true
+      changed_when: true
+
+    # ---- Install and start Windows service ----------------------------
+
+    - name: "{{ _instance.name }} | Install agent as Windows service"
+      ansible.windows.win_shell: |
+        cd '{{ _inst_dir }}'
+        .\svc.cmd install
+      changed_when: true
+
+    - name: "{{ _instance.name }} | Start agent service"
+      ansible.windows.win_shell: |
+        cd '{{ _inst_dir }}'
+        .\svc.cmd start
+      changed_when: true
+
+    # ---- Write version marker ------------------------------------------
+
+    - name: "{{ _instance.name }} | Write version marker"
+      ansible.windows.win_copy:
+        content: "{{ _azp_resolved_version }}"
+        dest: "{{ _inst_version_marker }}"
+
+# ---- Verify service status (always) -----------------------------------
+
+- name: "{{ _instance.name }} | Find agent service for status check"
+  ansible.windows.win_shell: |
+    Get-Service | Where-Object { $_.Name -match 'vstsagent.*{{ _instance.name }}' } |
+      Select-Object Name, Status | Format-List
+  register: _inst_svc_status
+  changed_when: false
+  failed_when: false
+
+- name: "{{ _instance.name }} | Display service status"
+  ansible.builtin.debug:
+    msg: "{{ _inst_svc_status.stdout_lines | default(['Service status unknown']) }}"

@@ -1,0 +1,12 @@
+---
+# Single source of truth: ansible/windows2025/toolsets/toolset-2025.json
+#
+# NOTE: This file is controller-read (lookup('file', ...)) and then parsed.
+#       Downloads/installations on the target VM use public URLs.
+
+# Path to toolset JSON (kept within ansible-windows2025 so the playbook can run standalone)
+_toolset_source_path: "{{ playbook_dir }}/../toolsets/toolset-2025.json"
+
+# Parsed toolset object
+# (Use json_query or direct dict access throughout roles.)
+toolset: "{{ lookup('file', _toolset_source_path) | from_json }}"
