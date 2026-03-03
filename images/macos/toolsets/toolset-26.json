@@ -4,11 +4,18 @@
         "x64": {
             "versions": [
                 {
-                    "link": "26.3_Release_Candidate",
-                    "filename": "Xcode_26.3_Release_Candidate_Universal",
-                    "version": "26.3+17C519",
-                    "symlinks": ["26.3"],
-                    "sha256": "4a33bf2cc3dbb1aaa9796f8f659b8a55798e27f0eea8e1b60484264f6d6a93a1",
+                    "link": "26.4_beta_2",
+                    "filename": "Xcode_26.4_beta_2_Universal",
+                    "version": "26.4+17E5170d",
+                    "symlinks": ["26.4"],
+                    "sha256": "962d6bf68816f0328a6cc632153110943be4b2f59b6e0ce05ce6c07ce3edad95",
+                    "install_runtimes": "none"
+                },
+                {
+                    "link": "26.3",
+                    "filename": "Xcode_26.3_Universal",
+                    "version": "26.3+17C529",
+                    "sha256": "cf87232e0419785170edcfa070b750f28808ec00b489ab540c08b7d197c79ae4",
                     "install_runtimes": "none"
                 },
                 {
@@ -39,11 +46,18 @@
         "arm64": {
             "versions": [
                 {
-                    "link": "26.3_Release_Candidate",
-                    "filename": "Xcode_26.3_Release_Candidate_Universal",
-                    "version": "26.3+17C519",
-                    "symlinks": ["26.3"],
-                    "sha256": "4a33bf2cc3dbb1aaa9796f8f659b8a55798e27f0eea8e1b60484264f6d6a93a1",
+                    "link": "26.4_beta_2",
+                    "filename": "Xcode_26.4_beta_2_Universal",
+                    "version": "26.4+17E5170d",
+                    "symlinks": ["26.4"],
+                    "sha256": "962d6bf68816f0328a6cc632153110943be4b2f59b6e0ce05ce6c07ce3edad95",
+                    "install_runtimes": "none"
+                },
+                {
+                    "link": "26.3",
+                    "filename": "Xcode_26.3_Universal",
+                    "version": "26.3+17C529",
+                    "sha256": "cf87232e0419785170edcfa070b750f28808ec00b489ab540c08b7d197c79ae4",
                     "install_runtimes": "none"
                 },
                 {
