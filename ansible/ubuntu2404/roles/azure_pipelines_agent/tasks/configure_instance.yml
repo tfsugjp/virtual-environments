@@ -11,7 +11,12 @@
 - name: "{{ _instance.name }} | Set instance variables"
   ansible.builtin.set_fact:
     _inst_dir: "{{ azp_agent_base_dir }}/{{ _instance.name }}"
-    _inst_pool: "{{ _instance.pool | default(azp_pool) }}"
+    _inst_pool: >-
+      {{
+        azp_pool_runtime_override
+        if (azp_pool_runtime_override | default('') | length > 0)
+        else (_instance.pool | default(azp_pool))
+      }}
     _inst_service_script: "{{ azp_agent_base_dir }}/{{ _instance.name }}/svc.sh"
     _inst_agent_file: "{{ azp_agent_base_dir }}/{{ _instance.name }}/.agent"
     _inst_version_marker: "{{ azp_agent_base_dir }}/{{ _instance.name }}/.ansible_agent_version"
@@ -42,7 +47,11 @@
 
 - name: "{{ _instance.name }} | Determine if install/update is needed"
   ansible.builtin.set_fact:
-    _inst_needs_update: "{{ _inst_current_version != _azp_resolved_version }}"
+    _inst_needs_update: >-
+      {{
+        (azp_force_reinstall | default(false) | bool)
+        or (_inst_current_version != _azp_resolved_version)
+      }}
 
 - name: "{{ _instance.name }} | Display version comparison"
   ansible.builtin.debug:
@@ -50,7 +59,12 @@
       Instance '{{ _instance.name }}':
       current={{ _inst_current_version | default('(none)') }},
       target={{ _azp_resolved_version }},
-      action={{ 'install/update' if (_inst_needs_update | bool) else 'skip (up-to-date)' }}
+      pool={{ _inst_pool }},
+      force_reinstall={{ azp_force_reinstall | default(false) | bool }},
+      action={{
+        'force reinstall' if (azp_force_reinstall | default(false) | bool)
+        else ('install/update' if (_inst_needs_update | bool) else 'skip (up-to-date)')
+      }}
 
 # ---- Skip if already at target version ----------------------------------
 
@@ -88,13 +102,13 @@
       ansible.builtin.shell: |
         cd {{ _inst_dir }}
         ./config.sh remove \
-          --auth sp \
-          --clientid {{ azp_client_id }} \
-          --tenantid {{ azp_tenant_id }} \
-          --clientsecret {{ azp_client_secret }}
+          --auth {{ azp_auth_type | quote }} \
+          --clientid {{ azp_client_id | quote }} \
+          --tenantid {{ azp_tenant_id | quote }} \
+          --clientsecret {{ azp_client_secret | quote }}
       become: true
       become_user: "{{ azp_agent_user }}"
-      no_log: true
+      no_log: "{{ azp_no_log_sensitive | default(true) | bool }}"
       when:
         - _inst_current_version | length > 0
         - _inst_agent_stat.stat.exists | default(false)
@@ -149,19 +163,19 @@
       ansible.builtin.shell: |
         cd {{ _inst_dir }}
         ./config.sh --unattended \
-          --url {{ azp_url }} \
-          --auth {{ azp_auth_type }} \
-          --clientid {{ azp_client_id }} \
-          --tenantid {{ azp_tenant_id }} \
-          --clientsecret {{ azp_client_secret }} \
-          --pool '{{ _inst_pool }}' \
-          --agent '{{ _instance.name }}' \
-          --work '{{ azp_agent_work_dir }}' \
+          --url {{ azp_url | quote }} \
+          --auth {{ azp_auth_type | quote }} \
+          --clientid {{ azp_client_id | quote }} \
+          --tenantid {{ azp_tenant_id | quote }} \
+          --clientsecret {{ azp_client_secret | quote }} \
+          --pool {{ _inst_pool | quote }} \
+          --agent {{ _instance.name | quote }} \
+          --work {{ azp_agent_work_dir | quote }} \
           --acceptTeeEula \
           {{ '--replace' if (azp_replace_existing | bool) else '' }}
       become: true
       become_user: "{{ azp_agent_user }}"
-      no_log: true
+      no_log: "{{ azp_no_log_sensitive | default(true) | bool }}"
       changed_when: true
 
     # ---- Install and start systemd service ----------------------------

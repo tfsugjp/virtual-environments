@@ -19,12 +19,47 @@
       - azp_client_id is defined and azp_client_id | length > 0
       - azp_tenant_id is defined and azp_tenant_id | length > 0
       - azp_client_secret is defined and azp_client_secret | length > 0
-      - azp_agent_instances is defined and azp_agent_instances | length > 0
+      - azp_agent_instances is defined
     fail_msg: >-
       Missing required variables for azure_pipelines_agent role.
       Please set azp_url, azp_client_id, azp_tenant_id, azp_client_secret,
       and azp_agent_instances (list with at least one element).
     quiet: true
+
+- name: Normalize agent instances input to list
+  ansible.builtin.set_fact:
+    _azp_agent_instances: >-
+      {{
+        azp_agent_instances
+        if (azp_agent_instances is sequence and azp_agent_instances is not string)
+        else (azp_agent_instances | from_yaml)
+      }}
+
+- name: Validate normalized agent instances list
+  ansible.builtin.assert:
+    that:
+      - _azp_agent_instances is sequence
+      - _azp_agent_instances is not string
+      - _azp_agent_instances | length > 0
+    fail_msg: >-
+      azp_agent_instances must be a non-empty list. You can pass either a list
+      variable or a JSON/YAML list string (for example with -e).
+    quiet: true
+
+- name: Validate each agent instance entry
+  ansible.builtin.assert:
+    that:
+      - _agent_instance is mapping
+      - _agent_instance.name is defined
+      - _agent_instance.name | string | length > 0
+    fail_msg: >-
+      Each azp_agent_instances item must be an object with a non-empty 'name'
+      field. Invalid value: {{ _agent_instance }}
+    quiet: true
+  loop: "{{ _azp_agent_instances }}"
+  loop_control:
+    loop_var: _agent_instance
+    label: "{{ _agent_instance.name | default(_agent_instance | string) }}"
 
 # Step 1 – Resolve target version from GitHub Releases API
 - name: Resolve Azure Pipelines Agent version
@@ -38,7 +73,7 @@
 - name: Configure agent instances
   ansible.builtin.include_tasks:
     file: configure_instance.yml
-  loop: "{{ azp_agent_instances }}"
+  loop: "{{ _azp_agent_instances }}"
   loop_control:
     loop_var: _instance
     label: "{{ _instance.name }}"
@@ -56,7 +91,7 @@
       Pool    : {{ azp_pool }}
       Auth    : Service Principal ({{ azp_auth_type }})
       Instances:
-      {% for inst in azp_agent_instances %}
+      {% for inst in _azp_agent_instances %}
         - {{ inst.name }} (pool: {{ inst.pool | default(azp_pool) }})
       {% endfor %}
       ============================================

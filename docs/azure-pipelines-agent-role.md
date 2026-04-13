@@ -12,11 +12,12 @@ Ubuntu 24.04 hosts using the `azure_pipelines_agent` Ansible role.
 - [Architecture](#architecture)
 - [Role Variables](#role-variables)
 - [Inventory Configuration](#inventory-configuration)
-- [Vault Setup](#vault-setup)
+- [Runtime Secret Injection](#runtime-secret-injection)
 - [Usage](#usage)
   - [Full Deployment](#full-deployment)
   - [Agent-Only Deployment](#agent-only-deployment)
   - [Pin a Specific Version](#pin-a-specific-version)
+  - [Force Reinstall (Same Version)](#force-reinstall-same-version)
   - [Dry Run (Check Mode)](#dry-run-check-mode)
   - [Update Agents to the Latest Version](#update-agents-to-the-latest-version)
 - [Multi-Instance Configuration](#multi-instance-configuration)
@@ -38,7 +39,7 @@ The `azure_pipelines_agent` role performs the following:
 4. **Service Principal authentication** – Registers agents using Azure AD Service Principal credentials (`--auth sp`).
 5. **Idempotent updates** – On subsequent runs the role compares the installed version (read from the `.agent` JSON file) against the resolved target; only instances that differ are stopped, unconfigured, re-extracted, and re-configured.
 
-The role is integrated into the main `ubuntu2404.yml` playbook with a `when: azp_url is defined` guard so it is safely skipped during image-only builds.
+Use the dedicated playbook `ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml` to deploy agents to the `ubuntu2404_agents` host group.
 
 ---
 
@@ -107,14 +108,14 @@ All variables are defined in `ansible/ubuntu2404/roles/azure_pipelines_agent/def
 
 ### Required Variables
 
-These must be provided via inventory, `group_vars`, `host_vars`, or Vault:
+These must be provided at runtime using `-e`, `-e @file`, or environment variables (`AZP_URL`, `AZP_CLIENT_ID`, `AZP_TENANT_ID`, `AZP_CLIENT_SECRET`):
 
 | Variable | Description | Example |
 |---|---|---|
 | `azp_url` | Azure DevOps organisation URL | `https://dev.azure.com/myorg` |
 | `azp_client_id` | Azure AD Application (client) ID | `00000000-0000-0000-0000-000000000000` |
 | `azp_tenant_id` | Azure AD Directory (tenant) ID | `00000000-0000-0000-0000-000000000000` |
-| `azp_client_secret` | Service Principal client secret | _(vault encrypted)_ |
+| `azp_client_secret` | Service Principal client secret | _(runtime-injected secret)_ |
 
 ### Optional Variables
 
@@ -122,6 +123,7 @@ These must be provided via inventory, `group_vars`, `host_vars`, or Vault:
 |---|---|---|
 | `azp_auth_type` | `sp` | Authentication type. Currently only `sp` (Service Principal) is implemented. |
 | `azp_pool` | `Default` | Default agent pool. Can be overridden per-instance. |
+| `azp_pool_runtime_override` | `""` | Force one pool for all agent instances at runtime. Takes precedence over `azp_agent_instances[].pool` and `azp_pool`. |
 | `azp_agent_base_dir` | `/opt/azure-pipelines-agent` | Base directory under which instance directories are created. |
 | `azp_agent_user` | `azpagent` | System user that owns the agent files and runs the service. Automatically created if absent. |
 | `azp_agent_work_dir` | `_work` | Working directory name (relative to instance directory). |
@@ -129,6 +131,8 @@ These must be provided via inventory, `group_vars`, `host_vars`, or Vault:
 | `azp_agent_instances` | `[{name: "agent-1"}]` | List of agent instances to deploy. See [Multi-Instance Configuration](#multi-instance-configuration). |
 | `azp_agent_version` | `latest` | Set to `latest` for auto-resolution or a specific version string (e.g. `4.269.0`) to pin. |
 | `azp_include_prerelease` | `true` | When `azp_agent_version` is `latest`, include pre-release versions in resolution. |
+| `azp_force_reinstall` | `false` | Force reinstall/update flow even when installed and target versions are the same. |
+| `azp_no_log_sensitive` | `true` | Keep credential-bearing tasks hidden (`no_log`) to avoid leaking secrets in logs. Set `false` only for temporary troubleshooting. |
 | `azp_github_token` | `""` | GitHub Personal Access Token for API calls. Falls back to `GITHUB_TOKEN` / `GH_TOKEN` environment variables. |
 
 ---
@@ -167,44 +171,45 @@ A staging inventory with the same structure is available at `ansible/ubuntu2404/
 
 ---
 
-## Vault Setup
+## Runtime Secret Injection
 
-Sensitive credentials are stored in an Ansible Vault–encrypted file.
+Sensitive credentials are expected at execution time.
+The dedicated playbook reads values from either runtime `-e` variables or these environment variables:
 
-1. Copy the template:
+- `AZP_URL`
+- `AZP_CLIENT_ID`
+- `AZP_TENANT_ID`
+- `AZP_CLIENT_SECRET`
+- `AZP_POOL` (optional override; default is `Default`)
 
-   ```bash
-   cp ansible/ubuntu2404/inventories/production/group_vars/ubuntu2404_agents/vault.yml \
-      ansible/ubuntu2404/inventories/production/group_vars/ubuntu2404_agents/vault.yml.bak
-   ```
+When `AZP_POOL` is set, the playbook applies it as a runtime override for all instances.
+This override takes precedence over both `azp_pool` and per-instance `pool` values in inventory.
 
-2. Edit the file with your actual values:
+### Option A: Environment variables (recommended)
 
-   ```yaml
-   azp_url: "https://dev.azure.com/myorg"
-   azp_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-   azp_tenant_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-   azp_client_secret: "your-secret-value"
-   azp_pool: "Default"
-   azp_include_prerelease: true
-   ```
+```bash
+export AZP_URL="https://dev.azure.com/myorg"
+export AZP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+export AZP_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+export AZP_CLIENT_SECRET="your-secret-value"
+export AZP_POOL="MyAgentPool"
+```
 
-3. Encrypt the file:
+### Option B: Ephemeral runtime vars file
 
-   ```bash
-   ansible-vault encrypt \
-     ansible/ubuntu2404/inventories/production/group_vars/ubuntu2404_agents/vault.yml
-   ```
+```bash
+cat > /tmp/azp-runtime-vars.yml <<'YAML'
+azp_url: "https://dev.azure.com/myorg"
+azp_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+azp_tenant_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+azp_client_secret: "your-secret-value"
+YAML
+```
 
-4. (Recommended) Store the vault password in a file excluded from version control:
-
-   ```bash
-   echo 'my-vault-password' > ~/.vault_pass
-   chmod 600 ~/.vault_pass
-   ```
+Use `-e @/tmp/azp-runtime-vars.yml` when running the playbook, then delete the file immediately after deployment.
 
 > [!WARNING]
-> Never commit unencrypted vault files. Add `vault.yml` to `.gitignore` or verify it is encrypted before pushing.
+> Do not commit secrets to inventory or `group_vars`. Inject them only at runtime.
 
 ---
 
@@ -214,25 +219,32 @@ All commands are run from the repository root. Adjust the inventory path (`-i`) 
 
 ### Full Deployment
 
-Run the entire playbook (image build + agent deployment):
+Run the dedicated agent deployment playbook:
 
 ```bash
 ansible-playbook \
   -i ansible/ubuntu2404/inventories/production/hosts.yml \
-  ansible/ubuntu2404/playbooks/ubuntu2404.yml \
-  --vault-password-file ~/.vault_pass
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml
 ```
 
 ### Agent-Only Deployment
 
 Use tags to run only the agent role:
 
+> [!IMPORTANT]
+> The `agent` tag is applied to the `azure_pipelines_agent` role **only** in the dedicated playbook
+> `ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml`.
+>
+> The image build playbook `ansible/ubuntu2404/playbooks/ubuntu2404.yml` does **not** include the
+> `azure_pipelines_agent` role, so running `ubuntu2404.yml --tags agent` will **not** install the
+> Azure Pipelines agent. You may still see some tasks run due to Ansible's special `always` tag
+> (e.g., the `system_base` role has `tags: ['always', ...]`).
+
 ```bash
 ansible-playbook \
   -i ansible/ubuntu2404/inventories/production/hosts.yml \
-  ansible/ubuntu2404/playbooks/ubuntu2404.yml \
-  --tags agent \
-  --vault-password-file ~/.vault_pass
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
+  --tags agent
 ```
 
 ### Pin a Specific Version
@@ -242,10 +254,19 @@ Override the version at runtime:
 ```bash
 ansible-playbook \
   -i ansible/ubuntu2404/inventories/production/hosts.yml \
-  ansible/ubuntu2404/playbooks/ubuntu2404.yml \
-  --tags agent \
-  --vault-password-file ~/.vault_pass \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
   -e azp_agent_version=4.268.0
+```
+
+### Force Reinstall (Same Version)
+
+Force stop/uninstall/reconfigure even when the installed version already matches the target version:
+
+```bash
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
+  -e azp_force_reinstall=true
 ```
 
 ### Dry Run (Check Mode)
@@ -255,9 +276,7 @@ Preview changes without applying them:
 ```bash
 ansible-playbook \
   -i ansible/ubuntu2404/inventories/production/hosts.yml \
-  ansible/ubuntu2404/playbooks/ubuntu2404.yml \
-  --tags agent \
-  --vault-password-file ~/.vault_pass \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
   --check --diff
 ```
 
@@ -266,14 +285,13 @@ ansible-playbook \
 
 ### Update Agents to the Latest Version
 
-Simply re-run the playbook. The role reads the currently installed version from each instance's `.agent` file and only performs an update if the resolved version differs:
+Simply re-run the playbook. The role reads the currently installed version from each instance's `.agent` file and performs an update when the resolved version differs.
+If you need to redeploy while keeping the same version, set `-e azp_force_reinstall=true`:
 
 ```bash
 ansible-playbook \
   -i ansible/ubuntu2404/inventories/production/hosts.yml \
-  ansible/ubuntu2404/playbooks/ubuntu2404.yml \
-  --tags agent \
-  --vault-password-file ~/.vault_pass
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml
 ```
 
 The update flow is:
@@ -333,9 +351,14 @@ Examples:
 # Run only agent-related tasks
 ansible-playbook ... --tags agent
 
-# Skip agent tasks during an image build
-ansible-playbook ... --skip-tags agent
+# Run all tasks in the dedicated agent playbook (no tag filter)
+ansible-playbook ...
 ```
+
+> [!NOTE]
+> If you run `--tags agent` against a playbook that doesn't include the agent role (for example
+> `playbooks/ubuntu2404.yml`), the agent will not be deployed and the install directory (default:
+> `/opt/azure-pipelines-agent`) will not be created.
 
 ---
 
@@ -360,7 +383,7 @@ Two handlers are available and can be triggered with `notify`:
 
 - Set the `GITHUB_TOKEN` or `GH_TOKEN` environment variable on the control node.
 - Pass `-e azp_github_token=ghp_xxxx` at the command line.
-- Add `azp_github_token` to your vault file.
+- Add `azp_github_token` to your runtime vars file (`-e @file`).
 
 ### Agent registration fails
 
@@ -372,14 +395,48 @@ Two handlers are available and can be triggered with `notify`:
 - `azp_url` is incorrect or unreachable from the target host.
 - The specified pool does not exist.
 
+### Agent pool not found
+
+**Symptom:** `Agent pool not found: 'Default'`
+
+**Cause:** Your Azure DevOps organization does not have a pool named `Default`.
+
+**Fix:** pass an existing pool at runtime:
+
+```bash
+export AZP_POOL="<existing-pool-name>"
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml
+```
+
+Or with extra vars:
+
+```bash
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
+  -e azp_pool_runtime_override=<existing-pool-name>
+```
+
 **Debugging:** Re-run with increased verbosity:
 
 ```bash
 ansible-playbook ... --tags agent -vvv
 ```
 
+If you need to see `config.sh` output temporarily:
+
+```bash
+ansible-playbook \
+  -i ansible/ubuntu2404/inventories/production/hosts.yml \
+  ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml \
+  -e azp_no_log_sensitive=false \
+  -vvv
+```
+
 > [!IMPORTANT]
-> The `config.sh` task uses `no_log: true` to protect credentials. Temporarily set `no_log: false` in `configure_instance.yml` if you need to see the full command output during debugging. **Revert this change immediately afterward.**
+> `azp_no_log_sensitive=false` may expose secrets in output/logs. Use only in an isolated troubleshooting session and rotate credentials if exposure is suspected.
 
 ### Agent service does not start
 
@@ -427,7 +484,7 @@ Then re-run the playbook.
 | **Download from `download.agent.dev.azure.com`** | This is the official Microsoft-hosted CDN for agent tarballs. GitHub release assets only contain `assets.json` (checksums), not the tarballs themselves. |
 | **Service Principal authentication** | SP auth enables fully non-interactive, unattended configuration. PAT-based auth requires token rotation; SP credentials can be managed via Azure AD with longer lifetimes and automated rotation. |
 | **`svc.sh` for service management** | The agent ships with its own `svc.sh` script that generates proper systemd unit files. Using it (rather than writing custom units) ensures compatibility across agent versions. |
-| **`when: azp_url is defined` guard** | Allows the role to coexist in the same playbook as image-build roles. When `azp_url` is not set (e.g. during Packer builds), the role is skipped automatically. |
+| **Dedicated `azure_pipelines_agents.yml` playbook** | Keeps image build and agent deployment as separate workflows, reducing accidental agent installation during image creation. |
 | **Pre-release included by default** | Azure Pipelines agent pre-releases are generally stable and allow early access to fixes. The `azp_include_prerelease` variable lets you opt out. |
 | **Multi-instance support** | Running multiple agents per host maximises hardware utilisation for parallel pipeline jobs without requiring additional VMs. |
 | **Idempotent update flow** | The role reads the `.agent` JSON file to detect the installed version and skips instances that are already at the target version. This makes repeated playbook runs safe and efficient. |

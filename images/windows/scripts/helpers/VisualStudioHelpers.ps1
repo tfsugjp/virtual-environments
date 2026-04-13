@@ -32,13 +32,14 @@ Function Install-VisualStudio {
         [Parameter(Mandatory)] [String] $Channel,
         [String] $InstallChannelUri = "",
         [Parameter(Mandatory)] [String[]] $RequiredComponents,
-        [String] $ExtraArgs = ""
+        [String] $ExtraArgs = "",
+        [String] $Architecture = "x64"
     )
 
-    if (-not $env:INSTALL_VS_2026) {
-        $bootstrapperUrl = "https://aka.ms/vs/${Version}/postGRO-${Channel}/vs_${Edition}.exe"
+    if ($env:INSTALL_VS_2026) {
+        $bootstrapperUrl = "https://aka.ms/vs/postGRO-${Channel}/vs_${Edition}.exe"
     } else {
-        $bootstrapperUrl = "https://aka.ms/vs/${Version}/${Channel}/vs_${Edition}.exe"
+        $bootstrapperUrl = "https://aka.ms/vs/${Version}/postGRO-${Channel}/vs_${Edition}.exe"
     }
     $channelUri = "https://aka.ms/vs/${Version}/${Channel}/channel"
     $channelId = "VisualStudio.${Version}.Release"
@@ -61,7 +62,7 @@ Function Install-VisualStudio {
             "channelUri"        = $channelUri
             "channelId"         = $channelId
             "productId"         = $productId
-            "arch"              = "x64"
+            "arch"              = $Architecture
             "add"               = $RequiredComponents | ForEach-Object { "$_;includeRecommended" }
         }
 
