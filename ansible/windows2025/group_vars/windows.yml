@@ -23,5 +23,8 @@ install_password: "{{ vault_install_password | default('') }}"
 # images/windows directory on the Ansible controller.
 scripts_source_base: ""
 
+# Opt-in only. Inventories use NTLM over HTTPS by default.
+enable_winrm_basic_auth: false
+
 # Sysprep control
 run_sysprep: false

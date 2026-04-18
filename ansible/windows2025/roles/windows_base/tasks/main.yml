@@ -14,23 +14,28 @@
     path: "{{ temp_dir }}"
     state: directory
 
+- name: Create helper scripts directory
+  ansible.windows.win_file:
+    path: "{{ helper_script_folder }}"
+    state: directory
+
+- name: Create TestsHelpers directory
+  ansible.windows.win_file:
+    path: "{{ helper_script_folder }}\\TestsHelpers"
+    state: directory
+
 # ---- Copy scripts, helpers, toolsets, and assets from controller ---------
 
-- name: Detect scripts source base path
+- name: Detect controller asset paths
   ansible.builtin.set_fact:
     _scripts_base: "{{ scripts_source_base | default(playbook_dir ~ '/../../../images/windows', true) }}"
+    _toolset_copy_source: "{{ _toolset_source_path | default(playbook_dir ~ '/../toolsets/toolset-2025.json', true) }}"
   delegate_to: localhost
 
 - name: Copy build scripts to target
   ansible.windows.win_copy:
-    src: "{{ _scripts_base }}/scripts/"
-    dest: "{{ image_folder }}\\scripts\\"
-  become: true
-
-- name: Copy toolsets to target
-  ansible.windows.win_copy:
-    src: "{{ _scripts_base }}/toolsets/"
-    dest: "{{ image_folder }}\\toolsets\\"
+    src: "{{ _scripts_base }}/scripts/build/"
+    dest: "{{ image_folder }}\\build\\"
   become: true
 
 - name: Copy assets to target
@@ -39,10 +44,34 @@
     dest: "{{ image_folder }}\\assets\\"
   become: true
 
+- name: Copy docs-gen scripts to target
+  ansible.windows.win_copy:
+    src: "{{ _scripts_base }}/scripts/docs-gen/"
+    dest: "{{ image_folder }}\\SoftwareReport\\"
+  become: true
+
 - name: Copy software-report-base helpers to target
   ansible.windows.win_copy:
     src: "{{ playbook_dir }}/../../../helpers/software-report-base"
-    dest: "{{ image_folder }}\\scripts\\docs-gen\\"
+    dest: "{{ image_folder }}\\SoftwareReport\\"
+  become: true
+
+- name: Copy helper scripts to target
+  ansible.windows.win_copy:
+    src: "{{ _scripts_base }}/scripts/helpers/"
+    dest: "{{ helper_script_folder }}\\ImageHelpers\\"
+  become: true
+
+- name: Copy tests to target
+  ansible.windows.win_copy:
+    src: "{{ _scripts_base }}/scripts/tests/"
+    dest: "{{ image_folder }}\\tests\\"
+  become: true
+
+- name: Copy toolset JSON to target
+  ansible.windows.win_copy:
+    src: "{{ _toolset_copy_source }}"
+    dest: "{{ image_folder }}\\toolset.json"
   become: true
 
 # ---- Reorganize directory structure (matches Packer Phase 4) -------------
@@ -56,51 +85,12 @@
   args:
     executable: powershell.exe
 
-- name: Reorganize - Move docs-gen to SoftwareReport
-  ansible.windows.win_shell: |
-    if (Test-Path '{{ image_folder }}\scripts\docs-gen') {
-      Move-Item '{{ image_folder }}\scripts\docs-gen' '{{ image_folder }}\SoftwareReport' -Force
-    }
-  args:
-    executable: powershell.exe
-
-- name: Reorganize - Move helpers to ImageHelpers
-  ansible.windows.win_shell: |
-    if (Test-Path '{{ image_folder }}\scripts\helpers') {
-      Move-Item '{{ image_folder }}\scripts\helpers' '{{ helper_script_folder }}\ImageHelpers' -Force
-    }
-  args:
-    executable: powershell.exe
-
-- name: Reorganize - Move tests helpers
+- name: Reorganize - Move tests helper module
   ansible.windows.win_shell: |
     New-Item -Type Directory -Path '{{ helper_script_folder }}\TestsHelpers\' -Force | Out-Null
-    if (Test-Path '{{ image_folder }}\scripts\tests\Helpers.psm1') {
-      Move-Item '{{ image_folder }}\scripts\tests\Helpers.psm1' '{{ helper_script_folder }}\TestsHelpers\TestsHelpers.psm1' -Force
+    if (Test-Path '{{ image_folder }}\tests\Helpers.psm1') {
+      Move-Item '{{ image_folder }}\tests\Helpers.psm1' '{{ helper_script_folder }}\TestsHelpers\TestsHelpers.psm1' -Force
     }
-  args:
-    executable: powershell.exe
-
-- name: Reorganize - Move tests directory
-  ansible.windows.win_shell: |
-    if (Test-Path '{{ image_folder }}\scripts\tests') {
-      Move-Item '{{ image_folder }}\scripts\tests' '{{ image_folder }}\tests' -Force
-    }
-  args:
-    executable: powershell.exe
-
-- name: Reorganize - Clean up scripts directory
-  ansible.windows.win_shell: |
-    Remove-Item -Recurse -Force '{{ image_folder }}\scripts' -ErrorAction SilentlyContinue
-  args:
-    executable: powershell.exe
-
-- name: Reorganize - Move toolset JSON to image folder root
-  ansible.windows.win_shell: |
-    if (Test-Path '{{ image_folder }}\toolsets\toolset-2025.json') {
-      Move-Item '{{ image_folder }}\toolsets\toolset-2025.json' '{{ image_folder }}\toolset.json' -Force
-    }
-    Remove-Item -Recurse -Force '{{ image_folder }}\toolsets' -ErrorAction SilentlyContinue
   args:
     executable: powershell.exe
 
@@ -132,6 +122,7 @@
     winrm set winrm/config/service/auth '@{Basic="true"}'
   args:
     executable: cmd.exe
+  when: enable_winrm_basic_auth | bool
 
 # ---- Enable test signing -------------------------------------------------
 

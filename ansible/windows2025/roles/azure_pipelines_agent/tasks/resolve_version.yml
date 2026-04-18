@@ -8,7 +8,7 @@
 
 - name: Map host architecture to agent platform string
   ansible.builtin.set_fact:
-    _azp_platform: "{{ _azp_arch_map[ansible_facts['os_family_arch'] | default(ansible_facts['architecture'] | default('AMD64'))] | default('x64') }}"
+    _azp_platform: "{{ _azp_arch_map[ansible_facts['architecture'] | default('AMD64')] | default('x64') }}"
 
 # ---- Build API headers (with optional GitHub token) ----
 

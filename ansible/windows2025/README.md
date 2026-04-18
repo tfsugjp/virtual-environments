@@ -34,7 +34,6 @@ On the target Windows Server 2025 VM, run in an elevated PowerShell:
 # Enable WinRM with HTTPS listener
 winrm quickconfig -force
 winrm set winrm/config/service '@{AllowUnencrypted="false"}'
-winrm set winrm/config/service/auth '@{Basic="true"}'
 winrm set winrm/config/service/auth '@{CredSSP="true"}'
 
 # Create self-signed certificate for HTTPS
@@ -44,6 +43,12 @@ winrm create winrm/config/Listener?Address=*+Transport=HTTPS "@{Hostname=`"$env:
 # Open firewall
 New-NetFirewallRule -Name "WinRM-HTTPS" -DisplayName "WinRM HTTPS" -Protocol TCP -LocalPort 5986 -Action Allow
 ```
+
+The sample inventories use `ansible_winrm_transport: ntlm`, so WinRM Basic
+authentication is not required. Leave it disabled unless you intentionally
+switch your inventory or controller settings to use Basic over HTTPS. If you
+need the playbook to enable it on the target, set `enable_winrm_basic_auth` to
+`true`.
 
 ## Quick Start
 
@@ -153,5 +158,7 @@ After a successful build, the following files are created in `playbooks/outputs/
 ### Script Execution Errors
 
 - Build scripts are sourced from `images/windows/scripts/build/` and copied to the target
+- The Windows 2025 toolset is sourced from `ansible/windows2025/toolsets/toolset-2025.json`
+  and copied to `{{ image_folder }}\toolset.json`
 - Ensure the repository root is accessible from the Ansible controller
 - Check `{{ image_folder }}\build\` on the target for script presence

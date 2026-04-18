@@ -60,18 +60,35 @@
 
     - name: "{{ _instance.name }} | Find existing agent service"
       ansible.windows.win_shell: |
-        Get-Service | Where-Object { $_.Name -match 'vstsagent.*{{ _instance.name }}' } | Select-Object -ExpandProperty Name
-      register: _inst_svc_name
+        $escapedInstanceName = [regex]::Escape('{{ _instance.name }}')
+        $matches = @(Get-Service | Where-Object { $_.Name -match "^vstsagent\..*\.$escapedInstanceName$" } | Select-Object -ExpandProperty Name)
+
+        @{
+          count = $matches.Count
+          names = $matches
+        } | ConvertTo-Json -Compress
+      register: _inst_svc_lookup_raw
       changed_when: false
       failed_when: false
 
+    - name: "{{ _instance.name }} | Parse existing agent service lookup"
+      ansible.builtin.set_fact:
+        _inst_svc_lookup: "{{ _inst_svc_lookup_raw.stdout | default('{\"count\":0,\"names\":[]}') | from_json }}"
+
+    - name: "{{ _instance.name }} | Fail when service lookup is ambiguous"
+      ansible.builtin.fail:
+        msg: >-
+          Expected at most one Azure Pipelines agent service for instance '{{ _instance.name }}',
+          but found {{ _inst_svc_lookup.count }}: {{ _inst_svc_lookup.names | join(', ') }}
+      when: (_inst_svc_lookup.count | int) > 1
+
     - name: "{{ _instance.name }} | Stop agent service (update)"
       ansible.windows.win_service:
-        name: "{{ _inst_svc_name.stdout | trim }}"
+        name: "{{ _inst_svc_lookup.names | first }}"
         state: stopped
       when:
         - _inst_current_version | length > 0
-        - _inst_svc_name.stdout | trim | length > 0
+        - (_inst_svc_lookup.count | int) == 1
       failed_when: false
 
     - name: "{{ _instance.name }} | Unconfigure existing agent (update)"
@@ -146,7 +163,8 @@
 
 - name: "{{ _instance.name }} | Find agent service for status check"
   ansible.windows.win_shell: |
-    Get-Service | Where-Object { $_.Name -match 'vstsagent.*{{ _instance.name }}' } |
+    $escapedInstanceName = [regex]::Escape('{{ _instance.name }}')
+    Get-Service | Where-Object { $_.Name -match "^vstsagent\..*\.$escapedInstanceName$" } |
       Select-Object Name, Status | Format-List
   register: _inst_svc_status
   changed_when: false

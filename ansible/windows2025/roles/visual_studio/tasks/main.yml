@@ -37,6 +37,8 @@
   become_user: "{{ install_user }}"
   vars:
     ansible_become_password: "{{ install_password }}"
+  register: _kubernetes_tools_result
+  failed_when: _kubernetes_tools_result.rc not in [0, 3010]
 
 - name: Reboot after Visual Studio installation
   ansible.windows.win_reboot:

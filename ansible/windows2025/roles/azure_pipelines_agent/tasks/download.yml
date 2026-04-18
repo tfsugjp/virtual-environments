@@ -69,8 +69,7 @@
   ansible.windows.win_get_url:
     url: "{{ _azp_download_url }}"
     dest: "{{ _azp_zip_path }}"
-    checksum: "{{ _azp_checksum }}"
-    checksum_algorithm: sha256
+    checksum: "sha256:{{ _azp_checksum }}"
     force: false
   register: _azp_download
   retries: 5
