@@ -1,0 +1,3 @@
+---
+# This file contains Windows Server 2025 specific variable overrides.
+# Override any variables from all.yml or windows.yml here.

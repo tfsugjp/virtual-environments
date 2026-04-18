@@ -1,0 +1,50 @@
+---
+# =============================================================================
+# Visual Studio – VS 2022 Enterprise + Kubernetes Tools (Elevated)
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phase 10
+
+- name: Set common environment variables for VS scripts
+  ansible.builtin.set_fact:
+    _vs_env:
+      IMAGE_FOLDER: "{{ image_folder }}"
+      TEMP_DIR: "{{ temp_dir }}"
+
+- name: Install Visual Studio 2022 Enterprise (elevated)
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\Install-VisualStudio.ps1"
+  args:
+    executable: powershell.exe
+  environment: "{{ _vs_env }}"
+  become: true
+  become_method: runas
+  become_user: "{{ install_user }}"
+  vars:
+    ansible_become_password: "{{ install_password }}"
+  register: _vs_result
+  failed_when: _vs_result.rc not in [0, 3010]
+
+- name: Install Kubernetes Tools (elevated)
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\Install-KubernetesTools.ps1"
+  args:
+    executable: powershell.exe
+  environment: "{{ _vs_env }}"
+  become: true
+  become_method: runas
+  become_user: "{{ install_user }}"
+  vars:
+    ansible_become_password: "{{ install_password }}"
+  register: _kubernetes_tools_result
+  failed_when: _kubernetes_tools_result.rc not in [0, 3010]
+
+- name: Reboot after Visual Studio installation
+  ansible.windows.win_reboot:
+    reboot_timeout: 600
+    post_reboot_delay: 120
+
+- name: Display visual_studio completion
+  ansible.builtin.debug:
+    msg: "visual_studio role completed – VS 2022 Enterprise and Kubernetes tools installed"

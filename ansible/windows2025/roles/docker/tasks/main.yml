@@ -1,0 +1,47 @@
+---
+# =============================================================================
+# Docker – Docker Engine, Compose, PowerShell Core
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phase 9
+
+- name: Set common environment variables for Docker scripts
+  ansible.builtin.set_fact:
+    _docker_env:
+      IMAGE_FOLDER: "{{ image_folder }}"
+      TEMP_DIR: "{{ temp_dir }}"
+
+- name: "Run Docker and PowerShell Core installation scripts"
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\{{ item }}"
+  args:
+    executable: powershell.exe
+  environment: "{{ _docker_env }}"
+  loop:
+    - Install-Docker.ps1
+    - Install-DockerWinCred.ps1
+    - Install-DockerCompose.ps1
+    - Install-PowershellCore.ps1
+    - Install-WebPlatformInstaller.ps1
+  loop_control:
+    label: "{{ item }}"
+
+- name: Reboot after Docker installation
+  ansible.windows.win_reboot:
+    reboot_timeout: 1800
+    post_reboot_delay: 120
+
+- name: Verify Docker service is running
+  ansible.windows.win_service:
+    name: docker
+    state: started
+  register: _docker_svc
+  failed_when: false
+
+- name: Display Docker service status
+  ansible.builtin.debug:
+    msg: "Docker service state: {{ _docker_svc.state | default('unknown') }}"
+
+- name: Display docker role completion
+  ansible.builtin.debug:
+    msg: "docker role completed – Docker Engine, Compose, and PowerShell Core installed"

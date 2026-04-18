@@ -1,0 +1,88 @@
+---
+# =============================================================================
+# Finalization – System Configuration, Validation, Sysprep
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phases 17-18
+
+- name: Set common environment variables for finalization scripts
+  ansible.builtin.set_fact:
+    _final_env:
+      IMAGE_FOLDER: "{{ image_folder }}"
+      INSTALL_USER: "{{ install_user }}"
+
+- name: "Run finalization scripts"
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\{{ item }}"
+  args:
+    executable: powershell.exe
+  environment: "{{ _final_env }}"
+  loop:
+    - Install-NativeImages.ps1
+    - Configure-System.ps1
+    - Configure-User.ps1
+    - Post-Build-Validation.ps1
+  loop_control:
+    label: "{{ item }}"
+
+- name: Reboot before sysprep
+  ansible.windows.win_reboot:
+    reboot_timeout: 600
+    post_reboot_delay: 60
+
+# ---- Sysprep (optional) -------------------------------------------------
+
+- name: Run Sysprep to generalize image
+  ansible.windows.win_shell: |
+    $expectedImageState = 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE'
+    $pollIntervalSeconds = 10
+    $maxWaitSeconds = 1800
+    $maxAttempts = [int]($maxWaitSeconds / $pollIntervalSeconds)
+
+    if (Test-Path "$env:SystemRoot\System32\Sysprep\unattend.xml") {
+      Remove-Item "$env:SystemRoot\System32\Sysprep\unattend.xml" -Force
+    }
+
+    & "$env:SystemRoot\System32\Sysprep\Sysprep.exe" /oobe /generalize /mode:vm /quiet /quit
+
+    $imageState = $null
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+      $imageState = (Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State).ImageState
+      if ($imageState -eq $expectedImageState) {
+        Write-Output "Sysprep complete: $imageState"
+        break
+      }
+
+      Write-Output "Waiting for Sysprep completion (attempt $attempt/$maxAttempts). Current state: $imageState"
+      if ($attempt -lt $maxAttempts) {
+        Start-Sleep -Seconds $pollIntervalSeconds
+      }
+    }
+
+    if ($imageState -ne $expectedImageState) {
+      $sysprepLogPaths = @(
+        "$env:SystemRoot\System32\Sysprep\Panther\setuperr.log",
+        "$env:SystemRoot\System32\Sysprep\Panther\setupact.log"
+      )
+      $sysprepLogs = foreach ($logPath in $sysprepLogPaths) {
+        if (Test-Path $logPath) {
+          $logContent = Get-Content -Path $logPath -Tail 50
+          "=== $logPath ===`n$($logContent -join "`n")"
+        }
+      }
+
+      $sysprepLogMessage = if ($sysprepLogs) {
+        $sysprepLogs -join "`n`n"
+      } else {
+        'Sysprep logs were not found.'
+      }
+
+      throw "Sysprep did not reach state '$expectedImageState' within $maxWaitSeconds seconds. Last observed state: '$imageState'. $sysprepLogMessage"
+    }
+  args:
+    executable: powershell.exe
+  when: run_sysprep | bool
+
+- name: Display finalization completion
+  ansible.builtin.debug:
+    msg: "finalization role completed{{ ' – image generalized with Sysprep' if (run_sysprep | bool) else '' }}"

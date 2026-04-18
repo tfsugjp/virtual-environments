@@ -1,0 +1,110 @@
+---
+# =============================================================================
+# Development Tools – Extended Tools, Languages, Databases, Browsers
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phases 11-13
+
+- name: Set common environment variables for dev tool scripts
+  ansible.builtin.set_fact:
+    _dev_env:
+      IMAGE_FOLDER: "{{ image_folder }}"
+      TEMP_DIR: "{{ temp_dir }}"
+
+# ---- Batch 1: Phase 11 – WIX, VSIX, Azure CLI, Choco, Java (2min pause) --
+
+- name: Pause before extended tools installation
+  ansible.builtin.pause:
+    seconds: 120
+
+- name: "Run extended tools installation scripts (Batch 1)"
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\{{ item }}"
+  args:
+    executable: powershell.exe
+  environment: "{{ _dev_env }}"
+  loop:
+    - Install-Wix.ps1
+    - Install-VSExtensions.ps1
+    - Install-AzureCli.ps1
+    - Install-AzureDevOpsCli.ps1
+    - Install-ChocolateyPackages.ps1
+    - Install-JavaTools.ps1
+    - Install-Kotlin.ps1
+    - Install-OpenSSL.ps1
+  loop_control:
+    label: "{{ item }}"
+
+# ---- Batch 2: Phase 12 – Service Fabric SDK (remotesigned) ---------------
+
+- name: Install Service Fabric SDK (remotesigned policy)
+  ansible.windows.win_shell: |
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+    & "{{ image_folder }}\build\Install-ServiceFabricSDK.ps1"
+  args:
+    executable: powershell.exe
+  environment: "{{ _dev_env }}"
+
+- name: Reboot after Service Fabric SDK
+  ansible.windows.win_reboot:
+    reboot_timeout: 600
+    post_reboot_delay: 60
+
+# ---- Batch 3: Phase 13 – Languages, Databases, Browsers (41 scripts) -----
+
+- name: "Run language and tool installation scripts (Batch 3)"
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\{{ item }}"
+  args:
+    executable: powershell.exe
+  environment: "{{ _dev_env }}"
+  loop:
+    - Install-ActionsCache.ps1
+    - Install-Ruby.ps1
+    - Install-PyPy.ps1
+    - Install-Toolset.ps1
+    - Configure-Toolset.ps1
+    - Install-NodeJS.ps1
+    - Install-AndroidSDK.ps1
+    - Install-PowershellAzModules.ps1
+    - Install-Pipx.ps1
+    - Install-Git.ps1
+    - Install-GitHub-CLI.ps1
+    - Install-PHP.ps1
+    - Install-Rust.ps1
+    - Install-Sbt.ps1
+    - Install-Chrome.ps1
+    - Install-EdgeDriver.ps1
+    - Install-Firefox.ps1
+    - Install-Selenium.ps1
+    - Install-IEWebDriver.ps1
+    - Install-Apache.ps1
+    - Install-Nginx.ps1
+    - Install-Msys2.ps1
+    - Install-WinAppDriver.ps1
+    - Install-R.ps1
+    - Install-AWSTools.ps1
+    - Install-DACFx.ps1
+    - Install-MysqlCli.ps1
+    - Install-SQLPowerShellTools.ps1
+    - Install-SQLOLEDBDriver.ps1
+    - Install-DotnetSDK.ps1
+    - Install-Mingw64.ps1
+    - Install-Haskell.ps1
+    - Install-Stack.ps1
+    - Install-Miniconda.ps1
+    - Install-AzureCosmosDbEmulator.ps1
+    - Install-Zstd.ps1
+    - Install-Vcpkg.ps1
+    - Install-Bazel.ps1
+    - Install-RootCA.ps1
+    - Install-MongoDB.ps1
+    - Install-CodeQLBundle.ps1
+    - Configure-Diagnostics.ps1
+  loop_control:
+    label: "{{ item }}"
+
+- name: Display development_tools completion
+  ansible.builtin.debug:
+    msg: "development_tools role completed – all languages, tools, databases, and browsers installed"

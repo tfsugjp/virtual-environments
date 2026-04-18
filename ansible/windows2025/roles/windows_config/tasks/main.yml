@@ -1,0 +1,61 @@
+---
+# =============================================================================
+# Windows Config – Base Image Configuration
+# =============================================================================
+# Maps to Packer build.windows-2025.pkr.hcl Phases 7-8
+# Runs 10 configuration scripts, reboots, then disables WLAN service.
+
+- name: Set common environment variables for configuration scripts
+  ansible.builtin.set_fact:
+    _win_config_env:
+      IMAGE_VERSION: "{{ image_version }}"
+      IMAGE_OS: "{{ image_os }}"
+      AGENT_TOOLSDIRECTORY: "{{ agent_tools_directory }}"
+      IMAGEDATA_FILE: "{{ imagedata_file }}"
+      IMAGE_FOLDER: "{{ image_folder }}"
+      TEMP_DIR: "{{ temp_dir }}"
+
+- name: "Run configuration scripts (Phase 7)"
+  ansible.windows.win_shell: |
+    $ErrorActionPreference = 'Stop'
+    & "{{ image_folder }}\build\{{ item }}"
+  args:
+    executable: powershell.exe
+  environment: "{{ _win_config_env }}"
+  loop:
+    - Configure-WindowsDefender.ps1
+    - Configure-PowerShell.ps1
+    - Install-PowerShellModules.ps1
+    - Install-WSL2.ps1
+    - Install-WindowsFeatures.ps1
+    - Install-Chocolatey.ps1
+    - Configure-BaseImage.ps1
+    - Configure-ImageDataFile.ps1
+    - Configure-SystemEnvironment.ps1
+    - Configure-DotnetSecureChannel.ps1
+  loop_control:
+    label: "{{ item }}"
+
+- name: Reboot after Windows Features installation
+  ansible.windows.win_reboot:
+    reboot_timeout: 600
+    post_reboot_delay: 60
+    test_command: >-
+      powershell -command "& {
+        if ((Get-WindowsOptionalFeature -Online -FeatureName Containers -ErrorAction SilentlyContinue).State -eq 'Enabled') {
+          Write-Output 'Ready'
+        } else {
+          throw 'Containers feature not yet enabled'
+        }
+      }"
+
+- name: Disable WLAN service
+  ansible.windows.win_service:
+    name: wlansvc
+    start_mode: manual
+    state: stopped
+  failed_when: false
+
+- name: Display windows_config completion
+  ansible.builtin.debug:
+    msg: "windows_config role completed – base image configured, Windows features enabled"

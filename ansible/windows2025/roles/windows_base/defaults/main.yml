@@ -1,0 +1,4 @@
+---
+# Runner-images source for downloading scripts
+runner_images_repo: "actions/runner-images"
+runner_images_branch: "main"

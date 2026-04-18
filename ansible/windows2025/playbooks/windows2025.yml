@@ -1,0 +1,70 @@
+---
+- name: Build Windows Server 2025 Runner Image
+  hosts: windows2025_builders
+  gather_facts: true
+  become: false
+
+  vars_files:
+    - ../group_vars/all.yml
+    - ../group_vars/windows.yml
+    - ../group_vars/toolset_2025.yml
+
+  pre_tasks:
+    - name: Verify WinRM connectivity
+      ansible.windows.win_ping:
+
+    - name: Check Windows version
+      ansible.windows.win_shell: |
+        (Get-CimInstance Win32_OperatingSystem).Caption
+      register: win_version
+      changed_when: false
+
+    - name: Display Windows version
+      ansible.builtin.debug:
+        msg: "Building on {{ win_version.stdout | trim }}"
+
+    - name: Create outputs directory locally
+      ansible.builtin.file:
+        path: "{{ outputs_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+  roles:
+    - role: windows_base
+      tags: ['always', 'base', 'windows_base']
+
+    - role: windows_config
+      tags: ['base', 'config', 'windows_config']
+
+    - role: docker
+      tags: ['tools', 'docker']
+
+    - role: visual_studio
+      tags: ['tools', 'vs', 'visual_studio']
+
+    - role: development_tools
+      tags: ['tools', 'dev', 'development_tools']
+
+    - role: system_updates
+      tags: ['updates', 'system_updates']
+
+    - role: validation
+      tags: ['test', 'validate', 'validation']
+
+    - role: finalization
+      tags: ['finalize', 'finalization']
+
+  post_tasks:
+    - name: Display build summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================
+          Windows Server 2025 image build completed!
+          ============================================
+          Image Version: {{ image_version }}
+          Image OS: {{ image_os }}
+          Software Report: {{ outputs_dir }}/Windows2025-Readme.md
+          JSON Report: {{ outputs_dir }}/software-report.json
+          ============================================
