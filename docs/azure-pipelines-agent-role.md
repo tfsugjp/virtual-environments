@@ -34,10 +34,10 @@ Ubuntu 24.04 hosts using the `azure_pipelines_agent` Ansible role.
 The `azure_pipelines_agent` role performs the following:
 
 1. **Version resolution** – Queries the [microsoft/azure-pipelines-agent](https://github.com/microsoft/azure-pipelines-agent) GitHub Releases API to find the latest (or a pinned) version, optionally including pre-release builds.
-2. **Download with integrity check** – Downloads the agent tarball from `download.agent.dev.azure.com` and verifies its SHA-256 checksum against the `assets.json` published in the GitHub release.
+2. **Download with integrity check** – Downloads the agent tarball from `download.agent.dev.azure.com`. It verifies the SHA-256 checksum in the GitHub release `assets.json` when available, otherwise it uses the archive endpoint's HTTPS `Content-MD5` header. The role refuses to download if neither checksum is available.
 3. **Per-instance configuration** – Deploys one or more agent instances on each host, each with its own directory, systemd service, and (optionally) a different agent pool.
-4. **Service Principal authentication** – Registers agents using Azure AD Service Principal credentials (`--auth sp`).
-5. **Idempotent updates** – On subsequent runs the role compares the installed version (read from the `.agent` JSON file) against the resolved target; only instances that differ are stopped, unconfigured, re-extracted, and re-configured.
+4. **Service Principal authentication** – Uses Azure AD Service Principal credentials (`--auth sp`) when registering or re-registering an agent.
+5. **Idempotent updates** – On subsequent runs the role reads its version marker, or runs the installed `Agent.Listener --version` when adopting an existing installation. Only instances that differ are stopped, unconfigured, re-extracted, and re-configured.
 
 Use the dedicated playbook `ansible/ubuntu2404/playbooks/azure_pipelines_agents.yml` to deploy agents to the `ubuntu2404_agents` host group.
 
@@ -71,7 +71,7 @@ ansible/ubuntu2404/roles/azure_pipelines_agent/
 └── tasks/
     ├── main.yml                  # Entry point – validation, orchestration
     ├── resolve_version.yml       # GitHub Releases API version resolution
-    ├── download.yml              # Tarball download with SHA-256 verification
+    ├── download.yml              # Tarball download with checksum verification
     └── configure_instance.yml    # Per-instance install / update / service
 ```
 
@@ -79,18 +79,21 @@ ansible/ubuntu2404/roles/azure_pipelines_agent/
 
 ```
 main.yml
-  ├─ assert required variables
+  ├─ validate azp_agent_instances
   ├─ include: resolve_version.yml
   │    ├─ detect host architecture (x86_64 → x64, aarch64 → arm64)
   │    ├─ build GitHub API headers (optional Bearer token)
   │    └─ fetch releases → filter by prerelease flag → extract version
   ├─ include: download.yml
   │    ├─ compute tarball name & download URL
-  │    ├─ fetch assets.json → extract SHA-256
-  │    └─ download tarball (with or without checksum)
+  │    ├─ fetch assets.json → extract SHA-256 when published
+  │    ├─ otherwise read and decode the archive Content-MD5 header
+  │    └─ download tarball with checksum verification
   └─ loop over azp_agent_instances:
        └─ include: configure_instance.yml
-            ├─ read .agent JSON → compare versions
+            ├─ read version marker or Agent.Listener --version
+            ├─ compare current and target versions
+            ├─ (if update) validate Service Principal credentials
             ├─ (if update) stop → uninstall → unconfigure existing agent
             ├─ create system user & instance directory
             ├─ extract tarball
@@ -108,7 +111,7 @@ All variables are defined in `ansible/ubuntu2404/roles/azure_pipelines_agent/def
 
 ### Required Variables
 
-These must be provided at runtime using `-e`, `-e @file`, or environment variables (`AZP_URL`, `AZP_CLIENT_ID`, `AZP_TENANT_ID`, `AZP_CLIENT_SECRET`):
+`azp_agent_instances` is required for every run. The credential variables are required only when installing or updating an agent, and can be provided using `-e`, `-e @file`, or the playbook environment variables (`AZP_URL`, `AZP_CLIENT_ID`, `AZP_TENANT_ID`, `AZP_CLIENT_SECRET`):
 
 | Variable | Description | Example |
 |---|---|---|
@@ -173,7 +176,7 @@ A staging inventory with the same structure is available at `ansible/ubuntu2404/
 
 ## Runtime Secret Injection
 
-Sensitive credentials are expected at execution time.
+Sensitive credentials are needed only if an agent must be installed or updated.
 The dedicated playbook reads values from either runtime `-e` variables or these environment variables:
 
 - `AZP_URL`
@@ -195,21 +198,16 @@ export AZP_CLIENT_SECRET="your-secret-value"
 export AZP_POOL="MyAgentPool"
 ```
 
-### Option B: Ephemeral runtime vars file
+### Option B: Ansible Vault vars file
 
 ```bash
-cat > /tmp/azp-runtime-vars.yml <<'YAML'
-azp_url: "https://dev.azure.com/myorg"
-azp_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-azp_tenant_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-azp_client_secret: "your-secret-value"
-YAML
+ansible-vault create /tmp/azp-runtime-vars.yml
 ```
 
-Use `-e @/tmp/azp-runtime-vars.yml` when running the playbook, then delete the file immediately after deployment.
+Add `azp_url`, `azp_client_id`, `azp_tenant_id`, and `azp_client_secret` to the encrypted file. Use `-e @/tmp/azp-runtime-vars.yml --vault-password-file <protected-password-file>` when running the playbook, then delete the file after deployment.
 
 > [!WARNING]
-> Do not commit secrets to inventory or `group_vars`. Inject them only at runtime.
+> Do not commit plaintext secrets to inventory or `group_vars`. Keep both the encrypted vars file and its password file protected, and inject secrets only at runtime.
 
 ---
 
@@ -281,11 +279,11 @@ ansible-playbook \
 ```
 
 > [!NOTE]
-> Check mode cannot fully simulate shell tasks (`config.sh`, `svc.sh`), so some tasks will report "skipped". Use it primarily to verify version resolution and download decisions.
+> Check mode cannot fully simulate shell tasks (`config.sh`, `svc.sh`) or extract the downloaded archive, so some tasks will report "skipped". Use it primarily to verify version resolution and the intended version/pool before applying changes.
 
 ### Update Agents to the Latest Version
 
-Simply re-run the playbook. The role reads the currently installed version from each instance's `.agent` file and performs an update when the resolved version differs.
+Simply re-run the playbook. The role reads the current version from its `.ansible_agent_version` marker. For existing installations without that marker, it runs `Agent.Listener --version` as the agent service account. It performs an update only when the current version differs from the resolved target.
 If you need to redeploy while keeping the same version, set `-e azp_force_reinstall=true`:
 
 ```bash
@@ -296,11 +294,12 @@ ansible-playbook \
 
 The update flow is:
 
-1. Stop the systemd service (`svc.sh stop`).
-2. Uninstall the service (`svc.sh uninstall`).
-3. Unconfigure the agent (`config.sh remove`).
-4. Extract the new tarball over the instance directory.
-5. Re-run `config.sh --unattended` and `svc.sh install/start`.
+1. Validate credentials before changing the existing installation.
+2. Stop the systemd service (`svc.sh stop`).
+3. Uninstall the service (`svc.sh uninstall`).
+4. Unconfigure the agent (`config.sh remove`).
+5. Extract the new tarball over the instance directory.
+6. Re-run `config.sh --unattended` and `svc.sh install/start`.
 
 ---
 
@@ -464,7 +463,8 @@ ansible-playbook \
 **Possible causes:**
 
 - Corrupted download – the role retries up to 5 times automatically.
-- The `assets.json` in the GitHub release does not match the tarball on the download server (rare).
+- The GitHub release `assets.json` SHA-256 does not match the tarball on the download server.
+- The archive's `Content-MD5` does not match when the release does not publish SHA-256.
 
 **Workaround:** Manually verify the checksum and, if necessary, clear the cached tarball:
 
@@ -480,7 +480,7 @@ Then re-run the playbook.
 
 | Decision | Rationale |
 |---|---|
-| **GitHub Releases API for version resolution** | The official `microsoft/azure-pipelines-agent` repository publishes all releases (including pre-release) with `assets.json` containing SHA-256 checksums. This allows fully automated, verifiable downloads. |
+| **GitHub Releases API for version resolution** | The official `microsoft/azure-pipelines-agent` repository publishes release metadata. When its `assets.json` includes a SHA-256 for the selected archive, the role uses it; otherwise the role requires the archive endpoint's HTTPS `Content-MD5` header and still refuses unverified downloads. |
 | **Download from `download.agent.dev.azure.com`** | This is the official Microsoft-hosted CDN for agent tarballs. GitHub release assets only contain `assets.json` (checksums), not the tarballs themselves. |
 | **Service Principal authentication** | SP auth enables fully non-interactive, unattended configuration. PAT-based auth requires token rotation; SP credentials can be managed via Azure AD with longer lifetimes and automated rotation. |
 | **`svc.sh` for service management** | The agent ships with its own `svc.sh` script that generates proper systemd unit files. Using it (rather than writing custom units) ensures compatibility across agent versions. |

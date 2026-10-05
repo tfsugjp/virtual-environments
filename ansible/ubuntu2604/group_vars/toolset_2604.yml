@@ -1,0 +1,4 @@
+---
+# Synchronized from images/ubuntu/toolsets/toolset-2604.json.
+_toolset_source_path: "{{ playbook_dir }}/../toolsets/toolset-2604.json"
+toolset: "{{ lookup('file', _toolset_source_path) | from_json }}"

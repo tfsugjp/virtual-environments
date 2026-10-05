@@ -17,6 +17,7 @@
       register: ubuntu_version
       changed_when: false
       failed_when: ubuntu_version.stdout != "24.04"
+      check_mode: false
 
     - name: Display deployment target
       ansible.builtin.debug:
@@ -43,21 +44,9 @@
         msg: >-
           Agent pool is set to 'Default'. Ensure this pool exists in Azure DevOps,
           or set AZP_POOL / -e azp_pool_runtime_override=<pool-name> at runtime.
-      when: (azp_pool | default('Default')) == 'Default'
-      tags: ['deploy', 'agent', 'azure_agent']
-
-    - name: Validate required runtime Azure Pipelines credentials
-      ansible.builtin.assert:
-        that:
-          - azp_url is defined and azp_url | length > 0
-          - azp_client_id is defined and azp_client_id | length > 0
-          - azp_tenant_id is defined and azp_tenant_id | length > 0
-          - azp_client_secret is defined and azp_client_secret | length > 0
-        fail_msg: >-
-          Missing Azure Pipelines credentials.
-          Pass them at runtime with -e variables or AZP_URL/AZP_CLIENT_ID/
-          AZP_TENANT_ID/AZP_CLIENT_SECRET environment variables.
-        quiet: true
+      when:
+        - (azp_pool | default('Default')) == 'Default'
+        - azp_pool_runtime_override | default('') | length == 0
       tags: ['deploy', 'agent', 'azure_agent']
 
   roles:
@@ -73,7 +62,7 @@
           ============================================
           Hosts group : ubuntu2404_agents
           Base dir    : {{ azp_agent_base_dir | default('/opt/azure-pipelines-agent') }}
-          Pool        : {{ azp_pool | default('Default') }}
+          Pool        : {{ azp_pool_runtime_override if (azp_pool_runtime_override | default('') | length > 0) else (azp_pool | default('Default')) }}
           Instances   :
           {% for inst in (azp_agent_instances | default([])) %}
             - {{ inst.name }}

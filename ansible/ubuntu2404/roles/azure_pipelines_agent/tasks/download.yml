@@ -41,27 +41,65 @@
   delay: 2
   until: _azp_assets_json_resp is succeeded
   changed_when: false
+  check_mode: false
   when: _azp_assets_json_url | length > 0
 
 - name: Extract SHA-256 checksum from assets.json
   ansible.builtin.set_fact:
     _azp_checksum: >-
       {{
-        (_azp_assets_json_resp.json | default(_azp_assets_json_resp.content | from_json))
+        (
+          _azp_assets_json_resp.json
+          if 'json' in _azp_assets_json_resp
+          else (_azp_assets_json_resp.content | from_json)
+        )
         | selectattr('name', 'equalto', _azp_tarball_name)
         | map(attribute='hash')
         | list
         | first
         | default('')
       }}
+    _azp_checksum_algorithm: sha256
   when: _azp_assets_json_url | length > 0
 
-- name: Warn if checksum is unavailable (assets.json not found)
-  ansible.builtin.debug:
-    msg: >-
-      WARNING: Could not retrieve assets.json from the release.
-      Download will proceed WITHOUT SHA-256 verification.
-  when: (_azp_assets_json_url | length == 0) or (_azp_checksum | default('') | length == 0)
+- name: Retrieve archive Content-MD5 when SHA-256 is unavailable
+  ansible.builtin.uri:
+    url: "{{ _azp_download_url }}"
+    method: HEAD
+    status_code: [200]
+    return_content: false
+  register: _azp_download_head
+  changed_when: false
+  check_mode: false
+  when: (_azp_checksum | default('') | length) == 0
+
+- name: Require archive Content-MD5 when SHA-256 is unavailable
+  ansible.builtin.assert:
+    that:
+      - _azp_download_head.content_md5 is defined
+    fail_msg: >-
+      The release does not provide a SHA-256 checksum and the archive endpoint
+      did not provide Content-MD5. Refusing to download without integrity
+      verification.
+  when: (_azp_checksum | default('') | length) == 0
+
+- name: Decode archive Content-MD5
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - "import base64, sys; print(base64.b64decode(sys.argv[1], validate=True).hex())"
+      - "{{ _azp_download_head.content_md5 }}"
+  register: _azp_content_md5_hex
+  changed_when: false
+  check_mode: false
+  when: (_azp_checksum | default('') | length) == 0
+
+- name: Set archive checksum from Content-MD5
+  ansible.builtin.set_fact:
+    _azp_checksum: "{{ _azp_content_md5_hex.stdout }}"
+    _azp_checksum_algorithm: md5
+  when: (_azp_checksum | default('') | length) == 0
 
 # ---- Download tarball ----------------------------------------------------
 
@@ -70,7 +108,7 @@
     url: "{{ _azp_download_url }}"
     dest: "{{ _azp_tarball_path }}"
     mode: '0644'
-    checksum: "sha256:{{ _azp_checksum }}"
+    checksum: "{{ _azp_checksum_algorithm }}:{{ _azp_checksum }}"
     force: false
   register: _azp_download
   retries: 5
@@ -78,19 +116,6 @@
   until: _azp_download is succeeded
   become: true
   when: (_azp_checksum | default('')) | length > 0
-
-- name: Download Azure Pipelines Agent tarball (without checksum)
-  ansible.builtin.get_url:
-    url: "{{ _azp_download_url }}"
-    dest: "{{ _azp_tarball_path }}"
-    mode: '0644'
-    force: false
-  register: _azp_download_nochecksum
-  retries: 5
-  delay: 3
-  until: _azp_download_nochecksum is succeeded
-  become: true
-  when: (_azp_checksum | default('')) | length == 0
 
 - name: Display download result
   ansible.builtin.debug:

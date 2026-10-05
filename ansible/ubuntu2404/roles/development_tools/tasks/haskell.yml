@@ -1,6 +1,6 @@
 ---
 # Native Haskell installation using public GitHub Releases URLs (no token required).
-# Source of truth: toolset.haskell (added to images/ubuntu/toolsets/toolset-2404.json).
+# Source of truth: toolset.haskell.
 
 - name: Install Haskell prerequisites
   ansible.builtin.apt:
@@ -136,7 +136,7 @@
     dest: /etc/profile.d/ghcup.sh
     mode: '0644'
     content: |
-      # Managed by ansible-ubuntu2404
+      # Managed by the Ubuntu Ansible image build
       export GHCUP_INSTALL_BASE_PREFIX=/usr/local
       export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
       export BOOTSTRAP_HASKELL_INSTALL_NO_STACK_HOOK=1

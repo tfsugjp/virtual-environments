@@ -87,9 +87,12 @@
 
 - name: Reorganize - Move tests helper module
   ansible.windows.win_shell: |
-    New-Item -Type Directory -Path '{{ helper_script_folder }}\TestsHelpers\' -Force | Out-Null
-    if (Test-Path '{{ image_folder }}\tests\Helpers.psm1') {
-      Move-Item '{{ image_folder }}\tests\Helpers.psm1' '{{ helper_script_folder }}\TestsHelpers\TestsHelpers.psm1' -Force
+    $testsHelpers = Join-Path '{{ helper_script_folder }}' 'TestsHelpers'
+    $testHelperModule = Join-Path '{{ image_folder }}' 'tests\Helpers.psm1'
+    $destination = Join-Path $testsHelpers 'TestsHelpers.psm1'
+    New-Item -Type Directory -Path $testsHelpers -Force | Out-Null
+    if (Test-Path $testHelperModule) {
+      Move-Item $testHelperModule $destination -Force
     }
   args:
     executable: powershell.exe

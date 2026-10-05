@@ -1,16 +1,11 @@
 ---
 # system_base role - Phase 1: Base system setup
 
-- name: Set runner-images source (remote fetch)
+- name: Resolve runner-images source paths from the repository checkout
   ansible.builtin.set_fact:
-    runner_images_repo: "{{ runner_images_repo | default('actions/runner-images') }}"
-    runner_images_ref: "{{ runner_images_ref | default('main') }}"
-
-- name: Compute runner-images download variables
-  ansible.builtin.set_fact:
-    runner_images_cache_dir: "{{ image_folder }}/.cache/runner-images"
-    runner_images_tarball: "/tmp/runner-images-{{ runner_images_ref }}.tar.gz"
-    runner_images_download_url: "https://github.com/{{ runner_images_repo }}/archive/{{ runner_images_ref }}.tar.gz"
+    runner_images_root: "{{ playbook_dir }}/../../.."
+    runner_images_ubuntu: "{{ playbook_dir }}/../../../images/ubuntu"
+  changed_when: false
 
 - name: Create required directories
   ansible.builtin.file:
@@ -23,69 +18,16 @@
     - "{{ installer_script_folder }}"
   become: true
 
-- name: Install minimal prerequisites for fetching/extracting runner-images
-  ansible.builtin.apt:
-    name:
-      - ca-certificates
-      - tar
-      - gzip
-    state: present
-    update_cache: false
+- name: Copy helper scripts from the repository checkout
+  ansible.builtin.copy:
+    src: "{{ runner_images_ubuntu }}/scripts/helpers/"
+    dest: "{{ helper_script_folder }}/"
   become: true
 
-- name: Create runner-images cache directory
-  ansible.builtin.file:
-    path: "{{ runner_images_cache_dir }}"
-    state: directory
-    mode: '0755'
-  become: true
-
-- name: Download runner-images source tarball (public)
-  ansible.builtin.get_url:
-    url: "{{ runner_images_download_url }}"
-    dest: "{{ runner_images_tarball }}"
-    mode: '0644'
-    force: true
-  register: _runner_images_download
-  retries: 5
-  delay: 2
-  until: _runner_images_download is succeeded
-  become: true
-
-- name: Extract runner-images tarball
-  ansible.builtin.unarchive:
-    src: "{{ runner_images_tarball }}"
-    dest: "{{ runner_images_cache_dir }}"
-    remote_src: true
-  become: true
-
-- name: Locate extracted runner-images directory
-  ansible.builtin.find:
-    paths: "{{ runner_images_cache_dir }}"
-    file_type: directory
-    patterns: "runner-images-*"
-    recurse: false
-  register: _runner_images_find
-  changed_when: false
-
-- name: Fail if extracted runner-images directory was not found
-  ansible.builtin.fail:
-    msg: "runner-images extraction failed: no runner-images-* directory found under {{ runner_images_cache_dir }}"
-  when: _runner_images_find.files | length == 0
-
-- name: Set runner-images paths
-  ansible.builtin.set_fact:
-    runner_images_root: "{{ (_runner_images_find.files | sort(attribute='path') | last).path }}"
-    runner_images_ubuntu: "{{ (_runner_images_find.files | sort(attribute='path') | last).path }}/images/ubuntu"
-
-- name: Populate helper scripts (from runner-images)
-  ansible.builtin.command:
-    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/helpers/. {{ helper_script_folder }}/"
-  become: true
-
-- name: Populate build scripts (from runner-images)
-  ansible.builtin.command:
-    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/build/. {{ installer_script_folder }}/"
+- name: Copy build scripts from the repository checkout
+  ansible.builtin.copy:
+    src: "{{ runner_images_ubuntu }}/scripts/build/"
+    dest: "{{ installer_script_folder }}/"
   become: true
 
 - name: Find installer shell scripts (for patching)
@@ -127,11 +69,11 @@
     label: "{{ item.path }}"
   become: true
 
-- name: Make waagent.conf edits safe in configure-environment.sh (Hyper-V)
+- name: Remove Azure Linux Agent configuration for on-premises builds
   ansible.builtin.replace:
     path: "{{ installer_script_folder }}/configure-environment.sh"
-    regexp: '^(\s*)(sed\s+-i\s+.*?/etc/waagent\.conf)(\s*\|\|\s*true)?\s*$'
-    replace: '\g<1>test -f /etc/waagent.conf && \g<2> || true'
+    regexp: '^\s*sed\s+-i\s+.*?/etc/waagent\.conf.*$'
+    replace: ''
   become: true
 
 - name: Make toolcache directory creation safe in configure-environment.sh
@@ -216,22 +158,6 @@
     replace: '\g<1>unzip -o -qq "$archive_path" -d $KOTLIN_ROOT'
   become: true
 
-- name: Verify configure-environment.sh has no unguarded waagent.conf sed lines (Hyper-V)
-  ansible.builtin.command:
-    cmd: "grep -nE '^\\s*sed\\s+-i\\s+.*?/etc/waagent\\.conf\\s*$' {{ installer_script_folder }}/configure-environment.sh"
-  register: _waagent_unguarded_sed_grep
-  changed_when: false
-  failed_when: false
-  become: true
-
-- name: Fail if configure-environment.sh still contains unguarded waagent.conf edits (Hyper-V)
-  ansible.builtin.fail:
-    msg: |
-      configure-environment.sh still contains unguarded waagent.conf edits which fail on Hyper-V.
-      Matches:
-      {{ _waagent_unguarded_sed_grep.stdout | default('') }}
-  when: _waagent_unguarded_sed_grep.rc == 0
-
 - name: Find installer shell scripts
   ansible.builtin.find:
     paths: "{{ installer_script_folder }}"
@@ -257,9 +183,10 @@
     mode: '0755'
   become: true
 
-- name: Populate test scripts (from runner-images)
-  ansible.builtin.command:
-    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/tests/. {{ image_folder }}/tests/"
+- name: Copy test scripts from the repository checkout
+  ansible.builtin.copy:
+    src: "{{ runner_images_ubuntu }}/scripts/tests/"
+    dest: "{{ image_folder }}/tests/"
   become: true
 
 - name: Create directory for SoftwareReport
@@ -269,14 +196,16 @@
     mode: '0755'
   become: true
 
-- name: Populate docs-gen scripts (from runner-images)
-  ansible.builtin.command:
-    cmd: "cp -a {{ runner_images_ubuntu }}/scripts/docs-gen/. {{ image_folder }}/SoftwareReport/"
+- name: Copy docs-gen scripts from the repository checkout
+  ansible.builtin.copy:
+    src: "{{ runner_images_ubuntu }}/scripts/docs-gen/"
+    dest: "{{ image_folder }}/SoftwareReport/"
   become: true
 
-- name: Populate software-report-base (from runner-images)
-  ansible.builtin.command:
-    cmd: "cp -a {{ runner_images_root }}/helpers/software-report-base {{ image_folder }}/SoftwareReport/"
+- name: Copy software-report-base from the repository checkout
+  ansible.builtin.copy:
+    src: "{{ runner_images_root }}/helpers/software-report-base/"
+    dest: "{{ image_folder }}/SoftwareReport/software-report-base/"
   become: true
 
 - name: Create directory for post-generation scripts
@@ -286,14 +215,15 @@
     mode: '0755'
   become: true
 
-- name: Populate post-gen assets (from runner-images)
-  ansible.builtin.command:
-    cmd: "cp -a {{ runner_images_ubuntu }}/assets/post-gen/. {{ image_folder }}/post-generation/"
+- name: Copy post-gen assets from the repository checkout
+  ansible.builtin.copy:
+    src: "{{ runner_images_ubuntu }}/assets/post-gen/"
+    dest: "{{ image_folder }}/post-generation/"
   become: true
 
 - name: Copy toolset configuration
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/../toolsets/toolset-2404.json"
+    src: "{{ _toolset_source_path }}"
     dest: "{{ installer_script_folder }}/toolset.json"
     mode: '0644'
   become: true

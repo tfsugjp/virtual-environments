@@ -6,7 +6,7 @@
 # deploys one or more agent instances, configures them with Service Principal
 # authentication, and runs each as a systemd service.
 #
-# Required variables (typically set via inventory or Vault):
+# Required to install or update an agent (typically set via inventory or Vault):
 #   azp_url, azp_client_id, azp_tenant_id, azp_client_secret
 #
 # See defaults/main.yml for the full variable reference.
@@ -15,15 +15,10 @@
 - name: Validate required Azure Pipelines Agent variables
   ansible.builtin.assert:
     that:
-      - azp_url is defined and azp_url | length > 0
-      - azp_client_id is defined and azp_client_id | length > 0
-      - azp_tenant_id is defined and azp_tenant_id | length > 0
-      - azp_client_secret is defined and azp_client_secret | length > 0
       - azp_agent_instances is defined
     fail_msg: >-
       Missing required variables for azure_pipelines_agent role.
-      Please set azp_url, azp_client_id, azp_tenant_id, azp_client_secret,
-      and azp_agent_instances (list with at least one element).
+      Please set azp_agent_instances (list with at least one element).
     quiet: true
 
 - name: Normalize agent instances input to list
@@ -88,10 +83,10 @@
       Version : {{ _azp_resolved_version }} {{ '(pre-release)' if (_azp_is_prerelease | bool) else '(stable)' }}
       Platform: linux-{{ _azp_platform }}
       Base dir: {{ azp_agent_base_dir }}
-      Pool    : {{ azp_pool }}
+      Pool    : {{ azp_pool_runtime_override if (azp_pool_runtime_override | default('') | length > 0) else azp_pool }}
       Auth    : Service Principal ({{ azp_auth_type }})
       Instances:
       {% for inst in _azp_agent_instances %}
-        - {{ inst.name }} (pool: {{ inst.pool | default(azp_pool) }})
+        - {{ inst.name }} (pool: {{ azp_pool_runtime_override if (azp_pool_runtime_override | default('') | length > 0) else (inst.pool | default(azp_pool)) }})
       {% endfor %}
       ============================================

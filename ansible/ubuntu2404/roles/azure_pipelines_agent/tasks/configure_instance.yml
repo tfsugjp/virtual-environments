@@ -28,22 +28,50 @@
     path: "{{ _inst_agent_file }}"
   register: _inst_agent_stat
 
-- name: "{{ _instance.name }} | Read current agent version"
-  when: _inst_agent_stat.stat.exists | default(false)
-  block:
-    - name: "{{ _instance.name }} | Slurp .agent file"
-      ansible.builtin.slurp:
-        src: "{{ _inst_agent_file }}"
-      register: _inst_agent_content
+- name: "{{ _instance.name }} | Check for the Ansible version marker"
+  ansible.builtin.stat:
+    path: "{{ _inst_version_marker }}"
+  register: _inst_version_marker_stat
 
-    - name: "{{ _instance.name }} | Parse current version from .agent JSON"
-      ansible.builtin.set_fact:
-        _inst_current_version: "{{ (_inst_agent_content.content | b64decode | from_json).agentVersion | default('') }}"
+- name: "{{ _instance.name }} | Read Ansible version marker"
+  ansible.builtin.slurp:
+    src: "{{ _inst_version_marker }}"
+  register: _inst_version_marker_content
+  when: _inst_version_marker_stat.stat.exists | default(false)
 
-- name: "{{ _instance.name }} | Default current version to empty if not installed"
+- name: "{{ _instance.name }} | Check for the installed agent listener"
+  ansible.builtin.stat:
+    path: "{{ _inst_dir }}/bin/Agent.Listener"
+  register: _inst_listener_stat
+
+- name: "{{ _instance.name }} | Read installed agent version"
+  ansible.builtin.command:
+    argv:
+      - "{{ _inst_dir }}/bin/Agent.Listener"
+      - --version
+  become: true
+  become_user: "{{ azp_agent_user }}"
+  register: _inst_listener_version
+  changed_when: false
+  check_mode: false
+  when:
+    - _inst_agent_stat.stat.exists | default(false)
+    - not (_inst_version_marker_stat.stat.exists | default(false))
+    - _inst_listener_stat.stat.exists | default(false)
+
+- name: "{{ _instance.name }} | Set current agent version"
   ansible.builtin.set_fact:
-    _inst_current_version: ""
-  when: not (_inst_agent_stat.stat.exists | default(false))
+    _inst_current_version: >-
+      {{
+        (_inst_version_marker_content.content | b64decode | trim)
+        if (
+          (_inst_version_marker_stat.stat.exists | default(false))
+          and (_inst_listener_stat.stat.exists | default(false))
+        )
+        else (_inst_listener_version.stdout | trim)
+        if (_inst_listener_stat.stat.exists | default(false))
+        else ''
+      }}
 
 - name: "{{ _instance.name }} | Determine if install/update is needed"
   ansible.builtin.set_fact:
@@ -71,6 +99,19 @@
 - name: "{{ _instance.name }} | Install or update agent"
   when: _inst_needs_update | bool
   block:
+    - name: "{{ _instance.name }} | Validate credentials before installation or update"
+      ansible.builtin.assert:
+        that:
+          - azp_url is defined and azp_url | length > 0
+          - azp_client_id is defined and azp_client_id | length > 0
+          - azp_tenant_id is defined and azp_tenant_id | length > 0
+          - azp_client_secret is defined and azp_client_secret | length > 0
+        fail_msg: >-
+          Agent installation or update requires azp_url, azp_client_id,
+          azp_tenant_id, and azp_client_secret. Provide them through Ansible
+          Vault or the playbook runtime environment.
+        quiet: true
+
     # ---- Stop existing service (update path) ---------------------------
 
     - name: "{{ _instance.name }} | Check if svc.sh exists"
@@ -81,20 +122,20 @@
     - name: "{{ _instance.name }} | Stop agent service (update)"
       ansible.builtin.shell: |
         cd {{ _inst_dir }}
-        ./svc.sh stop || true
+        ./svc.sh stop
       become: true
       when:
-        - _inst_current_version | length > 0
+        - _inst_agent_stat.stat.exists | default(false)
         - _inst_svc_stat.stat.exists | default(false)
       changed_when: true
 
     - name: "{{ _instance.name }} | Uninstall agent service (update)"
       ansible.builtin.shell: |
         cd {{ _inst_dir }}
-        ./svc.sh uninstall || true
+        ./svc.sh uninstall
       become: true
       when:
-        - _inst_current_version | length > 0
+        - _inst_agent_stat.stat.exists | default(false)
         - _inst_svc_stat.stat.exists | default(false)
       changed_when: true
 
@@ -110,7 +151,6 @@
       become_user: "{{ azp_agent_user }}"
       no_log: "{{ azp_no_log_sensitive | default(true) | bool }}"
       when:
-        - _inst_current_version | length > 0
         - _inst_agent_stat.stat.exists | default(false)
       changed_when: true
       failed_when: false   # Best-effort removal; fresh install will follow
@@ -156,6 +196,7 @@
         extra_opts:
           - "--no-same-owner"
       become: true
+      when: not ansible_check_mode
 
     # ---- Configure agent -----------------------------------------------
 
@@ -214,7 +255,7 @@
   become: true
   register: _inst_svc_status
   changed_when: false
-  failed_when: false
+  failed_when: _inst_svc_status.rc != 0
 
 - name: "{{ _instance.name }} | Display service status"
   ansible.builtin.debug:

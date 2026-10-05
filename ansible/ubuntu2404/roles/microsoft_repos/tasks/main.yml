@@ -48,35 +48,12 @@
   register: image_data_result
   changed_when: image_data_result.rc == 0
 
-- name: Make waagent.conf edits safe in configure-environment.sh (Hyper-V)
-  ansible.builtin.replace:
-    path: "{{ installer_script_folder }}/configure-environment.sh"
-    regexp: '^(\s*)(sed\s+-i\s+.*?/etc/waagent\.conf)(\s*\|\|\s*true)?\s*$'
-    replace: '\g<1>test -f /etc/waagent.conf && \g<2> || true'
-  become: true
-
 - name: Make invoke_tests symlink creation safe in configure-environment.sh
   ansible.builtin.replace:
     path: "{{ installer_script_folder }}/configure-environment.sh"
     regexp: '^(\s*)ln\s+-s\s+(.*/invoke-tests\.sh)\s+/usr/local/bin/invoke_tests\s*$'
     replace: '\g<1>ln -sf \g<2> /usr/local/bin/invoke_tests'
   become: true
-
-- name: Verify configure-environment.sh has no unguarded waagent.conf sed lines (Hyper-V)
-  ansible.builtin.command:
-    cmd: "grep -nE '^\\s*sed\\s+-i\\s+.*?/etc/waagent\\.conf\\s*$' {{ installer_script_folder }}/configure-environment.sh"
-  register: _waagent_unguarded_sed_grep
-  changed_when: false
-  failed_when: false
-  become: true
-
-- name: Fail if configure-environment.sh still contains unguarded waagent.conf edits (Hyper-V)
-  ansible.builtin.fail:
-    msg: |
-      configure-environment.sh still contains unguarded waagent.conf edits which fail on Hyper-V.
-      Matches:
-      {{ _waagent_unguarded_sed_grep.stdout | default('') }}
-  when: _waagent_unguarded_sed_grep.rc == 0
 
 - name: Configure environment
   ansible.builtin.shell: "{{ installer_script_folder }}/configure-environment.sh"

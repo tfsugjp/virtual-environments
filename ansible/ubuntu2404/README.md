@@ -1,6 +1,9 @@
 # Ubuntu 24.04 Ansible Playbook
 
-This directory contains the Ansible playbook used to build the Ubuntu 24.04 GitHub Actions runner image.
+This directory contains the Ansible playbook used to build the x64 Ubuntu 24.04
+GitHub Actions runner image on an on-premises host. Build scripts, tests,
+assets, and toolsets are copied from this repository checkout; the target does
+not download the runner-images source tree.
 
 ## 📁 Directory Structure
 
@@ -40,7 +43,7 @@ ansible-ubuntu2404/
 
 - Ansible >= 2.14
 - Python >= 3.9
-- Target VM: Ubuntu 24.04 LTS
+- Target host: x64 Ubuntu 24.04 LTS
 - SSH access to the target environment
 
 ### 2. Setup
@@ -96,8 +99,7 @@ AZP_URL="https://dev.azure.com/myorg" AZP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxx
 
 ### Phase 1: system_base
 - Create directory structure
-- Deploy helper scripts
-- Deploy build scripts
+- Copy helper scripts, build scripts, tests, and assets from the local repository checkout
 - Deploy `toolset.json`
 
 ### Phase 2: microsoft_repos
@@ -138,7 +140,7 @@ AZP_URL="https://dev.azure.com/myorg" AZP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxx
 - Generate software reports
 - Run tests
 - Apply final system configuration
-- Run `waagent deprovision` (Azure environment)
+- Preserve SSH access; Azure-specific deprovisioning is not performed
 
 ## 📊 Estimated Execution Time
 

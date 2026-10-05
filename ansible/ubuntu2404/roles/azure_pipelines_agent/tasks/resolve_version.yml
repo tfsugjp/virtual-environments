@@ -50,11 +50,20 @@
   delay: 2
   until: _azp_releases_resp is succeeded
   changed_when: false
+  check_mode: false
   when: azp_agent_version == 'latest'
 
 - name: Select latest release (including pre-release)
   ansible.builtin.set_fact:
-    _azp_release_json: "{{ (_azp_releases_resp.json | default(_azp_releases_resp.content | from_json)) | first }}"
+    _azp_release_json: >-
+      {{
+        (
+          _azp_releases_resp.json
+          if 'json' in _azp_releases_resp
+          else (_azp_releases_resp.content | from_json)
+        )
+        | first
+      }}
   when:
     - azp_agent_version == 'latest'
     - azp_include_prerelease | bool
@@ -63,7 +72,11 @@
   ansible.builtin.set_fact:
     _azp_release_json: >-
       {{
-        (_azp_releases_resp.json | default(_azp_releases_resp.content | from_json))
+        (
+          _azp_releases_resp.json
+          if 'json' in _azp_releases_resp
+          else (_azp_releases_resp.content | from_json)
+        )
         | selectattr('prerelease', 'equalto', false)
         | list
         | first
@@ -86,11 +99,17 @@
   delay: 2
   until: _azp_pinned_resp is succeeded
   changed_when: false
+  check_mode: false
   when: azp_agent_version != 'latest'
 
 - name: Set release JSON for pinned version
   ansible.builtin.set_fact:
-    _azp_release_json: "{{ _azp_pinned_resp.json | default(_azp_pinned_resp.content | from_json) }}"
+    _azp_release_json: >-
+      {{
+        _azp_pinned_resp.json
+        if 'json' in _azp_pinned_resp
+        else (_azp_pinned_resp.content | from_json)
+      }}
   when: azp_agent_version != 'latest'
 
 # ---- Extract version number ---------------------------------------------

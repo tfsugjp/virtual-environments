@@ -49,6 +49,7 @@
 - name: Install development tools (batch 1 - Cloud & Container)
   ansible.builtin.shell: "{{ item }}"
   loop:
+    - "{{ installer_script_folder }}/install-actions-cache.sh"
     - "{{ installer_script_folder }}/install-azcopy.sh"
     - "{{ installer_script_folder }}/install-azure-cli.sh"
     - "{{ installer_script_folder }}/install-azure-devops-cli.sh"
@@ -56,6 +57,7 @@
     - "{{ installer_script_folder }}/install-aws-tools.sh"
     - "{{ installer_script_folder }}/install-container-tools.sh"
     - "{{ installer_script_folder }}/install-kubernetes-tools.sh"
+    - "{{ installer_script_folder }}/install-awf.sh"
   environment:
     HELPER_SCRIPTS: "{{ helper_script_folder }}"
     INSTALLER_SCRIPT_FOLDER: "{{ installer_script_folder }}"
@@ -354,10 +356,18 @@
   when: not ansible_check_mode
   tags: ['misc', 'android']
 
+- name: Install common APT packages
+  ansible.builtin.apt:
+    name: "{{ (toolset.apt.common_packages + toolset.apt.cmd_packages) | unique | list }}"
+    state: present
+    update_cache: false
+  become: true
+  when: not ansible_check_mode
+  tags: ['misc']
+
 - name: Install development tools (batch 8 - Misc Tools)
   ansible.builtin.shell: "{{ item }}"
   loop:
-    - "{{ installer_script_folder }}/install-apt-common.sh"
     - "{{ installer_script_folder }}/install-git.sh"
     - "{{ installer_script_folder }}/install-git-lfs.sh"
     - "{{ installer_script_folder }}/install-github-cli.sh"
@@ -366,6 +376,7 @@
     - "{{ installer_script_folder }}/install-android-sdk.sh"
     - "{{ installer_script_folder }}/install-pulumi.sh"
     - "{{ installer_script_folder }}/install-codeql-bundle.sh"
+    - "{{ installer_script_folder }}/install-copilot-cli.sh"
     - "{{ installer_script_folder }}/install-dotnetcore-sdk.sh"
     - "{{ installer_script_folder }}/install-yq.sh"
     - "{{ installer_script_folder }}/install-zstd.sh"

@@ -10,6 +10,10 @@ These notes apply to:
 - `roles/validation`
 - production and staging inventories
 
+The build sources scripts and assets from the checked-out repository on the
+Ansible controller. The target still needs network access for the upstream
+installer scripts to download tool packages and artifacts.
+
 ## Fixes Applied
 
 ### 1) Safe Ansible remote temp directory

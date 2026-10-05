@@ -15,15 +15,18 @@
 
 - name: Extract Ruby toolcache settings from toolset
   ansible.builtin.set_fact:
-    _ruby_toolcache: "{{ (toolset.toolcache | selectattr('name', 'equalto', 'Ruby') | list | first) | default({}) }}"
-    ruby_version_specs: "{{ _ruby_toolcache.versions | default([]) }}"
-    ruby_platform_version: "{{ _ruby_toolcache.platform_version | default('24.04') }}"
-    ruby_arch: "{{ _ruby_toolcache.arch | default('x64') }}"
+    _ruby_toolcache: "{{ (toolset.toolcache | selectattr('name', 'equalto', 'Ruby') | list | first) | default(none) }}"
 
 - name: Fail if Ruby toolcache is missing from toolset
   ansible.builtin.fail:
-    msg: "toolset-2404.json is missing toolcache entry for Ruby"
+    msg: "Ubuntu {{ ubuntu_release }} toolset is missing the Ruby toolcache entry"
   when: _ruby_toolcache is not mapping
+
+- name: Set Ruby toolcache variables from toolset
+  ansible.builtin.set_fact:
+    ruby_version_specs: "{{ _ruby_toolcache.versions | default([]) }}"
+    ruby_platform_version: "{{ _ruby_toolcache.platform_version | default(ubuntu_release) }}"
+    ruby_arch: "{{ _ruby_toolcache.arch | default('x64') }}"
 
 - name: Set toolcache directories
   ansible.builtin.set_fact:
