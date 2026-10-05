@@ -1,21 +1,28 @@
 {
     "xcode": {
-        "default": "26.2",
+        "default": "26.6",
         "x64": {
             "versions": [
                 {
-                    "link": "26.5_beta",
-                    "filename": "Xcode_26.5_beta_Universal",
-                    "version": "26.5+17F5012f",
-                    "symlinks": ["26.5"],
-                    "sha256": "1342821cc2b93a64dfe06c4697617208df537cbfde4b66c4548e2310e4cb374e",
+                    "link": "26.6",
+                    "filename": "Xcode_26.6_Universal",
+                    "version": "26.6+17F113",
+                    "sha256": "3f7e2985a080d6166f178034a76a7e7a24e5e64a31f36772f9a3f55e27c94591",
                     "install_runtimes": "none"
                 },
                 {
-                    "link": "26.4",
-                    "filename": "Xcode_26.4_Universal",
-                    "version": "26.4+17E192",
-                    "sha256": "1049032d89389cc7d803d7097359a7420c2e9747b4ce2b9cf4b81c9f3f634dfa",
+                    "link": "26.5",
+                    "filename": "Xcode_26.5_Universal",
+                    "version": "26.5+17F42",
+                    "sha256": "49541f9381551936bd5ab95432337eb1040505edcf5c65a59f39e5cf95fc22c5",
+                    "install_runtimes": "default"
+                },
+                {
+                    "link": "26.4.1",
+                    "filename": "Xcode_26.4.1_Universal",
+                    "version": "26.4.1+17E202",
+                    "symlinks": ["26.4"],
+                    "sha256": "e2698ef350e5b38740132b1110d02bd22a1feb928c3e019c168d373ce00e3ffa",
                     "install_runtimes": "default"
                 },
                 {
@@ -42,7 +49,7 @@
                     "version": "26.1.1+17B100",
                     "symlinks": ["26.1"],
                     "sha256": "ed55d55fa28455c11a65e0809ba8fdf7d83fdeb268aabf9af7fcc1ee911543eb",
-                    "install_runtimes": "default"
+                    "install_runtimes": "none"
                 },
                 {
                     "link": "26.0.1",
@@ -57,18 +64,25 @@
         "arm64": {
             "versions": [
                 {
-                    "link": "26.5_beta",
-                    "filename": "Xcode_26.5_beta_Universal",
-                    "version": "26.5+17F5012f",
-                    "symlinks": ["26.5"],
-                    "sha256": "1342821cc2b93a64dfe06c4697617208df537cbfde4b66c4548e2310e4cb374e",
+                    "link": "26.6",
+                    "filename": "Xcode_26.6_Universal",
+                    "version": "26.6+17F113",
+                    "sha256": "3f7e2985a080d6166f178034a76a7e7a24e5e64a31f36772f9a3f55e27c94591",
                     "install_runtimes": "none"
                 },
                 {
-                    "link": "26.4",
-                    "filename": "Xcode_26.4_Universal",
-                    "version": "26.4+17E192",
-                    "sha256": "1049032d89389cc7d803d7097359a7420c2e9747b4ce2b9cf4b81c9f3f634dfa",
+                    "link": "26.5",
+                    "filename": "Xcode_26.5_Universal",
+                    "version": "26.5+17F42",
+                    "sha256": "49541f9381551936bd5ab95432337eb1040505edcf5c65a59f39e5cf95fc22c5",
+                    "install_runtimes": "default"
+                },
+                {
+                    "link": "26.4.1",
+                    "filename": "Xcode_26.4.1_Universal",
+                    "version": "26.4.1+17E202",
+                    "symlinks": ["26.4"],
+                    "sha256": "e2698ef350e5b38740132b1110d02bd22a1feb928c3e019c168d373ce00e3ffa",
                     "install_runtimes": "default"
                 },
                 {
@@ -96,7 +110,7 @@
                     "version": "26.1.1+17B100",
                     "symlinks": ["26.1"],
                     "sha256": "ed55d55fa28455c11a65e0809ba8fdf7d83fdeb268aabf9af7fcc1ee911543eb",
-                    "install_runtimes": "default"
+                    "install_runtimes": "none"
                 },
                 {
                     "link": "26.0.1",
@@ -143,10 +157,10 @@
         {
             "name": "Az",
             "versions": [
-                "14.6.0"
+                "15.6.1"
             ]
         },
-        { "name": "Pester" },
+        { "name": "Pester", "versions": ["5.9.0"] },
         { "name": "PSScriptAnalyzer" }
     ],
     "brew": {
@@ -163,7 +177,8 @@
             "kotlin",
             "libpq",
             "libsodium",
-            "openssl",
+            "openssl@3",
+            "openssl@4",
             "p7zip",
             "packer",
             "perl",
@@ -208,6 +223,7 @@
     "ruby": {
         "default": "3.4",
         "rubygems": [
+            "multi_json",
             "cocoapods",
             "bundler",
             "fastlane"
@@ -244,14 +260,12 @@
             "arch": {
                 "x64": {
                     "versions": [
-                        "20.*",
                         "22.*",
-                        "24.*"
+                        "24.19.*"
                     ]
                 },
                 "arm64": {
                     "versions": [
-                        "20.*",
                         "22.*",
                         "24.*"
                     ]
@@ -266,17 +280,17 @@
                 "x64": {
                     "variable_template" : "GOROOT_{0}_{1}_X64",
                     "versions": [
-                        "1.23.*",
                         "1.24.*",
-                        "1.25.*"
+                        "1.25.*",
+                        "1.26.*"
                     ]
                 },
                 "arm64": {
                     "variable_template" : "GOROOT_{0}_{1}_ARM64",
                     "versions": [
-                        "1.23.*",
                         "1.24.*",
-                        "1.25.*"
+                        "1.25.*",
+                        "1.26.*"
                     ]
                 }
             }
@@ -313,6 +327,6 @@
         "version": "8.5"
     },
     "pwsh": {
-        "version": "7.4"
+        "version": "7.6"
     }
 }
